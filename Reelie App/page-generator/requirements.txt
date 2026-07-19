@@ -1,0 +1,4 @@
+# Page generator only needs the Anthropic SDK for live mode. --mock runs with
+# zero third-party deps. Full video extraction (--video) additionally needs the
+# ../../video-llm requirements (ffmpeg, faster-whisper, etc.).
+anthropic>=0.40

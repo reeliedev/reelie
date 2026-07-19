@@ -1,0 +1,103 @@
+{
+  "video_id": "YmA9l0eHFrk",
+  "source_file": "YmA9l0eHFrk.mp4",
+  "duration_s": 32.8,
+  "num_frames": 19,
+  "num_products": 8,
+  "num_video_products": 7,
+  "num_description_products": 5,
+  "mirrored": true,
+  "model": "claude-sonnet-4-6",
+  "usage": {
+    "input_tokens": 15024,
+    "output_tokens": 1724,
+    "api_calls": 5
+  },
+  "cost_usd": {
+    "transcription": 0.0,
+    "extraction": 0.070932,
+    "total": 0.070932
+  },
+  "products": [
+    {
+      "product_name": "red lipstick (used as colour corrector)",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 0.0,
+      "transcript_quote": "Remember this red lipstick concealer",
+      "confidence": 0.75,
+      "source": "video"
+    },
+    {
+      "product_name": "Luminous Silk Concealer",
+      "brand": "Armani Beauty",
+      "variant_or_shade": "Shade 2",
+      "evidence_type": "both",
+      "timestamp_s": 0.0,
+      "transcript_quote": "Remember this red lipstick concealer",
+      "confidence": 0.9,
+      "source": "description"
+    },
+    {
+      "product_name": "Skin Tint",
+      "brand": "Kylie Cosmetics",
+      "variant_or_shade": "2W",
+      "evidence_type": "both",
+      "timestamp_s": 5.8,
+      "transcript_quote": "Create a colour corrector for your under eyes foundation loose powder",
+      "confidence": 0.9,
+      "source": "description"
+    },
+    {
+      "product_name": "Easy Bake Powder",
+      "brand": "Huda Beauty",
+      "variant_or_shade": "Poundcake",
+      "evidence_type": "spoken",
+      "timestamp_s": 5.8,
+      "transcript_quote": "Create a colour corrector for your under eyes foundation loose powder",
+      "confidence": 0.9,
+      "source": "description"
+    },
+    {
+      "product_name": "black face paint",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 13.1,
+      "transcript_quote": "We'll create a foundation with a matte finish black face paint cream bronzer",
+      "confidence": 0.7,
+      "source": "video"
+    },
+    {
+      "product_name": "HD Skin Face Essentials Palette",
+      "brand": "Make Up For Ever",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 13.1,
+      "transcript_quote": "We'll create a foundation with a matte finish black face paint cream bronzer",
+      "confidence": 0.9,
+      "source": "description"
+    },
+    {
+      "product_name": "Baby Oil",
+      "brand": "Johnson's",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 20.7,
+      "transcript_quote": "Create a cool toned contour shade baby oil liquid highlighter",
+      "confidence": 0.95,
+      "source": "video"
+    },
+    {
+      "product_name": "Illuminator Drops Liquid Highlighter",
+      "brand": "Iconic London",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 20.7,
+      "transcript_quote": "Create a cool toned contour shade baby oil liquid highlighter",
+      "confidence": 0.9,
+      "source": "both"
+    }
+  ]
+}

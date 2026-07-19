@@ -1,0 +1,104 @@
+{
+  "video_id": "utDt-ut4yUY",
+  "source_file": "utDt-ut4yUY.mp4",
+  "duration_s": 116.8,
+  "num_frames": 53,
+  "num_products": 9,
+  "num_video_products": 9,
+  "num_description_products": 0,
+  "mirrored": false,
+  "model": "claude-sonnet-4-6",
+  "usage": {
+    "input_tokens": 28800,
+    "output_tokens": 2178,
+    "api_calls": 5
+  },
+  "cost_usd": {
+    "transcription": 0.0,
+    "extraction": 0.11907,
+    "total": 0.11907
+  },
+  "products": [
+    {
+      "product_name": "Clear Brow Gel",
+      "brand": "Rare Beauty",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 14.9,
+      "transcript_quote": "I highly recommend the Rare Beauty Clear Brow Gel",
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Brow Products",
+      "brand": null,
+      "variant_or_shade": "Medium Brown",
+      "evidence_type": "spoken",
+      "timestamp_s": 17.2,
+      "transcript_quote": "I always fill in my brows with the cossus brow products I used to shade medium brown",
+      "confidence": 0.75
+    },
+    {
+      "product_name": "Foundation Stick",
+      "brand": "Dior",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 46.7,
+      "transcript_quote": "The Dior Foundation Stick is my absolute favorite",
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Glazing Milk",
+      "brand": "Rhode",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 51.5,
+      "transcript_quote": "I also loved mixing it with road glazing milk",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Lumify Eye Drops",
+      "brand": "Lumify",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 55.2,
+      "transcript_quote": "I also decided that this was the time to add my lume-fye eye drops",
+      "confidence": 0.85
+    },
+    {
+      "product_name": "Face Trace Contour Stick",
+      "brand": "Westman Atelier",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 73.0,
+      "transcript_quote": "So I switched to my Westman affiliate face trace contour stick",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Tan Line Blush",
+      "brand": "Rhode",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 90.8,
+      "transcript_quote": "This is the tan line blush from road",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Cherry Blossom Color Corrector",
+      "brand": null,
+      "variant_or_shade": "Cherry Blossom",
+      "evidence_type": "spoken",
+      "timestamp_s": 100.0,
+      "transcript_quote": "The Hootaboodie Sherry Blossom color corrector",
+      "confidence": 0.55
+    },
+    {
+      "product_name": "Serum Concealer",
+      "brand": "Natasha Denona",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 104.2,
+      "transcript_quote": "And then I go under the Natasha Denona serum concealer",
+      "confidence": 0.9
+    }
+  ]
+}

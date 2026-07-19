@@ -1,0 +1,41 @@
+{
+  "video_id": "V50oT7H8Cl8",
+  "source_file": "V50oT7H8Cl8.mp4",
+  "duration_s": 56.2,
+  "num_frames": 34,
+  "num_products": 2,
+  "num_video_products": 2,
+  "num_description_products": 0,
+  "mirrored": false,
+  "model": "claude-sonnet-4-6",
+  "usage": {
+    "input_tokens": 18235,
+    "output_tokens": 561,
+    "api_calls": 4
+  },
+  "cost_usd": {
+    "transcription": 0.0,
+    "extraction": 0.06312,
+    "total": 0.06312
+  },
+  "products": [
+    {
+      "product_name": "Revitalift Glass Skin Hydrogel Glow Mask",
+      "brand": "L'Oreal Paris",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 12.8,
+      "transcript_quote": "This one is the L'Oreal Paris Glask in Hydrogel Glow Mask",
+      "confidence": 0.97
+    },
+    {
+      "product_name": "Revitalift Glass Skin Liquid Cream",
+      "brand": "L'Oreal Paris",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 45.5,
+      "transcript_quote": "and then we put on the glass skin liquid cream",
+      "confidence": 0.97
+    }
+  ]
+}

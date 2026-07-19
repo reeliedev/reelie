@@ -1,0 +1,263 @@
+{
+  "video_id": "g6geutlCWjM",
+  "source_file": "g6geutlCWjM.mp4",
+  "duration_s": 910.2,
+  "num_frames": 113,
+  "num_products": 27,
+  "model": "claude-sonnet-4-6",
+  "usage": {
+    "input_tokens": 77959,
+    "output_tokens": 5304,
+    "api_calls": 6
+  },
+  "cost_usd": {
+    "transcription": 0.0,
+    "extraction": 0.313437,
+    "total": 0.313437
+  },
+  "products": [
+    {
+      "product_name": "Madagascar Centella Probio-Cica Glow Sun Ampoule",
+      "brand": "Skin 1004",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 22.7,
+      "transcript_quote": "I'm using the Sun Ampule from Skin 1004.",
+      "confidence": 0.97
+    },
+    {
+      "product_name": "Hyaluronic Acid Water Resin Gel",
+      "brand": "Isntree",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 29.3,
+      "transcript_quote": "similar to my favorite from Isntree, the Hyaluronic Acid Water Resin Gel",
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Ciclamanu Serum Cushion",
+      "brand": "Parnell",
+      "variant_or_shade": "27N Rosy",
+      "evidence_type": "shown",
+      "timestamp_s": 55.9,
+      "transcript_quote": null,
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Mousse Care Cheek Handy",
+      "brand": "Nuse",
+      "variant_or_shade": "Dim-dumb",
+      "evidence_type": "both",
+      "timestamp_s": 109.5,
+      "transcript_quote": "These are from the brand News. I grabbed these as I was on my way out",
+      "confidence": 0.88
+    },
+    {
+      "product_name": "matchstick",
+      "brand": "Fenty",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 176.9,
+      "transcript_quote": "I wanted to bring my Fenty matchsticks, but I don't have it.",
+      "confidence": 0.85
+    },
+    {
+      "product_name": "matchstick liner",
+      "brand": "Colorgram",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 182.3,
+      "transcript_quote": "So I'm going to use this one from Colorgram instead.",
+      "confidence": 0.88
+    },
+    {
+      "product_name": "Pink Translucent Loose Setting Powder",
+      "brand": "Laura Mercier",
+      "variant_or_shade": "Tone-up",
+      "evidence_type": "shown",
+      "timestamp_s": 222.9,
+      "transcript_quote": null,
+      "confidence": 0.88
+    },
+    {
+      "product_name": "Collagen wrap mask",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 265.4,
+      "transcript_quote": "lately I've been using this collagen wrap mask at night and it's really good",
+      "confidence": 0.7
+    },
+    {
+      "product_name": "Butterfly Cloud Color Embossed Highlight & Contour Palette",
+      "brand": "Flower Knows",
+      "variant_or_shade": "02 Tawny Tea",
+      "evidence_type": "both",
+      "timestamp_s": 276.4,
+      "transcript_quote": "This is the Flower Nose Contour Palette in the shade number two.",
+      "confidence": 0.95
+    },
+    {
+      "product_name": "So Fierce Vinyl Eyeliner",
+      "brand": "Revlon",
+      "variant_or_shade": "Midnight Mystery",
+      "evidence_type": "both",
+      "timestamp_s": 296.9,
+      "transcript_quote": "So I'm starting with my Revlon So Fierce Vinyl Eyeliner.",
+      "confidence": 0.97
+    },
+    {
+      "product_name": "Quad Eyeshadow Palette",
+      "brand": "Kaleidos",
+      "variant_or_shade": "Twilight Rush",
+      "evidence_type": "shown",
+      "timestamp_s": 330.2,
+      "transcript_quote": null,
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Artist Color Pencil",
+      "brand": "Make Up For Ever",
+      "variant_or_shade": "506 Endless Cacao",
+      "evidence_type": "both",
+      "timestamp_s": 341.3,
+      "transcript_quote": "And then I'm going to go over with the brown milky chocolate liner just above it to emphasize the smokiness.",
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Double Eyelid Tape",
+      "brand": "Flortte",
+      "variant_or_shade": "#5 Fine Tuned Style",
+      "evidence_type": "both",
+      "timestamp_s": 358.0,
+      "transcript_quote": "These are from Floor T. It's my favorite eyelet tape.",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Luodie Floral Eyebrow Define Pencil",
+      "brand": "Florasis",
+      "variant_or_shade": "Chwei tip 01 Grey",
+      "evidence_type": "both",
+      "timestamp_s": 365.4,
+      "transcript_quote": "I'm using my brow pencil from Floris's.",
+      "confidence": 0.88
+    },
+    {
+      "product_name": "Shaper Pomade Eyebrow Fixer",
+      "brand": "Unleashia",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 384.8,
+      "transcript_quote": "I'm going to take my Unleashia brow gel.",
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Eyelash Curler",
+      "brand": "Rephr",
+      "variant_or_shade": "20R",
+      "evidence_type": "both",
+      "timestamp_s": 434.8,
+      "transcript_quote": "I'm using my reefer eyelash curler.",
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Kill Lash Superproof Mascara Long Curling",
+      "brand": "Clio",
+      "variant_or_shade": "01 long curling",
+      "evidence_type": "both",
+      "timestamp_s": 447.0,
+      "transcript_quote": "my Clio Superproof Mascara Long Curling",
+      "confidence": 0.97
+    },
+    {
+      "product_name": "Mascara Volume Effet Faux Cils",
+      "brand": "YSL Beauty",
+      "variant_or_shade": "1 high density black",
+      "evidence_type": "both",
+      "timestamp_s": 479.7,
+      "transcript_quote": "This is the Y cell mascara.",
+      "confidence": 0.8
+    },
+    {
+      "product_name": "Luxeflutter Natural Wispy Glue-Free Cluster False Eyelashes",
+      "brand": null,
+      "variant_or_shade": "06 black",
+      "evidence_type": "both",
+      "timestamp_s": 505.2,
+      "transcript_quote": "They are the glue free mouse false eyelashes.",
+      "confidence": 0.85
+    },
+    {
+      "product_name": "Epic Ink Liner",
+      "brand": "NYX",
+      "variant_or_shade": "black",
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 573.4,
+      "transcript_quote": null,
+      "confidence": 0.85
+    },
+    {
+      "product_name": "Blush Color Infusion",
+      "brand": "Laura Mercier",
+      "variant_or_shade": "Chi",
+      "evidence_type": "both",
+      "timestamp_s": 585.6,
+      "transcript_quote": "I'm going to use the Laura Mercier blush in the shade Chi.",
+      "confidence": 0.97
+    },
+    {
+      "product_name": "taupe contour",
+      "brand": "KVD",
+      "variant_or_shade": "taupe",
+      "evidence_type": "both",
+      "timestamp_s": 600.0,
+      "transcript_quote": "I'm going to be using my KVD taupe contour.",
+      "confidence": 0.92
+    },
+    {
+      "product_name": "Artist Color Pencil (lip liner)",
+      "brand": "Make Up For Ever",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 665.0,
+      "transcript_quote": "For lips I'm gonna be using this Makeup Forever liner again.",
+      "confidence": 0.88
+    },
+    {
+      "product_name": "Ink Mood Glowy Tint",
+      "brand": "Peripera",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 742.6,
+      "transcript_quote": "and then I'm gonna use a lip tint instead",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Laguna Bronzer",
+      "brand": "Nars",
+      "variant_or_shade": "Laguna 02",
+      "evidence_type": "both",
+      "timestamp_s": 761.6,
+      "transcript_quote": "I'm gonna use this Nars bronzer to try to make everything a little bit warmer",
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Heart Cookie Blusher",
+      "brand": "Etude",
+      "variant_or_shade": "pink salt",
+      "evidence_type": "both",
+      "timestamp_s": 776.7,
+      "transcript_quote": "I think I'm just gonna use this like hard cookie blusher",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "platinum+ styler 1\" flat iron",
+      "brand": "ghd",
+      "variant_or_shade": "white",
+      "evidence_type": "both",
+      "timestamp_s": 829.5,
+      "transcript_quote": "I also wanted to show you guys how I style my hair lately",
+      "confidence": 0.92
+    }
+  ]
+}

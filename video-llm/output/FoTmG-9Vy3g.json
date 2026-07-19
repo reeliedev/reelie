@@ -1,0 +1,133 @@
+{
+  "video_id": "FoTmG-9Vy3g",
+  "source_file": "FoTmG-9Vy3g.mp4",
+  "duration_s": 148.5,
+  "num_frames": 53,
+  "num_products": 11,
+  "num_video_products": 11,
+  "num_description_products": 8,
+  "mirrored": false,
+  "model": "claude-sonnet-4-6",
+  "usage": {
+    "input_tokens": 33535,
+    "output_tokens": 3174,
+    "api_calls": 7
+  },
+  "cost_usd": {
+    "transcription": 0.0,
+    "extraction": 0.148215,
+    "total": 0.148215
+  },
+  "products": [
+    {
+      "product_name": "Les Beiges",
+      "brand": "NARS",
+      "variant_or_shade": "B20",
+      "evidence_type": "both",
+      "timestamp_s": 30.8,
+      "transcript_quote": "Even for foundation, you want to choose something that gives you more of a natural coverage.",
+      "confidence": 0.85,
+      "source": "description"
+    },
+    {
+      "product_name": "Pressed Powder",
+      "brand": "Make Up For Ever",
+      "variant_or_shade": "Lavender",
+      "evidence_type": "both",
+      "timestamp_s": 35.8,
+      "transcript_quote": "You want to get a lavender color press powder.",
+      "confidence": 0.9,
+      "source": "both"
+    },
+    {
+      "product_name": "Better Me Eye Palette",
+      "brand": "2AN",
+      "variant_or_shade": "Sunlit",
+      "evidence_type": "shown",
+      "timestamp_s": 50.0,
+      "transcript_quote": null,
+      "confidence": 0.9,
+      "source": "description"
+    },
+    {
+      "product_name": "brown eyeliner",
+      "brand": null,
+      "variant_or_shade": "brown",
+      "evidence_type": "both",
+      "timestamp_s": 66.0,
+      "transcript_quote": "Okay, and get a brown eyeliner.",
+      "confidence": 0.75,
+      "source": "video"
+    },
+    {
+      "product_name": "Id\u00f4le Lengthening Mascara",
+      "brand": "Lanc\u00f4me",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 84.6,
+      "transcript_quote": "And for the eyelashes too, just apply mascara, no falsies.",
+      "confidence": 0.9,
+      "source": "both"
+    },
+    {
+      "product_name": "eyebrow pencil",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "shown",
+      "timestamp_s": 91.7,
+      "transcript_quote": null,
+      "confidence": 0.7,
+      "source": "video"
+    },
+    {
+      "product_name": "Ampoule Blush",
+      "brand": "House of HUR",
+      "variant_or_shade": "06",
+      "evidence_type": "both",
+      "timestamp_s": 100.7,
+      "transcript_quote": "You want to use a liquid blush.",
+      "confidence": 0.9,
+      "source": "description"
+    },
+    {
+      "product_name": "Glassy Glam",
+      "brand": "Haus Labs",
+      "variant_or_shade": "Glassy Opal",
+      "evidence_type": "both",
+      "timestamp_s": 109.7,
+      "transcript_quote": "I'm freaking love this bomb you guys because it gives you the most expensive glow without destroying my Mika.",
+      "confidence": 0.9,
+      "source": "description"
+    },
+    {
+      "product_name": "Powder Bronzer",
+      "brand": "Lanc\u00f4me",
+      "variant_or_shade": "Fair",
+      "evidence_type": "description",
+      "timestamp_s": 0,
+      "transcript_quote": null,
+      "confidence": 0.9,
+      "source": "description"
+    },
+    {
+      "product_name": "Ink Mood Glowy Tint",
+      "brand": "Peripera",
+      "variant_or_shade": "Rose in Mind",
+      "evidence_type": "both",
+      "timestamp_s": 131.6,
+      "transcript_quote": "I'm using this one from Peripera and this is such a pretty color.",
+      "confidence": 0.9,
+      "source": "description"
+    },
+    {
+      "product_name": "primer (glowy finish)",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 21.6,
+      "transcript_quote": "Choosing the right primary is super important. You want to choose something that's going to give you a really glowy finish.",
+      "confidence": 0.55,
+      "source": "video"
+    }
+  ]
+}

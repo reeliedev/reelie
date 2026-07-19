@@ -1,0 +1,8 @@
+anthropic>=0.40
+faster-whisper>=1.0
+openai>=1.40
+yt-dlp>=2024.0
+rapidfuzz>=3.0
+python-dotenv>=1.0
+tabulate>=0.9
+static-ffmpeg>=2.5   # bundled ffmpeg/ffprobe (no Homebrew); for URL/file extraction

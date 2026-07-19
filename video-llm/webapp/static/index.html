@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+  <title>Retrieva — your routine, shoppable</title>
+  <meta name="theme-color" content="#FFE566" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/try/styles.css" />
+</head>
+<body>
+  <!-- floating flavour pills (desktop) -->
+  <div class="bg-pills" aria-hidden="true">
+    <span class="pill p-1">✨ skincare routine</span>
+    <span class="pill p-2 pill-accent">auto-tagged</span>
+    <span class="pill p-3">GRWM</span>
+    <span class="pill p-4 pill-accent">zero linking</span>
+  </div>
+
+  <div class="app">
+    <header class="app-nav">
+      <a class="wordmark" href="/">Retrieva</a>
+      <a class="nav-home" href="/">← Home</a>
+    </header>
+
+    <!-- ───────────── STATE 1: INPUT ───────────── -->
+    <section id="view-input" class="view active">
+      <p class="eyebrow">Turn any video into a shoppable page</p>
+      <h1>Your routine, shoppable <span class="accent-word">automatically.</span></h1>
+      <p class="lead">Paste a video link or upload a clip. Retrieva watches it and finds every product you used.</p>
+
+      <form id="url-form" class="url-form">
+        <input id="url-input" type="text" inputmode="url" autocomplete="off"
+               placeholder="Paste a YouTube link…" />
+        <button type="submit" class="btn btn-primary">Find my products ✦</button>
+      </form>
+
+      <div class="or"><span>or</span></div>
+      <label class="upload">
+        <input id="file-input" type="file" accept="video/*" hidden />
+        <span>⬆︎ Upload a video</span>
+      </label>
+
+      <div id="input-error" class="inline-error" hidden></div>
+    </section>
+
+    <!-- ───────────── STATE 2: PROCESSING (analyze scene) ───────────── -->
+    <section id="view-processing" class="view">
+      <div class="rp-status">
+        <span class="rp-dot"></span>
+        <span id="proc-label">Analyzing your video…</span>
+        <span class="rp-pct" id="proc-pct">8%</span>
+      </div>
+
+      <div class="rp-video">
+        <img id="proc-thumb-img" class="rp-thumb-img" alt="" />
+        <span class="rp-grid"></span>
+        <span class="rp-scan"></span>
+        <div id="proc-detects" class="rp-detects"></div>
+        <span class="rp-timebar"><b id="proc-timebar"></b></span>
+      </div>
+
+      <ul id="proc-steps" class="proc-steps"></ul>
+      <div id="proc-cached" class="cached-pill" hidden>⚡ instant demo</div>
+    </section>
+
+    <!-- ───────────── STATE 3: APPROVAL ───────────── -->
+    <section id="view-result" class="view">
+      <header class="creator-head">
+        <div id="result-media" class="result-media"></div>
+        <h2 id="result-title">Your Skincare Routine</h2>
+        <p id="result-meta" class="result-meta"></p>
+      </header>
+
+      <p class="section-hint">Tap to confirm anything we weren't sure about.</p>
+      <div id="cards" class="cards"></div>
+
+      <button id="add-missing" class="rp-add add-missing">＋ Add a product we missed</button>
+
+      <div class="approve-bar">
+        <button id="see-page" class="btn btn-approve">Looks good — see my page →</button>
+      </div>
+    </section>
+
+    <!-- ───────────── STATE 4: PAGE PREVIEW ───────────── -->
+    <section id="view-page" class="view">
+      <div class="pub-banner">
+        <div class="pub-check">✓</div>
+        <div>
+          <p class="pub-title">Your page is live</p>
+          <p class="pub-url" id="page-url">retrieva.me/you/routine</p>
+        </div>
+      </div>
+
+      <div class="page-mock">
+        <div id="page-media" class="page-media"></div>
+        <h2 id="page-title" class="page-title">Your Skincare Routine</h2>
+        <p class="page-byline">shop the exact products below ✦</p>
+        <div id="page-products" class="page-products"></div>
+        <div class="page-foot">made with <b>Retrieva</b></div>
+      </div>
+      <button id="back-to-approve" class="btn btn-ghost">← Back to edit</button>
+    </section>
+
+    <!-- ───────────── FAILURE ───────────── -->
+    <section id="view-error" class="view">
+      <div class="fail">
+        <div class="fail-emoji">🌀</div>
+        <h2>We had trouble with this video.</h2>
+        <p>It might be private, very long, or a format we can't read yet. Try another one?</p>
+        <button id="try-again" class="btn btn-primary">Try another video</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- Edit / Add bottom sheet -->
+  <div id="modal" class="modal" hidden>
+    <div class="modal-card">
+      <div class="sheet-grip"></div>
+      <h3 id="modal-title">Edit product</h3>
+      <label>Product name<input id="f-name" type="text" /></label>
+      <label>Brand<input id="f-brand" type="text" /></label>
+      <label>Shade / variant<input id="f-variant" type="text" /></label>
+      <div class="modal-actions">
+        <button id="modal-cancel" class="btn btn-ghost">Cancel</button>
+        <button id="modal-save" class="btn btn-primary">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/try/app.js"></script>
+</body>
+</html>

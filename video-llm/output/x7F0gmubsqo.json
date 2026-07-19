@@ -1,0 +1,77 @@
+{
+  "video_id": "x7F0gmubsqo",
+  "source_file": "x7F0gmubsqo.mp4",
+  "duration_s": 51.5,
+  "num_frames": 32,
+  "num_products": 6,
+  "num_video_products": 6,
+  "num_description_products": 0,
+  "mirrored": true,
+  "model": "claude-sonnet-4-6",
+  "usage": {
+    "input_tokens": 17580,
+    "output_tokens": 923,
+    "api_calls": 4
+  },
+  "cost_usd": {
+    "transcription": 0.0,
+    "extraction": 0.066585,
+    "total": 0.066585
+  },
+  "products": [
+    {
+      "product_name": "Foundation",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 2.8,
+      "transcript_quote": "I start with foundation and in the past I used to be obsessed with making my face look wider but now I know it's more important to match your skin color.",
+      "confidence": 0.85
+    },
+    {
+      "product_name": "Makeup puff/sponge applicator",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "shown",
+      "timestamp_s": 8.4,
+      "transcript_quote": null,
+      "confidence": 0.8
+    },
+    {
+      "product_name": "Eyebrow pencil",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 15.5,
+      "transcript_quote": "I just fill in the color but this pencil is too dark so I add a bit of brown using the eyeshadow palette.",
+      "confidence": 0.82
+    },
+    {
+      "product_name": "Flower Tea eyeshadow palette",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 21.6,
+      "transcript_quote": "I add a bit of brown using the eyeshadow palette.",
+      "confidence": 0.88
+    },
+    {
+      "product_name": "Blush",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 32.7,
+      "transcript_quote": "My favorite part is the blush and I love this product so much.",
+      "confidence": 0.8
+    },
+    {
+      "product_name": "Lip tint",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 42.0,
+      "transcript_quote": "After applying my go-to lip tint, it's done.",
+      "confidence": 0.8
+    }
+  ]
+}

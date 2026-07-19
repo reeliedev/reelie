@@ -1,0 +1,686 @@
+{
+  "video_id": "y_h7RHvIXgc",
+  "source_file": "y_h7RHvIXgc.mp4",
+  "duration_s": 1724.1,
+  "num_frames": 258,
+  "num_products": 74,
+  "model": "claude-sonnet-4-6",
+  "usage": {
+    "input_tokens": 234938,
+    "output_tokens": 14362,
+    "api_calls": 11
+  },
+  "cost_usd": {
+    "transcription": 0.0,
+    "extraction": 0.920244,
+    "total": 0.920244
+  },
+  "products": [
+    {
+      "product_name": "Ice Roller",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 223.0,
+      "transcript_quote": "First, I'm doing this ice roller because apparently it deepuffs your face.",
+      "confidence": 0.75
+    },
+    {
+      "product_name": "Gisoo Hair Oil",
+      "brand": "Gisoo",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 252.1,
+      "transcript_quote": "I'm using the Gisoo one because they sent it in the mail.",
+      "confidence": 0.7
+    },
+    {
+      "product_name": "Peach 70 Niacin Serum",
+      "brand": "Anoi",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 263.8,
+      "transcript_quote": "I'm going to grab some of the annoi peach 70 niacin serum.",
+      "confidence": 0.7
+    },
+    {
+      "product_name": "Soothing and Barrier Support Serum",
+      "brand": "The Ordinary",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 282.1,
+      "transcript_quote": "We're going to use some of the ordinary soothing and barrier support serum.",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Future Dew Oil",
+      "brand": "Glossier",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 297.3,
+      "transcript_quote": "use the Glossier Future Dew Oil thingy.",
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Green Tea Seed Hyaluronic Cream",
+      "brand": "Innisfree",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 338.9,
+      "transcript_quote": "The Ines Free Green Tea Seed Hyaluronic Cream.",
+      "confidence": 0.85
+    },
+    {
+      "product_name": "Hydrogrip Primer",
+      "brand": "Milk Makeup",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 368.7,
+      "transcript_quote": "I've heard that the, what is it? The milk hydrogrip, whatever the milk one is good.",
+      "confidence": 0.85
+    },
+    {
+      "product_name": "Charlotte Tilbury Foundation/Tinted Moisturizer",
+      "brand": "Charlotte Tilbury",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 398.4,
+      "transcript_quote": "Let's start on the actual makeup base. We are going to use the Charlotte Tilbury girl.",
+      "confidence": 0.85
+    },
+    {
+      "product_name": "Blur and Smooth Tint Stick",
+      "brand": "Fenty Beauty",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 469.0,
+      "transcript_quote": "Then we're going to take the Fenty Beauty Blur and Smooth Tint Stick.",
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Creaseless Concealer",
+      "brand": "Tarte",
+      "variant_or_shade": "Light Sand",
+      "evidence_type": "spoken",
+      "timestamp_s": 502.4,
+      "transcript_quote": "Now we're going to use the Tarte Creaseless Concealer in Light Sand.",
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Concealer Brush",
+      "brand": "Rare Beauty",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 553.6,
+      "transcript_quote": "I'm using Rare Beauty Concealer brush.",
+      "confidence": 0.92
+    },
+    {
+      "product_name": "Bronzer Stick",
+      "brand": "Rare Beauty",
+      "variant_or_shade": "Happy Soul",
+      "evidence_type": "spoken",
+      "timestamp_s": 630.2,
+      "transcript_quote": "The rare beauty bronzer stick and happy soul.",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Soft Pop Plumping Blush",
+      "brand": "Makeup by Mario",
+      "variant_or_shade": "Rose Crush",
+      "evidence_type": "spoken",
+      "timestamp_s": 721.4,
+      "transcript_quote": "First, we're going to start off with the makeup by my own. Soft pop plumping blush. The shade Rose Crush.",
+      "confidence": 0.88
+    },
+    {
+      "product_name": "Blush Brush",
+      "brand": "Morphe",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 753.2,
+      "transcript_quote": "I have this brush from Morphe,",
+      "confidence": 0.8
+    },
+    {
+      "product_name": "Blush",
+      "brand": "Huda Beauty",
+      "variant_or_shade": "Black Cherry",
+      "evidence_type": "spoken",
+      "timestamp_s": 761.3,
+      "transcript_quote": "Then I take the Huda Beauty Blush and the shade Black Cherry.",
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Hello Kitty Blush",
+      "brand": "Cream",
+      "variant_or_shade": "Cheeky Pink",
+      "evidence_type": "spoken",
+      "timestamp_s": 778.2,
+      "transcript_quote": "And then we're going to take the Cream Hello Kitty Blush and the shade Cheeky Pink.",
+      "confidence": 0.75
+    },
+    {
+      "product_name": "Easy Bake Powder",
+      "brand": "Huda Beauty",
+      "variant_or_shade": "Pound Cake",
+      "evidence_type": "spoken",
+      "timestamp_s": 823.2,
+      "transcript_quote": "I'm going to go in with the easy bake by Huda Beauty in the shade Pound Cake.",
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Bake Powder",
+      "brand": "Fenty Beauty",
+      "variant_or_shade": "Butter",
+      "evidence_type": "spoken",
+      "timestamp_s": 869.0,
+      "transcript_quote": "We're going to take the fancy beauty bake in I have a shade butter.",
+      "confidence": 0.8
+    },
+    {
+      "product_name": "Powder Contour",
+      "brand": "Patrick Ta",
+      "variant_or_shade": "She Sculpted",
+      "evidence_type": "spoken",
+      "timestamp_s": 908.2,
+      "transcript_quote": "I use the Patrick Ta contour in the shade she sculpted",
+      "confidence": 0.92
+    },
+    {
+      "product_name": "Blush",
+      "brand": "Dior",
+      "variant_or_shade": "Poppy Coral",
+      "evidence_type": "spoken",
+      "timestamp_s": 960.2,
+      "transcript_quote": "At first I was sleeping on these Dior blushes... I got the peach one. This is the poppy coral.",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Soft Pinch Liquid Blush",
+      "brand": "Rare Beauty",
+      "variant_or_shade": "True",
+      "evidence_type": "spoken",
+      "timestamp_s": 1003.7,
+      "transcript_quote": "First I'm going to use the rare. The rare beauties have been the they've been so good.",
+      "confidence": 0.75
+    },
+    {
+      "product_name": "Flower Nose Palette",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 1054.9,
+      "transcript_quote": "I have a flower nose palette.",
+      "confidence": 0.6
+    },
+    {
+      "product_name": "Painted Palette Eyeshadow Palette",
+      "brand": "James Charles",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 1130.0,
+      "transcript_quote": "We are going to be using James Charles painted palette.",
+      "confidence": 0.88
+    },
+    {
+      "product_name": "Space Cowboy Glitter Liquid",
+      "brand": "Urban Decay",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 1141.3,
+      "transcript_quote": "The Urban Decay Space Cowboy... The Urban Decay Space Cowboy Glitter Liquid.",
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Cookie Highlighter",
+      "brand": "Benefit",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 1147.2,
+      "transcript_quote": "You're going to need the Benefit Cookie Highlighter.",
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Dior Highlighter Palette",
+      "brand": "Dior",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 1108.7,
+      "transcript_quote": "Next is highlight. We got the Dior palette.",
+      "confidence": 0.85
+    },
+    {
+      "product_name": "Highlight Brush",
+      "brand": "Morphe",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 1114.3,
+      "transcript_quote": "This is from Morphe.",
+      "confidence": 0.75
+    },
+    {
+      "product_name": "Freckle Pen",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 1352.2,
+      "transcript_quote": "I just take this freckle pen. It's the OG freckle pen you can get it.",
+      "confidence": 0.75
+    },
+    {
+      "product_name": "Lip Liner",
+      "brand": "Makeup Forever",
+      "variant_or_shade": "Low Key",
+      "evidence_type": "spoken",
+      "timestamp_s": 1411.7,
+      "transcript_quote": "I really like the makeup forever lip liners... I'm gonna use the Sabrina Carpenter Color Low Key.",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Velvet Lip Liner",
+      "brand": "NARS",
+      "variant_or_shade": "Venice",
+      "evidence_type": "spoken",
+      "timestamp_s": 1423.4,
+      "transcript_quote": "I use the NARS Venice one for a really long time.",
+      "confidence": 0.85
+    },
+    {
+      "product_name": "Lipstick",
+      "brand": null,
+      "variant_or_shade": "Slay",
+      "evidence_type": "spoken",
+      "timestamp_s": 1450.0,
+      "transcript_quote": "I'm gonna use the Fui thingy. I got this on Amazon girl. And it's in the shade Slay.",
+      "confidence": 0.55
+    },
+    {
+      "product_name": "Gloss",
+      "brand": "Patrick Ta",
+      "variant_or_shade": "She's Expensive",
+      "evidence_type": "both",
+      "timestamp_s": 1470.1,
+      "transcript_quote": "I'm gonna use Patrick Ta. Gloss shade.",
+      "confidence": 0.97
+    },
+    {
+      "product_name": "Roller Lash Mascara",
+      "brand": "Benefit",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 1496.4,
+      "transcript_quote": "We're using the Benefit roller lash.",
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Kiss Lashes (cluster/individual)",
+      "brand": "Kiss",
+      "variant_or_shade": "Voluminous",
+      "evidence_type": "spoken",
+      "timestamp_s": 1526.6,
+      "transcript_quote": "I use the kiss ones, the ones that are stick on so that you don't have to put any glue on... I'm using these ones, the kiss ones and they're in the voluminous style.",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Grande Lash Lift Heated Lash Curler",
+      "brand": "Grande Cosmetics",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 1567.3,
+      "transcript_quote": "I have the Grande Lash Lift heated lash thing and I just have them curl up.",
+      "confidence": 0.88
+    },
+    {
+      "product_name": "Ice Roller",
+      "brand": "Kitsch",
+      "variant_or_shade": null,
+      "evidence_type": "shown",
+      "timestamp_s": 210.0,
+      "transcript_quote": null,
+      "confidence": 0.8
+    },
+    {
+      "product_name": "Hair Oil",
+      "brand": "Gisoo",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 252.1,
+      "transcript_quote": "I'm using the Gisoo one because they sent it in the mail.",
+      "confidence": 0.85
+    },
+    {
+      "product_name": "Futuredew Oil Serum Hybrid",
+      "brand": "Glossier",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 297.4,
+      "transcript_quote": "Tip, if you want your base to look really glowy, then use the Glossier Future Dew Oil thingy.",
+      "confidence": 0.97
+    },
+    {
+      "product_name": "Glowy Makeup Base Serum",
+      "brand": "Laneige",
+      "variant_or_shade": null,
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 363.7,
+      "transcript_quote": null,
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Hair & Scalp Oil",
+      "brand": "Gisou",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 252.1,
+      "transcript_quote": "I'm using the Gisoo one because they sent it in the mail.",
+      "confidence": 0.8
+    },
+    {
+      "product_name": "Hollywood Flawless Filter",
+      "brand": "Charlotte Tilbury",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 398.4,
+      "transcript_quote": "We are going to use the Charlotte Tilbury girl.",
+      "confidence": 0.75
+    },
+    {
+      "product_name": "Blush",
+      "brand": "Morphe",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 751.2,
+      "transcript_quote": "I have this brush from Morphe, and I just dip it, kind of blend it into my contour",
+      "confidence": 0.6
+    },
+    {
+      "product_name": "Easy Bake Loose Baking & Setting Powder",
+      "brand": "Huda Beauty",
+      "variant_or_shade": "Black Cherry",
+      "evidence_type": "spoken",
+      "timestamp_s": 761.2,
+      "transcript_quote": "Then I take the Huda Beauty Blush and the shade Black Cherry.",
+      "confidence": 0.93
+    },
+    {
+      "product_name": "Hello Kitty Blush",
+      "brand": "The Creme Shop",
+      "variant_or_shade": "Cheeky Pink",
+      "evidence_type": "both",
+      "timestamp_s": 778.2,
+      "transcript_quote": "we're going to take the Cream Hello Kitty Blush and the shade Cheeky Pink.",
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Soft Pinch Luminous Powder Blush",
+      "brand": "Rare Beauty",
+      "variant_or_shade": "True",
+      "evidence_type": "spoken",
+      "timestamp_s": 1003.7,
+      "transcript_quote": "First I'm going to use the rare. The rare beauties have been the they've been so good.",
+      "confidence": 0.72
+    },
+    {
+      "product_name": "Painted Palette",
+      "brand": "James Charles",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 1130.0,
+      "transcript_quote": "We are going to be using James Charles painted palette.",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Space Cowboy Glitter Eyeshadow",
+      "brand": "Urban Decay",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 1141.3,
+      "transcript_quote": "The Urban Decay Space Cowboy.",
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Dior Palette",
+      "brand": "Dior",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 1108.7,
+      "transcript_quote": "We got the Dior palette.",
+      "confidence": 0.8
+    },
+    {
+      "product_name": "Morphe M449 Detailed Powder & Cream Brush",
+      "brand": "Morphe",
+      "variant_or_shade": null,
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 751.2,
+      "transcript_quote": null,
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Lip Liner",
+      "brand": "NARS",
+      "variant_or_shade": "Venice",
+      "evidence_type": "spoken",
+      "timestamp_s": 1423.4,
+      "transcript_quote": "I use the NARS Venice one for a really long time.",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Lash Clusters",
+      "brand": "Kiss",
+      "variant_or_shade": "Voluminous",
+      "evidence_type": "spoken",
+      "timestamp_s": 1526.6,
+      "transcript_quote": "I use the kiss ones, the ones that are stick on so that you don't have to put any glue on.",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Easy Bake and Snatch Powder",
+      "brand": "Huda Beauty",
+      "variant_or_shade": "Pound Cake",
+      "evidence_type": "both",
+      "timestamp_s": 824.4,
+      "transcript_quote": "I'm going to go in with the easy bake by Huda Beauty in the shade Pound Cake.",
+      "confidence": 0.97
+    },
+    {
+      "product_name": "Pro Filt'r Instant Retouch Setting Powder",
+      "brand": "Fenty Beauty",
+      "variant_or_shade": "Butter",
+      "evidence_type": "both",
+      "timestamp_s": 870.0,
+      "transcript_quote": "We're going to take the fancy beauty bake in I have a shade butter.",
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Patrick Ta contour",
+      "brand": "Patrick Ta",
+      "variant_or_shade": "She Sculpted",
+      "evidence_type": "spoken",
+      "timestamp_s": 908.2,
+      "transcript_quote": "I use the Patrick Ta contour in the shade she sculpted",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Rosy Glow Blush",
+      "brand": "Dior",
+      "variant_or_shade": "061 Poppy Coral",
+      "evidence_type": "both",
+      "timestamp_s": 972.9,
+      "transcript_quote": "I got the peach one. This is the poppy coral.",
+      "confidence": 0.97
+    },
+    {
+      "product_name": "Strawberry Rococo 03 Blackcurrant Cold Brew Palette",
+      "brand": "Flower Knows",
+      "variant_or_shade": "Strawberry Rococo 03 Blackcurrant Cold Brew",
+      "evidence_type": "both",
+      "timestamp_s": 1054.8,
+      "transcript_quote": "I have a flower nose palette. You're going to take an eyeshadow color that's close to your skin color.",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "BACKSTAGE Glow Face Palette",
+      "brand": "Dior",
+      "variant_or_shade": "001 Universal",
+      "evidence_type": "both",
+      "timestamp_s": 1108.7,
+      "transcript_quote": "Next is highlight. We got the Dior palette.",
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Space Cowboy Moondust Glitter Eyeshadow Palette",
+      "brand": "Urban Decay",
+      "variant_or_shade": "Space Cowboy",
+      "evidence_type": "both",
+      "timestamp_s": 1136.7,
+      "transcript_quote": "The Urban Decay Space Cowboy.",
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Creamy Kohl Eyeliner",
+      "brand": null,
+      "variant_or_shade": "Very Brown",
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 1164.7,
+      "transcript_quote": null,
+      "confidence": 0.85
+    },
+    {
+      "product_name": "Charlotte Tilbury Foundation",
+      "brand": "Charlotte Tilbury",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 398.4,
+      "transcript_quote": "We are going to use the Charlotte Tilbury girl.",
+      "confidence": 0.85
+    },
+    {
+      "product_name": "Huda Beauty Blush",
+      "brand": "Huda Beauty",
+      "variant_or_shade": "Black Cherry",
+      "evidence_type": "spoken",
+      "timestamp_s": 761.3,
+      "transcript_quote": "Then I take the Huda Beauty Blush and the shade Black Cherry.",
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Lip Product",
+      "brand": null,
+      "variant_or_shade": "Slay",
+      "evidence_type": "spoken",
+      "timestamp_s": 1450.0,
+      "transcript_quote": "I'm gonna use the Fui thingy. I got this on Amazon girl. And it's in the shade Slay.",
+      "confidence": 0.55
+    },
+    {
+      "product_name": "Kiss Lashes",
+      "brand": "Kiss",
+      "variant_or_shade": "Voluminous",
+      "evidence_type": "spoken",
+      "timestamp_s": 1526.6,
+      "transcript_quote": "I use the kiss ones, the ones that are stick on so that you don't have to put any glue on.",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "NARS Venice Lip Liner",
+      "brand": "NARS",
+      "variant_or_shade": "Venice",
+      "evidence_type": "spoken",
+      "timestamp_s": 1423.4,
+      "transcript_quote": "I use the NARS Venice one for a really long time.",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Precision Lip Liner",
+      "brand": "NARS",
+      "variant_or_shade": "Venice",
+      "evidence_type": "both",
+      "timestamp_s": 1423.4,
+      "transcript_quote": "I use the NARS Venice one for a really long time.",
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Kiss cluster lashes",
+      "brand": "Kiss",
+      "variant_or_shade": "Voluminous",
+      "evidence_type": "both",
+      "timestamp_s": 1526.6,
+      "transcript_quote": "I use the kiss ones, the ones that are stick on so that you don't have to put any glue on.",
+      "confidence": 0.88
+    },
+    {
+      "product_name": "Gisoo facial oil",
+      "brand": "Gisoo",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 252.1,
+      "transcript_quote": "I'm using the Gisoo one because they sent it in the mail.",
+      "confidence": 0.75
+    },
+    {
+      "product_name": "Charlotte Tilbury base",
+      "brand": "Charlotte Tilbury",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 398.4,
+      "transcript_quote": "We are going to use the Charlotte Tilbury girl.",
+      "confidence": 0.85
+    },
+    {
+      "product_name": "Dior blush",
+      "brand": "Dior",
+      "variant_or_shade": "Poppy Coral",
+      "evidence_type": "spoken",
+      "timestamp_s": 960.2,
+      "transcript_quote": "At first I was sleeping on these Dior blushes... I got the peach one. This is the poppy coral.",
+      "confidence": 0.88
+    },
+    {
+      "product_name": "Patrick Ta gloss",
+      "brand": "Patrick Ta",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 1470.1,
+      "transcript_quote": "I'm gonna use Patrick Ta. Gloss shade.",
+      "confidence": 0.88
+    },
+    {
+      "product_name": "Blush",
+      "brand": "Rare Beauty",
+      "variant_or_shade": "True",
+      "evidence_type": "spoken",
+      "timestamp_s": 1003.7,
+      "transcript_quote": "First I'm going to use the rare. The rare beauties have been the they've been so good.",
+      "confidence": 0.75
+    },
+    {
+      "product_name": "Eyeshadow Palette",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 1054.9,
+      "transcript_quote": "So I have a flower nose palette.",
+      "confidence": 0.5
+    },
+    {
+      "product_name": "Highlight Palette",
+      "brand": "Dior",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 1108.7,
+      "transcript_quote": "We got the Dior palette.",
+      "confidence": 0.75
+    },
+    {
+      "product_name": "Lip Liner",
+      "brand": null,
+      "variant_or_shade": "Low Key",
+      "evidence_type": "spoken",
+      "timestamp_s": 1416.6,
+      "transcript_quote": "I'm gonna use the Sabrina Carpenter Color Low Key.",
+      "confidence": 0.75
+    }
+  ]
+}

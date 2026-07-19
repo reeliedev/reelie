@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{TITLE}} — the full routine, priced &amp; linked | {{BRAND}}</title>
+<meta name="description" content="{{SUMMARY}}">
+<link rel="canonical" href="{{URL}}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="{{BRAND}}">
+<meta property="og:title" content="{{TITLE}} — {{CREATOR}}">
+<meta property="og:description" content="{{SUMMARY}}">
+<meta property="og:url" content="{{URL}}">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,600;1,9..144,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{{JSONLD}}
+</script>
+<style>
+  :root{
+    --sun:#FFD60A;--ink:#141414;--grey:#8A8A8A;--line:#EAEAEA;--soft:#F6F5F2;--cream:#FBFAF7;
+    --maxw:1080px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--ink);background:#fff;line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:inherit}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  .eyebrow{font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--grey)}
+
+  /* ---------- top bar ---------- */
+  .topbar{border-bottom:1px solid var(--line)}
+  .topbar .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .brandmark{font-family:'Fraunces',serif;font-style:italic;font-weight:700;font-size:22px;text-decoration:none}
+  .brandmark .dot{color:var(--sun)}
+  .allpages{font-size:13px;font-weight:600;text-decoration:none;color:var(--ink);padding-bottom:2px;border-bottom:2px solid var(--sun)}
+
+  /* ---------- hero ---------- */
+  .hero{background:var(--cream);border-bottom:1px solid var(--line)}
+  .hero .wrap{display:grid;grid-template-columns:1.35fr .9fr;gap:56px;align-items:center;padding:64px 24px}
+  .hero-eyebrow{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+  .creator{display:flex;align-items:center;gap:11px}
+  .cavatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,{{GRAD0}},{{GRAD1}});border:2px solid var(--sun);flex-shrink:0}
+  .cname{font-size:14px;font-weight:700;line-height:1.2}
+  .chandle{font-size:12px;color:var(--grey)}
+  h1{font-family:'Fraunces',serif;font-style:italic;font-weight:700;font-size:clamp(40px,5.6vw,66px);line-height:1.02;letter-spacing:-1px;margin:0 0 18px}
+  .lede{font-size:18px;color:#4a4a4a;max-width:30ch}
+  .hero-cta{display:inline-flex;align-items:center;gap:9px;margin-top:28px;background:var(--ink);color:#fff;text-decoration:none;font-weight:600;font-size:15px;padding:14px 24px;border-radius:999px;transition:transform .1s ease,opacity .1s}
+  .hero-cta:hover{transform:translateY(-1px)}
+  .hero-cta .sun{color:var(--sun)}
+
+  /* hero summary card */
+  .kit{background:#fff;border:1px solid var(--line);border-radius:22px;padding:26px 26px 22px;box-shadow:0 24px 60px -34px rgba(20,20,20,.35)}
+  .kit-label{font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--grey)}
+  .kit-total{font-family:'Fraunces',serif;font-weight:600;font-size:52px;line-height:1;margin:10px 0 2px}
+  .kit-total .approx{font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;color:var(--grey);letter-spacing:0}
+  .kit-sub{font-size:13.5px;color:var(--grey)}
+  .kit-stats{display:flex;gap:22px;margin:20px 0;padding:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .kit-stat b{display:block;font-family:'Fraunces',serif;font-weight:600;font-size:24px;line-height:1}
+  .kit-stat span{font-size:11.5px;color:var(--grey);letter-spacing:.3px}
+  .kit-chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:20px}
+  .chip{font-size:11.5px;font-weight:600;color:#5a5a5a;background:var(--soft);padding:5px 11px;border-radius:999px}
+  .kit-cta{display:block;text-align:center;background:var(--sun);color:var(--ink);text-decoration:none;font-weight:700;font-size:15px;padding:14px;border-radius:14px;transition:transform .1s ease}
+  .kit-cta:hover{transform:translateY(-1px)}
+
+  /* ---------- the guide ---------- */
+  .guide{padding:72px 0 40px}
+  .sec-head{max-width:680px;margin-bottom:44px}
+  .sec-head h2{font-family:'Fraunces',serif;font-style:italic;font-weight:700;font-size:34px;letter-spacing:-.5px;margin:10px 0 14px}
+  .sec-intro{color:#3a3a3a;font-size:18px;line-height:1.6}
+  .sec-meta{color:var(--grey);font-size:13.5px;margin-top:12px}
+
+  .steps{display:flex;flex-direction:column;gap:12px}
+  .step{display:flex;align-items:center;gap:64px;padding:52px 0;border-top:1px solid var(--line)}
+  .step:first-child{border-top:none}
+  .step.media-right{flex-direction:row-reverse}
+  .s-media{flex:0 0 288px}
+  .s-clipwrap{position:relative;width:288px}
+  .s-clip,.s-emoji{width:288px;aspect-ratio:9/16;object-fit:cover;border-radius:22px;display:block;background:#111;box-shadow:0 30px 60px -30px rgba(20,20,20,.5)}
+  .s-clip{width:100%}
+  .s-emoji{display:flex;align-items:center;justify-content:center;font-size:88px;background:var(--soft)}
+  .s-sound{position:absolute;bottom:12px;right:12px;width:40px;height:40px;border:none;border-radius:50%;background:rgba(20,20,20,.5);color:#fff;font-size:16px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:transform .1s ease,background .1s ease}
+  .s-sound:hover{transform:scale(1.07);background:rgba(20,20,20,.72)}
+  .s-sound .ic-on{display:none}
+  .s-clipwrap.is-on .s-sound .ic-on{display:inline}
+  .s-clipwrap.is-on .s-sound .ic-muted{display:none}
+  .s-clipwrap.is-on .s-sound{background:var(--sun);color:var(--ink)}
+  .s-content{flex:1;min-width:0;max-width:460px}
+  .s-step{font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--sun);margin-bottom:14px}
+  .s-product + .s-product{margin-top:26px;padding-top:26px;border-top:1px solid var(--line)}
+  .s-products.has-multi .s-name{font-size:25px}
+  .s-brand{font-size:12.5px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--grey);margin-bottom:5px}
+  .s-name{font-family:'Fraunces',serif;font-weight:600;font-size:30px;line-height:1.12;letter-spacing:-.4px}
+  .s-variant{font-family:'DM Sans',sans-serif;font-style:normal;font-weight:500;font-size:15px;color:var(--grey)}
+  .s-tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px}
+  .tag{font-size:11px;font-weight:600;letter-spacing:.3px;color:#6a6a6a;background:var(--soft);padding:4px 10px;border-radius:999px}
+  .tag-time{background:#fff;border:1px solid var(--line)}
+  .s-note{font-size:16px;line-height:1.65;color:#3a3a3a;margin-top:16px}
+  .s-buy{display:flex;align-items:center;gap:18px;margin-top:24px}
+  .s-price{font-family:'Fraunces',serif;font-weight:600;font-size:26px}
+  .s-price .approx{font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;color:var(--grey)}
+  .shop{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;text-decoration:none;background:var(--ink);color:#fff;font-size:14px;font-weight:600;padding:13px 22px;border-radius:12px;transition:transform .1s ease,background .1s}
+  .shop:hover{transform:translateY(-1px);background:#000}
+  .shop span{transition:transform .1s ease}
+  .shop:hover span{transform:translateX(3px)}
+
+  /* ---------- closing / bundle band ---------- */
+  .band{background:var(--ink);color:#fff;margin-top:52px}
+  .band .wrap{display:flex;align-items:center;justify-content:space-between;gap:32px;padding:52px 24px}
+  .band h2{font-family:'Fraunces',serif;font-style:italic;font-weight:700;font-size:clamp(26px,3vw,38px);letter-spacing:-.5px;line-height:1.08}
+  .band p{color:rgba(255,255,255,.6);font-size:14.5px;margin-top:10px}
+  .band-cta{display:inline-flex;align-items:center;gap:9px;background:var(--sun);color:var(--ink);text-decoration:none;font-weight:700;font-size:16px;padding:16px 28px;border-radius:999px;white-space:nowrap;transition:transform .1s ease}
+  .band-cta:hover{transform:translateY(-1px)}
+
+  /* ---------- FAQ (AI-citable Q&A) ---------- */
+  .faq{border-top:1px solid var(--line)}
+  .faq .wrap{padding:56px 24px 8px}
+  .faq h2{font-family:'Fraunces',serif;font-style:italic;font-weight:700;font-size:30px;letter-spacing:-.5px;margin:8px 0 22px}
+  .faq-list{max-width:720px}
+  .faq-item{border-top:1px solid var(--line);padding:0}
+  .faq-item summary{cursor:pointer;list-style:none;padding:20px 40px 20px 0;position:relative;font-family:'Fraunces',serif;font-weight:600;font-size:19px;line-height:1.3}
+  .faq-item summary::-webkit-details-marker{display:none}
+  .faq-item summary::after{content:"+";position:absolute;right:6px;top:18px;font-family:'DM Sans',sans-serif;font-size:24px;font-weight:400;color:var(--grey);transition:transform .15s ease}
+  .faq-item[open] summary::after{transform:rotate(45deg)}
+  .faq-a{padding:0 0 22px;color:#3a3a3a;font-size:16px;line-height:1.65;max-width:640px}
+
+  .disclosure{font-size:12.5px;line-height:1.6;color:var(--grey);text-align:center;max-width:560px;margin:34px auto 0;padding:0 24px}
+
+  /* ---------- footer ---------- */
+  .footer{border-top:1px solid var(--line);margin-top:44px}
+  .footer .wrap{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;padding:34px 24px 46px}
+  .footer .brandmark{font-size:19px}
+  .ftext{font-size:12.5px;color:var(--grey);line-height:1.6}
+  .ftext a{font-weight:700;text-decoration:none;color:var(--ink);border-bottom:2px solid var(--sun)}
+
+  /* ---------- save button + also-used-by + similar creators ---------- */
+  .top-actions{display:flex;align-items:center;gap:16px}
+  .savebtn{display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--line);background:#fff;color:var(--ink);font-family:inherit;font-size:13px;font-weight:600;padding:8px 14px;border-radius:999px;cursor:pointer;transition:background .1s,border-color .1s}
+  .savebtn .save-ic{font-size:14px;line-height:1}
+  .savebtn:hover{border-color:var(--ink)}
+  .savebtn.is-saved{background:var(--sun);border-color:var(--sun)}
+  .savebtn.is-saved .save-ic{color:var(--ink)}
+
+  .s-also{display:flex;align-items:center;gap:8px;margin-top:16px}
+  .s-also-label{font-size:12px;color:var(--grey)}
+  .who{display:inline-block;text-decoration:none}
+  .who-av{display:inline-block;width:26px;height:26px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px var(--line);margin-left:-6px;vertical-align:middle}
+  .who:first-of-type .who-av{margin-left:0}
+
+  .similar{background:var(--cream);border-top:1px solid var(--line)}
+  .similar .wrap{padding:56px 24px}
+  .similar h2{font-family:'Fraunces',serif;font-style:italic;font-weight:700;font-size:30px;letter-spacing:-.5px;margin:8px 0 24px}
+  .sim-row{display:flex;gap:16px;overflow-x:auto;padding-bottom:6px}
+  .sim-card{flex:0 0 150px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;text-decoration:none;background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px 14px;transition:transform .1s ease,box-shadow .1s}
+  .sim-card:hover{transform:translateY(-2px);box-shadow:0 20px 40px -28px rgba(20,20,20,.4)}
+  .sim-card .who-av{width:56px;height:56px;margin:0;box-shadow:0 0 0 2px var(--sun)}
+  .sim-name{font-weight:700;font-size:14px;color:var(--ink)}
+  .sim-reason{font-size:12px;color:var(--grey);line-height:1.4}
+
+  /* ---------- responsive ---------- */
+  @media(max-width:860px){
+    .hero .wrap{grid-template-columns:1fr;gap:38px;padding:48px 24px}
+    .kit{max-width:420px}
+  }
+  @media(max-width:760px){
+    .step,.step.media-right{flex-direction:column;align-items:flex-start;gap:24px;padding:40px 0}
+    .s-media{flex:none;width:100%;display:flex;justify-content:center}
+    .s-clipwrap,.s-emoji{width:min(74%,248px)}
+    .s-content{max-width:none;width:100%}
+    .s-name{font-size:27px}
+  }
+  @media(max-width:640px){
+    .guide{padding:52px 0 20px}
+    .band .wrap{flex-direction:column;align-items:flex-start;text-align:left}
+  }
+</style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="wrap">
+      <a class="brandmark" href="{{BASE_URL}}">{{BRAND}}<span class="dot">.</span></a>
+      <div class="top-actions">
+        <button class="savebtn" type="button" data-save-key="{{SAVE_KEY}}" aria-pressed="false">
+          <span class="save-ic">♡</span> <span class="save-label">Save</span>
+        </button>
+        <a class="allpages" href="{{BASE_URL}}/{{HANDLE}}">{{CREATOR_FIRST}}'s pages →</a>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-copy">
+        <div class="hero-eyebrow">
+          <div class="creator">
+            <div class="cavatar"></div>
+            <div>
+              <div class="cname">{{CREATOR}}</div>
+              <div class="chandle">@{{HANDLE}} · {{PLATFORMS}}</div>
+            </div>
+          </div>
+        </div>
+        <h1>{{TITLE}}</h1>
+        <p class="lede">{{SUMMARY}}</p>
+        <a class="hero-cta" href="#routine">See the routine <span class="sun">↓</span></a>
+      </div>
+
+      <aside class="kit">
+        <div class="kit-label">Shop the whole routine</div>
+        <div class="kit-total">{{TOTAL_DISPLAY}}<span class="approx">{{TOTAL_APPROX}}</span></div>
+        <div class="kit-sub">Everything {{CREATOR_FIRST}} uses, in one place</div>
+        <div class="kit-stats">
+          <div class="kit-stat"><b>{{PRODUCT_COUNT}}</b><span>products</span></div>
+          <div class="kit-stat"><b>{{RANGE_DISPLAY}}</b><span>price range</span></div>
+          <div class="kit-stat"><b>{{RETAILER_COUNT}}</b><span>retailers</span></div>
+        </div>
+        <div class="kit-chips">{{RETAILER_CHIPS}}</div>
+        <a class="kit-cta" href="#routine">Start shopping</a>
+      </aside>
+    </div>
+  </section>
+
+  <section class="guide" id="routine">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">The routine · step by step</div>
+        <h2>Every product, in the order {{CREATOR_FIRST}} uses them</h2>
+        <p class="sec-intro">{{INTRO}}</p>
+        <p class="sec-meta">{{META}} — pulled from the video, priced, and linked so you can shop it in a tap.</p>
+      </div>
+      <div class="steps">
+{{STEPS}}
+      </div>
+    </div>
+  </section>
+
+  {{SIMILAR_MODULE}}
+
+  <section class="band">
+    <div class="wrap">
+      <div>
+        <h2>Get the whole routine — {{TOTAL_DISPLAY}}</h2>
+        <p>{{PRODUCT_COUNT}} products across {{RETAILER_COUNT}} retailers. Shopping through these links supports {{CREATOR_FIRST}}.</p>
+      </div>
+      <a class="band-cta" href="#routine">Shop all {{PRODUCT_COUNT}} →</a>
+    </div>
+  </section>
+
+  {{FAQ}}
+
+  <p class="disclosure">{{DISCLOSURE}} Prices are approximate and refreshed regularly.</p>
+
+  <footer class="footer">
+    <div class="wrap">
+      <a class="brandmark" href="{{BASE_URL}}">{{BRAND}}<span class="dot">.</span></a>
+      <p class="ftext">This page was made automatically from {{CREATOR_FIRST}}'s video.<br>Are you a creator? <a href="{{BASE_URL}}">Claim your page →</a></p>
+    </div>
+  </footer>
+
+  <script>
+    // Step clips: play only while on screen (muted autoplay), tap to unmute one.
+    (function(){
+      var vids = Array.prototype.slice.call(document.querySelectorAll('.s-clip'));
+      if(!vids.length) return;
+
+      function mute(v){
+        v.muted = true;
+        var wrap = v.closest('.s-clipwrap');
+        if(wrap) wrap.classList.remove('is-on');
+      }
+      function unmute(v){
+        vids.forEach(function(o){ if(o!==v) mute(o); });   // only one audible at a time
+        v.muted = false; v.volume = 1;
+        v.play().catch(function(){});
+        var wrap = v.closest('.s-clipwrap');
+        if(wrap) wrap.classList.add('is-on');
+      }
+
+      document.querySelectorAll('.s-sound').forEach(function(btn){
+        btn.addEventListener('click', function(e){
+          e.preventDefault();
+          var v = btn.parentNode.querySelector('.s-clip');
+          if(v.muted) unmute(v); else mute(v);
+        });
+      });
+
+      if(!('IntersectionObserver' in window)){ vids.forEach(function(v){v.play().catch(function(){});}); return; }
+      var io = new IntersectionObserver(function(entries){
+        entries.forEach(function(e){
+          var v = e.target;
+          if(e.isIntersecting){ v.play().catch(function(){}); }
+          else { v.pause(); mute(v); }   // scrolling away stops sound
+        });
+      }, {threshold:0.35});
+      vids.forEach(function(v){ io.observe(v); });
+    })();
+
+    // Guest favorites — saved locally (no account needed).
+    (function(){
+      var KEY = 'reelie.saved';
+      function load(){ try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch(e){ return []; } }
+      function save(list){ localStorage.setItem(KEY, JSON.stringify(list)); }
+      document.querySelectorAll('.savebtn').forEach(function(btn){
+        var key = btn.getAttribute('data-save-key');
+        function render(){
+          var saved = load().indexOf(key) !== -1;
+          btn.classList.toggle('is-saved', saved);
+          btn.setAttribute('aria-pressed', saved ? 'true' : 'false');
+          btn.querySelector('.save-ic').textContent = saved ? '♥' : '♡';
+          btn.querySelector('.save-label').textContent = saved ? 'Saved' : 'Save';
+        }
+        btn.addEventListener('click', function(){
+          var list = load(), i = list.indexOf(key);
+          if(i === -1){ list.push(key); } else { list.splice(i,1); }
+          save(list); render();
+        });
+        render();
+      });
+    })();
+  </script>
+</body>
+</html>

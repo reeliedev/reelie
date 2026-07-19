@@ -1,0 +1,32 @@
+{
+  "video_id": "WOqiHidVb-g",
+  "source_file": "WOqiHidVb-g.mp4",
+  "duration_s": 49.3,
+  "num_frames": 29,
+  "num_products": 1,
+  "num_video_products": 1,
+  "num_description_products": 0,
+  "mirrored": false,
+  "model": "claude-sonnet-4-6",
+  "usage": {
+    "input_tokens": 14960,
+    "output_tokens": 237,
+    "api_calls": 3
+  },
+  "cost_usd": {
+    "transcription": 0.0,
+    "extraction": 0.048435,
+    "total": 0.048435
+  },
+  "products": [
+    {
+      "product_name": "Tattoo Lip Stick Multicolor Cotton Swab Q-tips",
+      "brand": null,
+      "variant_or_shade": "pink",
+      "evidence_type": "both",
+      "timestamp_s": 6.9,
+      "transcript_quote": "Tattoo, lip stick, multicolor, little cotton, swabby type items.",
+      "confidence": 0.72
+    }
+  ]
+}

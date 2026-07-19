@@ -1,0 +1,545 @@
+"""
+Dynamic public site (served at reelie.shop). Renders the crawlable creator pages
++ SEO files straight from the database, so a page is live and AI-discoverable the
+moment it's generated — no static build, no file sync.
+
+  page_html(page, products, creator)  -> the shoppable "shop + guide" page, with
+                                         embedded Schema.org JSON-LD (Product+Offer
+                                         per item) so assistants can cite it.
+  directory_html(rows)                -> browsable index of every page.
+  creator_html(creator, rows)         -> a creator's page index.
+  robots_txt / llms_txt / sitemap_xml -> the SEO files, at the domain root.
+  page_graph / site_graph             -> the JSON-LD documents.
+
+Mirrors the offline page-generator's output shape (render/schema.py, web.py,
+site_files.py) but sources everything from SQLModel rows.
+"""
+
+from __future__ import annotations
+
+import html
+import json
+from pathlib import Path
+
+from app import config
+from app.models import Creator, Page, Product
+
+BASE = config.PUBLIC_BASE_URL
+_TEMPLATE = (Path(__file__).parent / "templates" / "public_page.html").read_text()
+
+
+def _esc(s: str | None) -> str:
+    return html.escape(s or "", quote=True)
+
+
+def page_url(handle: str, slug: str) -> str:
+    return f"{BASE}/{handle}/{slug}"
+
+
+def shop_url(handle: str, slug: str, position: int) -> str:
+    # Route through the /r redirect so clicks are logged before the retailer.
+    return f"{BASE}/r/{handle}/{slug}/{position}"
+
+
+def _money(amount: float | None, currency: str) -> str:
+    if amount is None:
+        return ""
+    sym = {"USD": "$", "GBP": "£", "EUR": "€"}.get(currency, "")
+    if abs(amount - round(amount)) < 0.005:
+        return f"{sym}{int(round(amount))}"
+    return f"{sym}{amount:,.2f}"
+
+
+# --------------------------------------------------------------------------
+# JSON-LD
+# --------------------------------------------------------------------------
+def _pname(p: Product) -> str:
+    return (f"{p.brand} {p.name}".strip() if p.brand else p.name)
+
+
+def _offer(page: Page, p: Product) -> dict | None:
+    if p.price_amount is None:
+        return None
+    offer = {"@type": "Offer", "price": f"{p.price_amount:.2f}",
+             "priceCurrency": p.currency, "availability": "https://schema.org/InStock",
+             "url": shop_url(page.handle, page.slug, p.position)}
+    if p.retailer:
+        offer["seller"] = {"@type": "Organization", "name": p.retailer}
+    return offer
+
+
+def _product_node(page: Page, creator: Creator, p: Product) -> dict:
+    url = page_url(page.handle, page.slug)
+    node: dict = {
+        "@type": "Product", "@id": f"{url}#product-{p.position}",
+        "name": _pname(p), "position": p.position,
+    }
+    if p.brand:
+        node["brand"] = {"@type": "Brand", "name": p.brand}
+    if p.variant:
+        node["description"] = f"Variant: {p.variant}"
+    if p.clip_poster:
+        node["image"] = p.clip_poster
+    if p.note:
+        node["review"] = {"@type": "Review",
+                          "author": {"@type": "Person", "name": creator.display_name},
+                          "reviewBody": p.note}
+    offer = _offer(page, p)
+    if offer:
+        node["offers"] = offer
+    return node
+
+
+def _aggregate_offer(page: Page, products: list[Product]) -> dict | None:
+    """The whole-routine price, as a first-class Offer AI can quote directly."""
+    priced = [p for p in products if p.price_amount is not None]
+    if not priced:
+        return None
+    amounts = [p.price_amount for p in priced]
+    return {
+        "@type": "AggregateOffer", "@id": f"{page_url(page.handle, page.slug)}#offer",
+        "priceCurrency": priced[0].currency,
+        "lowPrice": f"{min(amounts):.2f}", "highPrice": f"{max(amounts):.2f}",
+        "price": f"{sum(amounts):.2f}",          # full-routine total
+        "offerCount": len(priced),
+        "availability": "https://schema.org/InStock",
+    }
+
+
+def _howto_node(page: Page, creator: Creator, products: list[Product], has_video: bool) -> dict:
+    """The routine as a HowTo — steps + supplies matched to AI 'how do I…' queries."""
+    url = page_url(page.handle, page.slug)
+    priced = [p for p in products if p.price_amount is not None]
+    node: dict = {
+        "@type": "HowTo", "@id": f"{url}#howto", "name": page.title,
+        "description": page.summary or page.meta or page.title,
+        "supply": [{"@type": "HowToSupply", "name": _pname(p)} for p in products],
+        "step": [
+            {"@type": "HowToStep", "position": i, "name": _pname(p),
+             "text": p.guide or p.note or f"Use {_pname(p)}.",
+             "url": f"{url}#product-{p.position}"}
+            for i, p in enumerate(products, 1)
+        ],
+    }
+    if priced:
+        node["estimatedCost"] = {"@type": "MonetaryAmount", "currency": priced[0].currency,
+                                 "value": f"{sum(p.price_amount for p in priced):.2f}"}
+    if has_video:
+        node["video"] = {"@id": f"{url}#video"}
+    return node
+
+
+def _video_node(page: Page, creator: Creator, products: list[Product]) -> dict | None:
+    if not page.video_id:
+        return None
+    url = page_url(page.handle, page.slug)
+    node = {"@type": "VideoObject", "@id": f"{url}#video",
+            "name": page.title, "description": page.summary or page.meta or page.title,
+            "uploadDate": page.created_at.date().isoformat()}
+    thumb = next((p.clip_poster for p in products if p.clip_poster), "")
+    if thumb:
+        node["thumbnailUrl"] = thumb
+    return node
+
+
+def faqs(page: Page, creator: Creator, products: list[Product]) -> list[tuple[str, str]]:
+    """Q&A generated from the page's own data — the format AI answer engines cite.
+    Answers are derivable from the visible page, so the FAQPage schema stays honest."""
+    name = creator.display_name or f"@{page.handle}"
+    title = page.title
+    t = _totals(products)
+    priced = [p for p in products if p.price_amount is not None]
+    out: list[tuple[str, str]] = []
+    names = [_pname(p) for p in products]
+    if names:
+        out.append((f"What products does {name} use in “{title}”?",
+                    f"{name} uses {len(products)} products in {title}: "
+                    f"{', '.join(names)} — each found from the video and linked to buy."))
+    if priced:
+        out.append((f"How much does {name}’s {title} cost?",
+                    f"The whole routine is about {t['total_display']} — {len(priced)} products, "
+                    f"ranging {t['range_display']}. Prices are approximate."))
+    if t["retailers"]:
+        out.append((f"Where can I buy the products in {title}?",
+                    f"They're available at {', '.join(t['retailers'])}."))
+    for p in priced[:4]:
+        disp = p.price_display or _money(p.price_amount, p.currency)
+        at = f" at {p.retailer}" if p.retailer else ""
+        out.append((f"How much is the {_pname(p)}?", f"The {_pname(p)} is {disp}{at}."))
+    return out
+
+
+def _faq_node(page: Page, creator: Creator, products: list[Product]) -> dict | None:
+    qa = faqs(page, creator, products)
+    if not qa:
+        return None
+    return {
+        "@type": "FAQPage", "@id": f"{page_url(page.handle, page.slug)}#faq",
+        "mainEntity": [
+            {"@type": "Question", "name": q,
+             "acceptedAnswer": {"@type": "Answer", "text": a}}
+            for q, a in qa
+        ],
+    }
+
+
+def page_graph(page: Page, creator: Creator, products: list[Product]) -> dict:
+    """AI-optimized graph: Article › HowTo + Product/Offers + AggregateOffer +
+    VideoObject + FAQPage, plus Person / Organization / Breadcrumb."""
+    url = page_url(page.handle, page.slug)
+    summary = page.summary or page.meta or page.title
+    video = _video_node(page, creator, products)
+
+    article = {
+        "@type": "Article", "@id": f"{url}#article", "headline": page.title,
+        "description": summary, "url": url,
+        "datePublished": page.created_at.date().isoformat(),
+        "author": {"@id": f"{BASE}/{page.handle}#person"},
+        "publisher": {"@id": f"{BASE}#org"},
+        "mainEntityOfPage": url,
+        "about": {"@id": f"{url}#howto"},
+    }
+    item_list = {
+        "@type": "ItemList", "@id": f"{url}#products", "name": page.title,
+        "numberOfItems": len(products),
+        "itemListOrder": "https://schema.org/ItemListOrderAscending",
+        "itemListElement": [
+            {"@type": "ListItem", "position": p.position, "item": _product_node(page, creator, p)}
+            for p in products
+        ],
+    }
+    person = {
+        "@type": "Person", "@id": f"{BASE}/{page.handle}#person",
+        "name": creator.display_name, "alternateName": f"@{page.handle}",
+        "url": f"{BASE}/{page.handle}",
+    }
+    org = {"@type": "Organization", "@id": f"{BASE}#org", "name": config.BRAND, "url": BASE}
+    breadcrumb = {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": config.BRAND, "item": BASE},
+            {"@type": "ListItem", "position": 2, "name": creator.display_name, "item": f"{BASE}/{page.handle}"},
+            {"@type": "ListItem", "position": 3, "name": page.title, "item": url},
+        ],
+    }
+    graph = [article, _howto_node(page, creator, products, bool(video)),
+             item_list, person, org, breadcrumb]
+    agg = _aggregate_offer(page, products)
+    if agg:
+        graph.append(agg)
+    if video:
+        graph.append(video)
+    faq = _faq_node(page, creator, products)
+    if faq:
+        graph.append(faq)
+    return {"@context": "https://schema.org", "@graph": graph}
+
+
+def site_graph(rows: list[dict]) -> dict:
+    org = {"@type": "Organization", "@id": f"{BASE}#org", "name": config.BRAND,
+           "url": BASE, "description": config.TAGLINE, "email": config.SUPPORT_EMAIL}
+    website = {"@type": "WebSite", "@id": f"{BASE}#website", "url": BASE,
+               "name": config.BRAND, "publisher": {"@id": f"{BASE}#org"}}
+    collection = {
+        "@type": "CollectionPage", "@id": f"{BASE}#creator-pages",
+        "name": f"{config.BRAND} creator pages", "isPartOf": {"@id": f"{BASE}#website"},
+        "mainEntity": {
+            "@type": "ItemList", "numberOfItems": len(rows),
+            "itemListElement": [
+                {"@type": "ListItem", "position": i + 1, "url": r["url"],
+                 "name": f"{r['title']} — {r['creator_name']}"}
+                for i, r in enumerate(rows)
+            ],
+        },
+    }
+    return {"@context": "https://schema.org", "@graph": [org, website, collection]}
+
+
+# --------------------------------------------------------------------------
+# SEO text files
+# --------------------------------------------------------------------------
+def robots_txt() -> str:
+    lines = ["# Reelie — we WANT AI assistants to read and cite our creator pages.",
+             "User-agent: *", "Allow: /", ""]
+    for bot in config.AI_CRAWLERS:
+        lines += [f"User-agent: {bot}", "Allow: /", ""]
+    lines += [f"Sitemap: {BASE}/sitemap.xml", f"# LLM guide: {BASE}/llms.txt", ""]
+    return "\n".join(lines)
+
+
+def _product_line(p: dict) -> str:
+    """'Brand Name ($price, Retailer)' — the shape an LLM can quote directly."""
+    name = f"{p['brand']} {p['name']}".strip() if p.get("brand") else p["name"]
+    bits = []
+    if p.get("price_amount") is not None:
+        bits.append(p.get("price_display") or _money(p["price_amount"], p.get("currency", "USD")))
+    if p.get("retailer"):
+        bits.append(p["retailer"])
+    return f"{name} ({', '.join(bits)})" if bits else name
+
+
+def _row_total(r: dict) -> str:
+    amounts = [p["price_amount"] for p in r.get("products", []) if p.get("price_amount") is not None]
+    if not amounts:
+        return ""
+    cur = next((p.get("currency", "USD") for p in r["products"] if p.get("price_amount") is not None), "USD")
+    return _money(sum(amounts), cur)
+
+
+def llms_txt(rows: list[dict]) -> str:
+    """llmstxt.org map with the substance inline — an LLM can answer 'what's in X
+    routine and how much?' from this file alone, without fetching each page."""
+    out = [f"# {config.BRAND}", "", f"> {config.TAGLINE}", "",
+           f"{config.BRAND} auto-generates shoppable routine pages from creators' videos. "
+           "Each page below lists the real products the creator used, in order, with an "
+           "approximate current price and a buy link. Details are inlined here so they can "
+           "be cited directly.", "", "## Creator pages", ""]
+    for r in rows:
+        total = _row_total(r)
+        head = f"- [{r['title']} — {r['creator_name']}]({r['url']}): {r['num_products']} products"
+        head += f", ~{total} total." if total else "."
+        out.append(head)
+        for p in r.get("products", []):
+            out.append(f"    - {_product_line(p)}")
+        out.append("")
+    out += ["## About", "", f"- [{config.BRAND}]({BASE}): {config.TAGLINE}", ""]
+    return "\n".join(out)
+
+
+def sitemap_xml(rows: list[dict]) -> str:
+    urls = [BASE] + [f"{BASE}/{r['handle']}" for r in {r['handle']: r for r in rows}.values()] \
+           + [r["url"] for r in rows]
+    body = "\n".join(f"  <url><loc>{_esc(u)}</loc></url>" for u in urls)
+    return ('<?xml version="1.0" encoding="UTF-8"?>\n'
+            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+            f"{body}\n</urlset>\n")
+
+
+# --------------------------------------------------------------------------
+# HTML — the designed "shop + guide" page (bundled template, filled from the DB)
+# --------------------------------------------------------------------------
+_EVIDENCE = {"both": "Shown &amp; mentioned", "shown": "Shown in the video",
+             "spoken": "Mentioned in the video", "description": "From the description"}
+
+
+def _approx(estimated: bool) -> str:
+    return ' <span class="approx">approx.</span>' if estimated else ""
+
+
+def _totals(products: list[Product]) -> dict:
+    priced = [p for p in products if p.price_amount is not None]
+    amounts = [p.price_amount for p in priced]
+    currency = priced[0].currency if priced else "USD"
+    retailers: list[str] = []
+    for p in products:
+        if p.retailer and p.retailer not in retailers:
+            retailers.append(p.retailer)
+    return {
+        "count": len(products),
+        "total_display": _money(sum(amounts), currency) if amounts else "",
+        "range_display": (f"{_money(min(amounts), currency)}–{_money(max(amounts), currency)}"
+                          if amounts else "—"),
+        "any_estimated": any(p.price_estimated for p in priced),
+        "retailers": retailers,
+    }
+
+
+def _product_block(page: Page, p: Product) -> str:
+    brand = f'<div class="s-brand">{_esc(p.brand)}</div>' if p.brand else ""
+    variant = f' <span class="s-variant">{_esc(p.variant)}</span>' if p.variant else ""
+    narration = p.guide or (f'"{p.note}"' if p.note else None)
+    note = f'<p class="s-note">{_esc(narration)}</p>' if narration else ""
+    evidence = _EVIDENCE.get(p.evidence, "")
+    ev_tag = f'<div class="s-tags"><span class="tag">{evidence}</span></div>' if evidence else ""
+    price_html = ""
+    if p.price_amount is not None:
+        disp = p.price_display or _money(p.price_amount, p.currency)
+        price_html = f'<div class="s-price">{_esc(disp)}{_approx(p.price_estimated)}</div>'
+    retailer = _esc(p.retailer) if p.retailer else "Shop"
+    return f"""          <div class="s-product">
+            {brand}
+            <h3 class="s-name">{_esc(p.name)}{variant}</h3>
+            {ev_tag}
+            {note}
+            <div class="s-buy">
+              {price_html}
+              <a class="shop" href="{_esc(shop_url(page.handle, page.slug, p.position))}" rel="sponsored nofollow" target="_blank">Shop at {retailer} <span aria-hidden="true">→</span></a>
+            </div>
+          </div>"""
+
+
+def _group_by_clip(products: list[Product]) -> list[list[Product]]:
+    """Group products that share the same clip into one moment (so a shared clip
+    is never repeated), preserving routine order. Products with no clip each form
+    their own group."""
+    groups: list[list[Product]] = []
+    index: dict[str, int] = {}
+    for p in products:
+        key = p.clip_url or f"solo-{p.id}"
+        if key in index:
+            groups[index[key]].append(p)
+        else:
+            index[key] = len(groups)
+            groups.append([p])
+    return groups
+
+
+def _steps_html(page: Page, products: list[Product]) -> str:
+    """One editorial step per video moment (clip), listing every product in that
+    moment. When a product has a clip URL the big video renders (with tap-to-
+    unmute, driven by the template's JS); otherwise the emoji fallback shows."""
+    rows = []
+    for gi, group in enumerate(_group_by_clip(products), 1):
+        lead = group[0]
+        if lead.clip_url:
+            poster = f' poster="{_esc(lead.clip_poster)}"' if lead.clip_poster else ""
+            media = (f'<div class="s-clipwrap">'
+                     f'<video class="s-clip" src="{_esc(lead.clip_url)}"{poster} '
+                     f'muted loop playsinline preload="metadata"></video>'
+                     f'<button class="s-sound" type="button" aria-label="Unmute clip">'
+                     f'<span class="ic ic-muted">🔇</span>'
+                     f'<span class="ic ic-on">🔊</span></button>'
+                     f'</div>')
+        else:
+            media = f'<div class="s-emoji">{lead.emoji or "🛍️"}</div>'
+        side = "media-left" if gi % 2 else "media-right"
+        when = f' · {_esc(lead.timestamp)}' if lead.timestamp and lead.timestamp != "0:00" else ""
+        multi = " has-multi" if len(group) > 1 else ""
+        products_html = "\n".join(_product_block(page, p) for p in group)
+        rows.append(f"""      <article class="step {side}">
+        <div class="s-media">{media}</div>
+        <div class="s-content">
+          <div class="s-step">Step {gi}{when}</div>
+          <div class="s-products{multi}">
+{products_html}
+          </div>
+        </div>
+      </article>""")
+    return "\n".join(rows)
+
+
+def _faq_html(page: Page, creator: Creator, products: list[Product]) -> str:
+    qa = faqs(page, creator, products)
+    if not qa:
+        return ""
+    items = "".join(
+        f'<details class="faq-item"><summary>{_esc(q)}</summary>'
+        f'<div class="faq-a">{_esc(a)}</div></details>' for q, a in qa)
+    return (f'<section class="faq" id="faq"><div class="wrap">'
+            f'<div class="eyebrow">Good to know</div>'
+            f'<h2>Questions &amp; answers</h2>'
+            f'<div class="faq-list">{items}</div></div></section>')
+
+
+def page_html(page: Page, creator: Creator, products: list[Product]) -> str:
+    url = page_url(page.handle, page.slug)
+    grad = creator.avatar_gradient or config.DEFAULT_AVATAR_GRADIENT
+    grad0, grad1 = grad[0], grad[1] if len(grad) > 1 else grad[0]
+    first = creator.display_name.split()[0] if creator.display_name else config.BRAND
+    t = _totals(products)
+    summary = page.summary or page.meta or f"{t['count']} products from {creator.display_name}."
+
+    tokens = {
+        "TITLE": _esc(page.title), "BRAND": config.BRAND, "BASE_URL": BASE,
+        "SUMMARY": _esc(summary), "URL": _esc(url),
+        "CREATOR": _esc(creator.display_name), "CREATOR_FIRST": _esc(first),
+        "HANDLE": _esc(page.handle),
+        "PLATFORMS": _esc(" & ".join(creator.platforms)) if creator.platforms else "",
+        "META": _esc(page.meta), "INTRO": _esc(page.intro), "DISCLOSURE": _esc(page.disclosure),
+        "GRAD0": grad0, "GRAD1": grad1,
+        "JSONLD": json.dumps(page_graph(page, creator, products), indent=2, ensure_ascii=False),
+        "STEPS": _steps_html(page, products),
+        "FAQ": _faq_html(page, creator, products),
+        "SIMILAR_MODULE": "",
+        "SAVE_KEY": _esc(f"{page.handle}/{page.slug}"),
+        "PRODUCT_COUNT": str(t["count"]), "TOTAL_DISPLAY": t["total_display"] or "—",
+        "TOTAL_APPROX": _approx(t["any_estimated"]), "RANGE_DISPLAY": t["range_display"],
+        "RETAILER_COUNT": str(len(t["retailers"])),
+        "RETAILER_CHIPS": "".join(f'<span class="chip">{_esc(r)}</span>' for r in t["retailers"]),
+        "SHOP_ALL_URL": _esc(url),
+    }
+    out = _TEMPLATE
+    for k, v in tokens.items():
+        out = out.replace("{{" + k + "}}", str(v))
+    return out
+
+
+# --- directory + creator index (same brand system, lighter layout) --------
+_LIST_CSS = """
+:root{--sun:#FFD60A;--ink:#141414;--grey:#8A8A8A;--line:#EAEAEA;--soft:#F6F5F2;--cream:#FBFAF7}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--ink);background:#fff;line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--grey)}
+.topbar{border-bottom:1px solid var(--line)}.topbar .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
+.brandmark{font-family:'Fraunces',serif;font-style:italic;font-weight:700;font-size:22px}.brandmark .dot{color:var(--sun)}
+.hero{background:var(--cream);border-bottom:1px solid var(--line)}.hero .wrap{padding:64px 24px}
+.creator{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.cavatar{width:52px;height:52px;border-radius:50%;border:2px solid var(--sun)}
+h1{font-family:'Fraunces',serif;font-style:italic;font-weight:700;font-size:clamp(34px,5vw,54px);line-height:1.04;letter-spacing:-1px;margin:8px 0 14px}
+.lede{font-size:18px;color:#4a4a4a;max-width:42ch}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px;padding:44px 0 72px}
+.card{display:block;border:1px solid var(--line);border-radius:18px;padding:22px 22px;transition:transform .1s ease,box-shadow .1s}
+.card:hover{transform:translateY(-2px);box-shadow:0 24px 50px -32px rgba(20,20,20,.4)}
+.card .ci{width:44px;height:44px;border-radius:12px;background:var(--soft);display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:14px}
+.card h3{font-family:'Fraunces',serif;font-weight:600;font-size:21px;line-height:1.15;margin-bottom:5px}
+.card .m{color:var(--grey);font-size:13.5px}
+.footer{border-top:1px solid var(--line)}.footer .wrap{padding:34px 24px 48px;color:var(--grey);font-size:12.5px}
+@media(prefers-color-scheme:dark){body{background:#111;color:#f2f2f2}.hero{background:#161616}.topbar,.card,.footer{border-color:#262626}.card .ci{background:#1e1e1e}}
+"""
+
+_FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com">'
+          '<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,600;1,9..144,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">')
+
+
+def _list_shell(title: str, desc: str, canonical: str, hero: str, cards: str, jsonld: dict | None = None) -> str:
+    ld = (f'<script type="application/ld+json">{json.dumps(jsonld, ensure_ascii=False)}</script>'
+          if jsonld else "")
+    grid = f'<section class="wrap"><div class="grid">{cards}</div></section>' if cards else \
+           '<section class="wrap"><p style="padding:44px 0;color:#8A8A8A">No pages yet.</p></section>'
+    return f"""<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{_esc(title)}</title><meta name="description" content="{_esc(desc)}">
+<link rel="canonical" href="{_esc(canonical)}">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta property="og:title" content="{_esc(title)}"><meta property="og:description" content="{_esc(desc)}">
+<meta property="og:type" content="website"><meta property="og:url" content="{_esc(canonical)}">
+{_FONTS}{ld}<style>{_LIST_CSS}</style></head><body>
+<header class="topbar"><div class="wrap"><a class="brandmark" href="{BASE}">{config.BRAND}<span class="dot">.</span></a>
+<a class="eyebrow" href="{BASE}">Browse all →</a></div></header>
+<section class="hero"><div class="wrap">{hero}</div></section>
+{grid}
+<footer class="footer"><div class="wrap">{config.BRAND} — {_esc(config.TAGLINE)}</div></footer>
+</body></html>"""
+
+
+def _card(r: dict, show_creator: bool = True) -> str:
+    sub = f'{_esc(r["creator_name"])} · {r["num_products"]} products' if show_creator \
+          else f'{r["num_products"]} products'
+    return (f'<a class="card" href="{_esc(r["url"])}"><div class="ci">🛍️</div>'
+            f'<h3>{_esc(r["title"])}</h3><div class="m">{sub}</div></a>')
+
+
+def creator_html(creator: Creator, rows: list[dict]) -> str:
+    url = f"{BASE}/{creator.handle}"
+    grad = creator.avatar_gradient or config.DEFAULT_AVATAR_GRADIENT
+    g0, g1 = grad[0], grad[1] if len(grad) > 1 else grad[0]
+    hero = (f'<div class="creator"><span class="cavatar" style="background:linear-gradient(135deg,{g0},{g1})"></span>'
+            f'<div><div class="eyebrow">Creator</div></div></div>'
+            f'<h1>{_esc(creator.display_name)}</h1>'
+            f'<p class="lede">@{_esc(creator.handle)}'
+            f'{" · " + _esc(creator.bio) if creator.bio else ""}</p>')
+    cards = "".join(_card(r, show_creator=False) for r in rows)
+    return _list_shell(f"{creator.display_name} (@{creator.handle}) · {config.BRAND}",
+                       f"{creator.display_name}'s shoppable routine pages on {config.BRAND}.",
+                       url, hero, cards)
+
+
+def directory_html(rows: list[dict]) -> str:
+    hero = (f'<div class="eyebrow">Every product, every routine</div>'
+            f'<h1>Shop your favourite<br>creators\' videos</h1>'
+            f'<p class="lede">{_esc(config.TAGLINE)}</p>')
+    cards = "".join(_card(r) for r in rows)
+    return _list_shell(f"{config.BRAND} — {config.TAGLINE}", config.TAGLINE, BASE, hero, cards,
+                       site_graph(rows))

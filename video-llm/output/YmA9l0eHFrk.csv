@@ -1,0 +1,9 @@
+video_id,product_name,brand,variant_or_shade,evidence_type,source,timestamp_s,transcript_quote,confidence
+YmA9l0eHFrk,red lipstick (used as colour corrector),,,both,video,0.0,Remember this red lipstick concealer,0.75
+YmA9l0eHFrk,Luminous Silk Concealer,Armani Beauty,Shade 2,both,description,0.0,Remember this red lipstick concealer,0.9
+YmA9l0eHFrk,Skin Tint,Kylie Cosmetics,2W,both,description,5.8,Create a colour corrector for your under eyes foundation loose powder,0.9
+YmA9l0eHFrk,Easy Bake Powder,Huda Beauty,Poundcake,spoken,description,5.8,Create a colour corrector for your under eyes foundation loose powder,0.9
+YmA9l0eHFrk,black face paint,,,spoken,video,13.1,We'll create a foundation with a matte finish black face paint cream bronzer,0.7
+YmA9l0eHFrk,HD Skin Face Essentials Palette,Make Up For Ever,,spoken,description,13.1,We'll create a foundation with a matte finish black face paint cream bronzer,0.9
+YmA9l0eHFrk,Baby Oil,Johnson's,,both,video,20.7,Create a cool toned contour shade baby oil liquid highlighter,0.95
+YmA9l0eHFrk,Illuminator Drops Liquid Highlighter,Iconic London,,spoken,both,20.7,Create a cool toned contour shade baby oil liquid highlighter,0.9

@@ -1,0 +1,227 @@
+{
+  "video_id": "dRZDUnvero4",
+  "source_file": "dRZDUnvero4.mp4",
+  "duration_s": 249.1,
+  "num_frames": 61,
+  "num_products": 23,
+  "model": "claude-sonnet-4-6",
+  "usage": {
+    "input_tokens": 27108,
+    "output_tokens": 1636,
+    "api_calls": 3
+  },
+  "cost_usd": {
+    "transcription": 0.0,
+    "extraction": 0.105864,
+    "total": 0.105864
+  },
+  "products": [
+    {
+      "product_name": "Makeup Prep Squad Jelly Primer",
+      "brand": "Get Ready With Me (GRWM)",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 11.9,
+      "transcript_quote": "I'll be using my primer from Get Ready With Me.",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Glued Styling Spiking Glue",
+      "brand": "got2b",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 22.3,
+      "transcript_quote": "I use this to be glue for my brows and be okay as a one since it's already empty.",
+      "confidence": 0.92
+    },
+    {
+      "product_name": "Brow Lock",
+      "brand": "BLK",
+      "variant_or_shade": null,
+      "evidence_type": "shown",
+      "timestamp_s": 22.3,
+      "transcript_quote": null,
+      "confidence": 0.75
+    },
+    {
+      "product_name": "On The Glow Skin Booster Illuminator",
+      "brand": "GRWM Cosmetics",
+      "variant_or_shade": "Kitana",
+      "evidence_type": "both",
+      "timestamp_s": 37.1,
+      "transcript_quote": "For my base, I use Get Ready With Me Illuminator as I use the shade Kitana.",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Prestige Skin Tint",
+      "brand": "Dior",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 47.6,
+      "transcript_quote": "Next, I'll be using your prestige skin tint and I am in love with this",
+      "confidence": 0.88
+    },
+    {
+      "product_name": "Concealer",
+      "brand": "Lovely Causmetics",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 71.4,
+      "transcript_quote": "Next up is the lovely concealer.",
+      "confidence": 0.82
+    },
+    {
+      "product_name": "Region Tint Contour",
+      "brand": "GRWM",
+      "variant_or_shade": "Truffle",
+      "evidence_type": "both",
+      "timestamp_s": 84.8,
+      "transcript_quote": "For my contour, this is the Get Ready With Me region tint, contour in the shade Truffle.",
+      "confidence": 0.88
+    },
+    {
+      "product_name": "Bronzer",
+      "brand": "Sheglam",
+      "variant_or_shade": "Warm Honey",
+      "evidence_type": "both",
+      "timestamp_s": 97.0,
+      "transcript_quote": "This is from Shiglam in the shade Warm Honey.",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Radiance Tint",
+      "brand": "GRWM",
+      "variant_or_shade": "Beach",
+      "evidence_type": "both",
+      "timestamp_s": 101.6,
+      "transcript_quote": "To brighten my face, I use this Get Ready With Me tint in the shade Beach.",
+      "confidence": 0.88
+    },
+    {
+      "product_name": "High 5 Beauty Hybrid Colour Stick",
+      "brand": "Five Beauty",
+      "variant_or_shade": "Iconic",
+      "evidence_type": "both",
+      "timestamp_s": 110.6,
+      "transcript_quote": "Now onto my blush, I use this High 5 Beauty Stick in the shade Iconic.",
+      "confidence": 0.87
+    },
+    {
+      "product_name": "Moist Ampoule Blusher",
+      "brand": "Hur",
+      "variant_or_shade": "Ruby Red",
+      "evidence_type": "both",
+      "timestamp_s": 119.7,
+      "transcript_quote": "which I love to gather with her ample blush in the shade Ruby Red.",
+      "confidence": 0.85
+    },
+    {
+      "product_name": "Sculpting Touch Creamy Stick Contour",
+      "brand": "KIKO Milano",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 125.1,
+      "transcript_quote": "For my nose contouring, I use this Kiko Skulting bronzer.",
+      "confidence": 0.92
+    },
+    {
+      "product_name": "Flower Knows Brow Palette",
+      "brand": "Flower Knows",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 138.1,
+      "transcript_quote": "For my brows, I'll be using Flower Nose Brow Palette.",
+      "confidence": 0.88
+    },
+    {
+      "product_name": "Full Coverage Powder Foundation",
+      "brand": "KIKO",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 143.9,
+      "transcript_quote": "For setting, I use this Kiko Full Coverage Powder Foundation",
+      "confidence": 0.92
+    },
+    {
+      "product_name": "Flawless Fusion Bronzer Powder",
+      "brand": "KIKO",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 158.9,
+      "transcript_quote": "To add warm, I use this Kiko bronzer powder.",
+      "confidence": 0.92
+    },
+    {
+      "product_name": "Extreme Gel Presso Pencil Liner",
+      "brand": "Clio",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 162.8,
+      "transcript_quote": "For my eyes, I tightline with Cleo Liner Pencil.",
+      "confidence": 0.88
+    },
+    {
+      "product_name": "Panorama Mascara",
+      "brand": "L'Oreal",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 170.8,
+      "transcript_quote": "It is from L'Oreal Panorama Mascara.",
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Contour Palette",
+      "brand": "Vecci",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 184.8,
+      "transcript_quote": "I use this Backsy Contour Palette",
+      "confidence": 0.8
+    },
+    {
+      "product_name": "Pearl Pod Blush",
+      "brand": "BYS",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 202.8,
+      "transcript_quote": "Next, I'll be using this B.O.I.S Pearl Pod Blush",
+      "confidence": 0.88
+    },
+    {
+      "product_name": "No Budge Lip Liner",
+      "brand": "Ever Bilena",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 208.8,
+      "transcript_quote": "I'll be using every blend and no blush lip liner, this last all day I swear.",
+      "confidence": 0.88
+    },
+    {
+      "product_name": "Cashmere Lipstick",
+      "brand": "Absidy",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 215.1,
+      "transcript_quote": "This is the Acidity Cash Relipstick.",
+      "confidence": 0.82
+    },
+    {
+      "product_name": "Powder Rush",
+      "brand": "GRWM",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 221.1,
+      "transcript_quote": "I use this get rid of my powder rush.",
+      "confidence": 0.85
+    },
+    {
+      "product_name": "Life Proof Setting Spray",
+      "brand": "GRWM",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 228.6,
+      "transcript_quote": "I use this get rid of my life proof setting spray.",
+      "confidence": 0.88
+    }
+  ]
+}

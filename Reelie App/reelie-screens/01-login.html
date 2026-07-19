@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reelie — Login</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sun:#FFD60A;
+    --sun-deep:#EFC400;
+    --ink:#141414;
+    --grey:#9A9A9A;
+    --line:#EDEDED;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    font-family:'DM Sans',-apple-system,sans-serif;
+    background:#111;
+    min-height:100vh;
+    display:flex;align-items:center;justify-content:center;
+    padding:24px;
+  }
+  .phone{
+    width:390px;height:844px;
+    background:#fff;
+    border-radius:54px;
+    border:10px solid #000;
+    box-shadow:0 30px 80px rgba(0,0,0,.5);
+    overflow:hidden;
+    position:relative;
+    display:flex;flex-direction:column;
+    padding:0 28px;
+  }
+  .notch{
+    position:absolute;top:12px;left:50%;transform:translateX(-50%);
+    width:120px;height:34px;background:#000;border-radius:20px;
+  }
+  .statusbar{
+    height:56px;flex-shrink:0;
+    display:flex;align-items:flex-end;justify-content:space-between;
+    padding-bottom:4px;
+    font-size:14px;font-weight:700;color:var(--ink);
+  }
+  .top{
+    flex:1;
+    display:flex;flex-direction:column;justify-content:center;align-items:center;
+    text-align:center;
+  }
+  .wordmark{
+    font-family:'Fraunces',serif;
+    font-style:italic;font-weight:700;
+    font-size:44px;line-height:1;
+    color:var(--ink);
+    letter-spacing:-1px;
+  }
+  .wordmark .dot{color:var(--sun)}
+  .tagline{
+    margin-top:16px;
+    font-size:16px;line-height:1.5;
+    color:var(--grey);
+    font-weight:400;
+    max-width:260px;
+    margin-left:auto;margin-right:auto;
+  }
+  .auth{flex-shrink:0;padding-bottom:36px}
+  .btn{
+    width:100%;height:54px;border-radius:16px;border:none;
+    font-family:'DM Sans',sans-serif;font-size:16px;font-weight:500;
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    cursor:pointer;margin-bottom:12px;
+    background:#fff;color:var(--ink);
+    border:1.5px solid var(--line);
+    transition:transform .08s ease;
+  }
+  .btn:active{transform:scale(.98)}
+  .btn:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+  .btn-apple{background:var(--ink);color:#fff;border:none}
+  .btn-email{background:var(--sun);color:var(--ink);border:none;font-weight:700}
+  .legal{
+    text-align:center;font-size:11.5px;line-height:1.6;color:#BDBDBD;margin-top:14px;
+  }
+  .legal a{color:var(--ink);font-weight:500;text-decoration:none}
+  .homebar{
+    width:135px;height:5px;border-radius:3px;background:var(--ink);
+    margin:14px auto 0;
+  }
+  .icon{width:20px;height:20px;display:inline-block}
+  @media(max-width:430px){
+    body{padding:0}
+    .phone{width:100vw;height:100vh;border-radius:0;border:none}
+  }
+</style>
+</head>
+<body>
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="statusbar"><span>9:41</span><span></span></div>
+
+    <div class="top">
+      <div class="wordmark">Reelie<span class="dot">.</span></div>
+      <p class="tagline">Your videos, turned into shoppable pages. Automatically.</p>
+    </div>
+
+    <div class="auth">
+      <button class="btn btn-apple">
+        <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.53 4.08zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+        Sign in with Apple
+      </button>
+
+      <button class="btn">
+        <svg class="icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.5 12.27c0-.85-.08-1.66-.22-2.45H12v4.64h6.46c-.28 1.5-1.13 2.77-2.4 3.62v3h3.88c2.27-2.09 3.56-5.17 3.56-8.81z"/><path fill="#34A853" d="M12 24c3.24 0 5.96-1.07 7.94-2.91l-3.88-3c-1.08.72-2.45 1.15-4.06 1.15-3.13 0-5.78-2.11-6.72-4.95H1.29v3.1C3.26 21.3 7.31 24 12 24z"/><path fill="#FBBC05" d="M5.28 14.29A7.2 7.2 0 0 1 4.9 12c0-.8.14-1.57.38-2.29v-3.1H1.29A12 12 0 0 0 0 12c0 1.94.46 3.77 1.29 5.39l3.99-3.1z"/><path fill="#EA4335" d="M12 4.76c1.76 0 3.34.6 4.59 1.8l3.44-3.44C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.61l3.99 3.1C6.22 6.87 8.87 4.76 12 4.76z"/></svg>
+        Continue with Google
+      </button>
+
+      <button class="btn btn-email">Continue with email</button>
+
+      <p class="legal">By continuing you agree to our <a href="#">Terms</a> &amp; <a href="#">Privacy Policy</a></p>
+      <div class="homebar"></div>
+    </div>
+  </div>
+</body>
+</html>

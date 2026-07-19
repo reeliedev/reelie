@@ -1,0 +1,209 @@
+{
+  "video_id": "U5lQJEHM7g4",
+  "source_file": "U5lQJEHM7g4.mp4",
+  "duration_s": 405.3,
+  "num_frames": 41,
+  "num_products": 21,
+  "model": "claude-sonnet-4-6",
+  "usage": {
+    "input_tokens": 23822,
+    "output_tokens": 3079,
+    "api_calls": 3
+  },
+  "cost_usd": {
+    "transcription": 0.0,
+    "extraction": 0.117651,
+    "total": 0.117651
+  },
+  "products": [
+    {
+      "product_name": "Immediate Moisture Facial Hydrasol",
+      "brand": "Aesop",
+      "variant_or_shade": null,
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 18.2,
+      "transcript_quote": null,
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Purple Bandage Sunscreen Primer",
+      "brand": "Judydoll",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 23.7,
+      "transcript_quote": "I think you can tell I'm obsessed with this Judy doll purple primer.",
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Cushion Egg-Fit Cover",
+      "brand": "fwee",
+      "variant_or_shade": "#02 Nude",
+      "evidence_type": "both",
+      "timestamp_s": 43.0,
+      "transcript_quote": "I picked up this Fui cushion in Korea two years ago",
+      "confidence": 0.92
+    },
+    {
+      "product_name": "Pro Concealer Palette",
+      "brand": "dasique",
+      "variant_or_shade": "#01",
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 66.7,
+      "transcript_quote": null,
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Yellow beauty sponge",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "shown",
+      "timestamp_s": 71.4,
+      "transcript_quote": null,
+      "confidence": 0.7
+    },
+    {
+      "product_name": "2 in 1 Highlighter Contour Palette",
+      "brand": "Judydoll",
+      "variant_or_shade": "#02",
+      "evidence_type": "both",
+      "timestamp_s": 89.1,
+      "transcript_quote": "I went in early with the Judy doll matte highlight",
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Pro Eye Palette Air",
+      "brand": "CLIO",
+      "variant_or_shade": "#11 Shopping Cheese",
+      "evidence_type": "both",
+      "timestamp_s": 97.0,
+      "transcript_quote": "This Clio eyeshadow palette is my number one favorite if I'm going for a very clear look.",
+      "confidence": 0.97
+    },
+    {
+      "product_name": "3D Curling Eyelash Iron Mascara",
+      "brand": "Judydoll",
+      "variant_or_shade": "#01 Black",
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 190.7,
+      "transcript_quote": null,
+      "confidence": 0.92
+    },
+    {
+      "product_name": "Eyelash curler",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "shown",
+      "timestamp_s": 194.6,
+      "transcript_quote": "I like to almost rotate my eyelash curler so that I can pinch every section of my eyelashes in the correct direction.",
+      "confidence": 0.8
+    },
+    {
+      "product_name": "Super Proof Brush Liner Kill Ash",
+      "brand": "CLIO",
+      "variant_or_shade": "#02 Ash Brown",
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 223.6,
+      "transcript_quote": null,
+      "confidence": 0.92
+    },
+    {
+      "product_name": "Contour & Highlight Duo Pencil",
+      "brand": "OUT-OF-OFFICE",
+      "variant_or_shade": "#01",
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 240.0,
+      "transcript_quote": null,
+      "confidence": 0.88
+    },
+    {
+      "product_name": "Artclass Smudging Under Liner",
+      "brand": "too cool for school",
+      "variant_or_shade": "#06 Dusk",
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 229.6,
+      "transcript_quote": null,
+      "confidence": 0.92
+    },
+    {
+      "product_name": "Artclass By Rodin Shading #1",
+      "brand": "too cool for school",
+      "variant_or_shade": "#1",
+      "evidence_type": "both",
+      "timestamp_s": 249.4,
+      "transcript_quote": "I also recently ordered the updated version of this Too Cool for School palette that I've been using since literally high school and this time I got the cool tone palette",
+      "confidence": 0.88
+    },
+    {
+      "product_name": "Backstage Rosy Glow Blush",
+      "brand": "Dior",
+      "variant_or_shade": "#001 Pink",
+      "evidence_type": "both",
+      "timestamp_s": 262.1,
+      "transcript_quote": "This Dior blush was so popular last year but I feel like I don't really see anyone using it anymore.",
+      "confidence": 0.97
+    },
+    {
+      "product_name": "Blending Mood Cheek Knit Edition",
+      "brand": "dasique",
+      "variant_or_shade": "#05 Violet Knit",
+      "evidence_type": "both",
+      "timestamp_s": 272.1,
+      "transcript_quote": "I'm taking the light pink color from this Desique palette to highlight the inner part of my cheeks.",
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Blur Water Tint",
+      "brand": "3CE",
+      "variant_or_shade": "#Dear March",
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 299.3,
+      "transcript_quote": null,
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Kiss Me Heavy Rotation Eyebrow Pencil",
+      "brand": "ISEHAN",
+      "variant_or_shade": "#12 Gray Beige",
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 330.0,
+      "transcript_quote": null,
+      "confidence": 0.92
+    },
+    {
+      "product_name": "Kiss Me Heavy Rotation Coloring Eyebrow",
+      "brand": "ISEHAN",
+      "variant_or_shade": "#15 Dusky Rose",
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 331.2,
+      "transcript_quote": null,
+      "confidence": 0.92
+    },
+    {
+      "product_name": "Cheek Pop Powder Blush",
+      "brand": "Clinique",
+      "variant_or_shade": "Black Honey Pop",
+      "evidence_type": "both",
+      "timestamp_s": 348.7,
+      "transcript_quote": "this black honey blush it's probably been a couple years since this one's trended. I still love it though it's my darkest color blush",
+      "confidence": 0.97
+    },
+    {
+      "product_name": "Artclass Frottage Pencil",
+      "brand": "too cool for school",
+      "variant_or_shade": "#11 Dew Beige",
+      "evidence_type": "both",
+      "timestamp_s": 364.3,
+      "transcript_quote": "The frottage pencil from Too Cool for School is so popular right now in Korea and for good reason.",
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Easy Bake Powder",
+      "brand": "Huda Beauty",
+      "variant_or_shade": "Birthday Cake",
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 387.5,
+      "transcript_quote": null,
+      "confidence": 0.92
+    }
+  ]
+}

@@ -1,0 +1,173 @@
+{
+  "video_id": "jrfYKdSFso0",
+  "source_file": "jrfYKdSFso0.mp4",
+  "duration_s": 41.7,
+  "num_frames": 31,
+  "num_products": 17,
+  "model": "claude-sonnet-4-6",
+  "usage": {
+    "input_tokens": 16019,
+    "output_tokens": 2119,
+    "api_calls": 3
+  },
+  "cost_usd": {
+    "transcription": 0.0,
+    "extraction": 0.079842,
+    "total": 0.079842
+  },
+  "products": [
+    {
+      "product_name": "Fairy Charm contact lenses",
+      "brand": "OLENS",
+      "variant_or_shade": "olive",
+      "evidence_type": "both",
+      "timestamp_s": 2.4,
+      "transcript_quote": null,
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Relief Sun Cream",
+      "brand": "Beauty of Joseon",
+      "variant_or_shade": null,
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 5.3,
+      "transcript_quote": null,
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Luminous Silk Concealer",
+      "brand": "Armani Beauty",
+      "variant_or_shade": "4",
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 8.4,
+      "transcript_quote": null,
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Luminous Cheek Tint",
+      "brand": "Armani Beauty",
+      "variant_or_shade": "53 bold pink",
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 11.0,
+      "transcript_quote": null,
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Ultra-Blur Translucent Loose Setting Powder",
+      "brand": "Laura Mercier",
+      "variant_or_shade": "rose",
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 12.1,
+      "transcript_quote": null,
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Shade + Light Contour",
+      "brand": "KVD Beauty",
+      "variant_or_shade": "taupe",
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 13.4,
+      "transcript_quote": null,
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Mono Blush",
+      "brand": "Kaleidos",
+      "variant_or_shade": "pale rose",
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 15.7,
+      "transcript_quote": null,
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Luodai Eyebrow Define Pencil",
+      "brand": "Florasis",
+      "variant_or_shade": "chisel tip 01 gray",
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 17.1,
+      "transcript_quote": null,
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Quad Palette",
+      "brand": "Kaleidos",
+      "variant_or_shade": "twilight rush",
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 19.2,
+      "transcript_quote": null,
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Long-Wear Gel Eyeliner",
+      "brand": "Bobbi Brown",
+      "variant_or_shade": "night grey",
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 20.4,
+      "transcript_quote": null,
+      "confidence": 0.85
+    },
+    {
+      "product_name": "The Gel Eyeliner",
+      "brand": "Addiction Tokyo",
+      "variant_or_shade": "bloody berry",
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 21.9,
+      "transcript_quote": null,
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Eyelash Curler",
+      "brand": "REPHR",
+      "variant_or_shade": null,
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 28.2,
+      "transcript_quote": null,
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Kill Lash Superproof Mascara",
+      "brand": "Clio",
+      "variant_or_shade": "long curling",
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 29.6,
+      "transcript_quote": null,
+      "confidence": 0.95
+    },
+    {
+      "product_name": "False Eyelash",
+      "brand": "Flortte",
+      "variant_or_shade": null,
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 30.7,
+      "transcript_quote": null,
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Artclass Frottage Pencil",
+      "brand": "Too Cool for School",
+      "variant_or_shade": null,
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 31.8,
+      "transcript_quote": null,
+      "confidence": 0.92
+    },
+    {
+      "product_name": "Smiley Lip Blending Stick",
+      "brand": "LILYBYRED",
+      "variant_or_shade": "01 grin with me",
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 35.3,
+      "transcript_quote": null,
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Slim Liquid Eyeliner",
+      "brand": "JUDYDOLL",
+      "variant_or_shade": "02 deep brown",
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 37.3,
+      "transcript_quote": null,
+      "confidence": 0.95
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "video_id": "sample-5s",
+  "source_file": "sample-5s.mp4",
+  "duration_s": 5.8,
+  "num_frames": 1,
+  "num_products": 0,
+  "num_video_products": 0,
+  "num_description_products": 0,
+  "mirrored": false,
+  "model": "claude-sonnet-4-6",
+  "usage": {
+    "input_tokens": 4541,
+    "output_tokens": 61,
+    "api_calls": 2
+  },
+  "cost_usd": {
+    "transcription": 0.0,
+    "extraction": 0.014538,
+    "total": 0.014538
+  },
+  "products": []
+}

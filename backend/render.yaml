@@ -1,0 +1,38 @@
+# Render blueprint — one-click deploy of the API + managed Postgres.
+# (Any host works; this is the least-config option.) Push the repo, then in
+# Render: New → Blueprint → point at this file. Set the two sync:false secrets.
+services:
+  - type: web
+    name: reelie-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /health
+    envVars:
+      - key: REELIE_ENV
+        value: prod
+      - key: DATABASE_URL
+        fromDatabase:
+          name: reelie-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true          # Render generates a strong secret
+      - key: ALLOWED_ORIGINS
+        sync: false                  # set to your web origins, e.g. https://reelie.shop
+      # Public site + SEO: the custom domain the crawlable pages live at. This
+      # service serves BOTH the API (known route prefixes) and the public site
+      # (root + /{handle}/{slug}) — point reelie.shop at it in Render → Settings →
+      # Custom Domains, then set these three to the live https origin.
+      - key: PUBLIC_BASE_URL
+        value: https://reelie.shop
+      - key: REELIE_SELF_URL
+        value: https://reelie.shop   # /r redirects + generator postback target
+      - key: OAUTH_REDIRECT_BASE
+        value: https://reelie.shop   # OAuth callback base (must match Google/Meta app config)
+      - key: WEB_CONCURRENCY
+        value: "2"
+
+databases:
+  - name: reelie-db
+    databaseName: reelie
+    plan: free                       # upgrade when you outgrow it

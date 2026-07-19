@@ -1,0 +1,21 @@
+video_id,product_name,brand,variant_or_shade,evidence_type,source,timestamp_s,transcript_quote,confidence
+ls9gPqFxw4o,Matte Sorbet Moisturizer,Vichy Laboratoires,,both,both,10.2,I'm going to use my moisturizer and my SPF.,0.9
+ls9gPqFxw4o,Hello Sunshine SPF,IT Cosmetics,SPF 50,both,both,10.2,I'm going to use my moisturizer and my SPF.,0.9
+ls9gPqFxw4o,Easy Blur Foundation,Huda Beauty,300,both,both,24.9,Don't apply your foundation directly to your face.,0.9
+ls9gPqFxw4o,Foundation brush,,,shown,video,35.7,,0.8
+ls9gPqFxw4o,Bronzer,Makeup by Mario,Light Medium,shown,both,45.0,"Apply your bronzer to your cheekbones, temple and forehead.",0.9
+ls9gPqFxw4o,Bronzer brush,,,shown,video,49.2,,0.75
+ls9gPqFxw4o,Blush Veil,Makeup by Mario,Perfect Pink,shown,description,58.8,Then go in with your blush.,0.9
+ls9gPqFxw4o,Blush brush,,,shown,video,64.0,,0.8
+ls9gPqFxw4o,Concealer,Tower 28,Ktown,spoken,both,76.0,Apply your concealer to these areas to brighten and lift the face.,0.9
+ls9gPqFxw4o,Makeup sponge,,,shown,video,79.7,,0.8
+ls9gPqFxw4o,Setting Powder,Makeup by Mario,Fair Pink,both,description,89.3,"To apply powder, get yourself a powder puff. Trust me, I'm going to pick up my loose powder",0.9
+ls9gPqFxw4o,Powder puff,,,both,video,89.3,"To apply powder, get yourself a powder puff.",0.85
+ls9gPqFxw4o,Powder Bronzer,YSL,02,both,both,110.9,"This is optional, but you can also set your cream bronzer with powder bronzer.",0.9
+ls9gPqFxw4o,Eyeshadow Quad,Charlotte Tilbury,Pillow Talk,both,description,130.3,"I'm going to take a soft brown eyeshadow, adding this to the outer corner of my eye and lightly dragging it out.",0.9
+ls9gPqFxw4o,Eyeshadow Duo,Patrick Ta,We Need Better Lighting,spoken,both,135.0,apply a light shimmer on the lid to make your eyes pop.,0.9
+ls9gPqFxw4o,Brown Gel Eyeliner,Milk Makeup,brown,both,both,139.8,"With a brown gel eyeliner, I'm drawing a tiny outer corner wing.",0.9
+ls9gPqFxw4o,Wild Flower Eyelashes,Velour Beauty,,spoken,description,144.6,"You can't forget the fluffy lashes, like look at that difference.",0.9
+ls9gPqFxw4o,Sweet Tea Lip Liner,Morphe,,spoken,both,151.5,I just wanted with a brown lip liner and a nude lip oil.,0.9
+ls9gPqFxw4o,Lip Oil,NYX Cosmetics,Chillin like a villain,both,both,151.5,I just wanted with a brown lip liner and a nude lip oil.,0.9
+ls9gPqFxw4o,All Nighter Setting Spray,Urban Decay,,both,video,152.8,Finish off with a setting spray so your makeup lasts all day.,0.82

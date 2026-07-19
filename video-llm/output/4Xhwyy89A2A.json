@@ -1,0 +1,32 @@
+{
+  "video_id": "4Xhwyy89A2A",
+  "source_file": "4Xhwyy89A2A.mp4",
+  "duration_s": 7.2,
+  "num_frames": 4,
+  "num_products": 1,
+  "num_video_products": 1,
+  "num_description_products": 0,
+  "mirrored": false,
+  "model": "claude-sonnet-4-6",
+  "usage": {
+    "input_tokens": 5513,
+    "output_tokens": 136,
+    "api_calls": 3
+  },
+  "cost_usd": {
+    "transcription": 0.0,
+    "extraction": 0.018579,
+    "total": 0.018579
+  },
+  "products": [
+    {
+      "product_name": "dark circle blush",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 0.5,
+      "transcript_quote": null,
+      "confidence": 0.6
+    }
+  ]
+}

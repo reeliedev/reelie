@@ -1,0 +1,155 @@
+{
+  "video_id": "raEnFm0sdnc",
+  "source_file": "raEnFm0sdnc.mp4",
+  "duration_s": 60.0,
+  "num_frames": 40,
+  "num_products": 15,
+  "model": "claude-sonnet-4-6",
+  "usage": {
+    "input_tokens": 18853,
+    "output_tokens": 1817,
+    "api_calls": 3
+  },
+  "cost_usd": {
+    "transcription": 0.0,
+    "extraction": 0.083814,
+    "total": 0.083814
+  },
+  "products": [
+    {
+      "product_name": "got2b Ultra Glued Styling Gel for Edges",
+      "brand": "Schwarzkopf",
+      "variant_or_shade": null,
+      "evidence_type": "shown",
+      "timestamp_s": 11.2,
+      "transcript_quote": null,
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Spoolie/Eyebrow Brush",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "shown",
+      "timestamp_s": 12.6,
+      "transcript_quote": null,
+      "confidence": 0.75
+    },
+    {
+      "product_name": "Brow Palette",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "shown",
+      "timestamp_s": 14.4,
+      "transcript_quote": null,
+      "confidence": 0.6
+    },
+    {
+      "product_name": "Flat Eyebrow/Detail Brush",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "shown",
+      "timestamp_s": 16.4,
+      "transcript_quote": null,
+      "confidence": 0.7
+    },
+    {
+      "product_name": "Wood Lipliner Pencil",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "shown",
+      "timestamp_s": 17.7,
+      "transcript_quote": null,
+      "confidence": 0.7
+    },
+    {
+      "product_name": "Power Grip Primer",
+      "brand": "e.l.f.",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 21.4,
+      "transcript_quote": "Next, the primer, foundation, concealer.",
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Foundation",
+      "brand": "NARS",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 21.4,
+      "transcript_quote": "Next, the primer, foundation, concealer.",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Concealer",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 21.4,
+      "transcript_quote": "Next, the primer, foundation, concealer.",
+      "confidence": 0.7
+    },
+    {
+      "product_name": "Foundation Brush (flat kabuki/buffing brush)",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "shown",
+      "timestamp_s": 28.5,
+      "transcript_quote": null,
+      "confidence": 0.7
+    },
+    {
+      "product_name": "Concealer Brush (flat detail brush)",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "shown",
+      "timestamp_s": 30.3,
+      "transcript_quote": null,
+      "confidence": 0.7
+    },
+    {
+      "product_name": "Beauty Sponge (red)",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "shown",
+      "timestamp_s": 36.9,
+      "transcript_quote": null,
+      "confidence": 0.85
+    },
+    {
+      "product_name": "Easy Bake Loose Baking & Setting Powder",
+      "brand": "Huda Beauty",
+      "variant_or_shade": "Blondie",
+      "evidence_type": "both",
+      "timestamp_s": 43.1,
+      "transcript_quote": "I'm going to go ahead and set setting powder, press powder to set the rest of my face.",
+      "confidence": 0.97
+    },
+    {
+      "product_name": "PRO.face HD High-Definition Matte Pressed Powder",
+      "brand": "L.A. Girl",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 43.1,
+      "transcript_quote": "I'm going to go ahead and set setting powder, press powder to set the rest of my face.",
+      "confidence": 0.97
+    },
+    {
+      "product_name": "Bronzer",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 53.4,
+      "transcript_quote": "Bronzer to softly sculpt the face, blush.",
+      "confidence": 0.7
+    },
+    {
+      "product_name": "Blush",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 53.4,
+      "transcript_quote": "Bronzer to softly sculpt the face, blush.",
+      "confidence": 0.7
+    }
+  ]
+}

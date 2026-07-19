@@ -1,0 +1,63 @@
+{
+  "video_id": "i9dNa9WHNno",
+  "source_file": "i9dNa9WHNno.mp4",
+  "duration_s": 8.2,
+  "num_frames": 7,
+  "num_products": 4,
+  "num_video_products": 3,
+  "num_description_products": 4,
+  "mirrored": true,
+  "model": "claude-sonnet-4-6",
+  "usage": {
+    "input_tokens": 10459,
+    "output_tokens": 906,
+    "api_calls": 5
+  },
+  "cost_usd": {
+    "transcription": 0.0,
+    "extraction": 0.044967,
+    "total": 0.044967
+  },
+  "products": [
+    {
+      "product_name": "Extreme Gelpresso Pencil Liner",
+      "brand": "CLIO",
+      "variant_or_shade": "Gray Brown",
+      "evidence_type": "shown",
+      "timestamp_s": 1.6,
+      "transcript_quote": null,
+      "confidence": 0.9,
+      "source": "both"
+    },
+    {
+      "product_name": "Eye Bento Bouncy Eyeshadow Trio",
+      "brand": "Kaja",
+      "variant_or_shade": "Chocolate Dahlia",
+      "evidence_type": "shown",
+      "timestamp_s": 4.1,
+      "transcript_quote": null,
+      "confidence": 0.9,
+      "source": "description"
+    },
+    {
+      "product_name": "Eyelash Curler",
+      "brand": "Shiseido",
+      "variant_or_shade": null,
+      "evidence_type": "description",
+      "timestamp_s": 0,
+      "transcript_quote": null,
+      "confidence": 0.9,
+      "source": "description"
+    },
+    {
+      "product_name": "Kill Lash Superproof Mascara",
+      "brand": "CLIO",
+      "variant_or_shade": "Long Curling",
+      "evidence_type": "shown",
+      "timestamp_s": 6.7,
+      "transcript_quote": null,
+      "confidence": 0.9,
+      "source": "both"
+    }
+  ]
+}

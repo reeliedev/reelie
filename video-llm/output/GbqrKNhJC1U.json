@@ -1,0 +1,362 @@
+{
+  "video_id": "GbqrKNhJC1U",
+  "source_file": "GbqrKNhJC1U.mp4",
+  "duration_s": 1016.5,
+  "num_frames": 54,
+  "num_products": 38,
+  "model": "claude-sonnet-4-6",
+  "usage": {
+    "input_tokens": 36242,
+    "output_tokens": 4303,
+    "api_calls": 3
+  },
+  "cost_usd": {
+    "transcription": 0.0,
+    "extraction": 0.173271,
+    "total": 0.173271
+  },
+  "products": [
+    {
+      "product_name": "Unleashed Brow Gel",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 92.9,
+      "transcript_quote": "I'm going to be going in with my unleashed brow gel this is pretty much the current version of the rough five brow gel",
+      "confidence": 0.7
+    },
+    {
+      "product_name": "Foundation",
+      "brand": "Hourglass",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 116.0,
+      "transcript_quote": "these are my two favorite foundations lately this is the house lapse one",
+      "confidence": 0.6
+    },
+    {
+      "product_name": "Foundation",
+      "brand": "Lawless",
+      "variant_or_shade": "3F",
+      "evidence_type": "both",
+      "timestamp_s": 116.0,
+      "transcript_quote": "this one is from Wallace this one matches my skin color a little bit better so I've been reaching mainly for this one",
+      "confidence": 0.85
+    },
+    {
+      "product_name": "Makeup Puffs",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 130.7,
+      "transcript_quote": "to blend out my makeup I love using these little makeup puffs I like these more than using a sponge actually",
+      "confidence": 0.6
+    },
+    {
+      "product_name": "Iris Toric Halo Brown contacts",
+      "brand": "Clalen",
+      "variant_or_shade": "Halo Brown",
+      "evidence_type": "both",
+      "timestamp_s": 176.3,
+      "transcript_quote": "these are the claylin iris toric halo browns",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "O2O2 Brown contact",
+      "brand": "Clalen",
+      "variant_or_shade": "Brown",
+      "evidence_type": "spoken",
+      "timestamp_s": 184.3,
+      "transcript_quote": "I also like to use the claylow O2O2 brown contact",
+      "confidence": 0.8
+    },
+    {
+      "product_name": "Concealer",
+      "brand": "Hourglass",
+      "variant_or_shade": "Cedar",
+      "evidence_type": "both",
+      "timestamp_s": 201.2,
+      "transcript_quote": "I'm gonna be using my hourglass concealer",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Concealer Brush",
+      "brand": "Hourglass",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 228.8,
+      "transcript_quote": "by the way this is the hourglass concealer brush I love this thing",
+      "confidence": 0.85
+    },
+    {
+      "product_name": "Duo-Ended Cream Contour Stick",
+      "brand": "Merythod",
+      "variant_or_shade": "Biscuit",
+      "evidence_type": "both",
+      "timestamp_s": 254.4,
+      "transcript_quote": "it's a dual ended contour stick from Maryford I do like these skimmer ones that the Asian brands are making but I also like the Westman Italian one that the shade I use is biscuit",
+      "confidence": 0.85
+    },
+    {
+      "product_name": "Foundation/Contour Brush",
+      "brand": "Real Techniques",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 292.9,
+      "transcript_quote": "sometimes I'd like to add a little bit on my eyes using my real technique brush to blend it out",
+      "confidence": 0.8
+    },
+    {
+      "product_name": "Blush",
+      "brand": "YSL",
+      "variant_or_shade": "No. 44",
+      "evidence_type": "spoken",
+      "timestamp_s": 364.0,
+      "transcript_quote": "it is the YSL number 44 blush this blush is like the perfect shade of pink for me",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Airbrush Flawless Finish Pressed Powder",
+      "brand": "Charlotte Tilbury",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 396.9,
+      "transcript_quote": "using my shirt that tilbury press powder this powder deserves every bit of hype that I guess because it is honestly so good",
+      "confidence": 0.8
+    },
+    {
+      "product_name": "Loose Powder",
+      "brand": "Huda Beauty",
+      "variant_or_shade": "Peach Pie",
+      "evidence_type": "both",
+      "timestamp_s": 413.8,
+      "transcript_quote": "I'm gonna go in with my huda beauty this one is peach pie",
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Matte Eyeshadow Palette",
+      "brand": "Makeup by Mario",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 446.6,
+      "transcript_quote": "I'm taking this white eyeshadow from my makeup my mario palette focusing underneath the eyebrow area",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Cool Tone Eyeshadow Palette",
+      "brand": "Clio Cosmetics",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 457.1,
+      "transcript_quote": "for the actual eyeshadows I'm gonna be going in with this cool tone palette from Clio Cosmetics",
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Mascara",
+      "brand": "Chao Beauty",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 530.5,
+      "transcript_quote": "This is my current favorite mascara it's from the brand chow beauty which is a brand that my friend started",
+      "confidence": 0.85
+    },
+    {
+      "product_name": "Expert Liquid Eyeliner",
+      "brand": "e.l.f.",
+      "variant_or_shade": "Black",
+      "evidence_type": "both",
+      "timestamp_s": 561.3,
+      "transcript_quote": "this is my current favorite one it's the experts liquid eyeliner from elf",
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Morning Dew Lashes",
+      "brand": "Dope Beauty",
+      "variant_or_shade": "Morning Dew",
+      "evidence_type": "both",
+      "timestamp_s": 658.0,
+      "transcript_quote": "this style is morning dew my current favorite lash style from Dope",
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Lash Glue",
+      "brand": "Dope Beauty",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 674.7,
+      "transcript_quote": "love the Dope Beauty glue by the way it holds your lashes on like none other",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Aegyosal Pen",
+      "brand": "Colorgram",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 745.9,
+      "transcript_quote": "I'm gonna be using my agosal pen from the color ground I have been so into doing agosalately",
+      "confidence": 0.88
+    },
+    {
+      "product_name": "Eyebrow Pencil",
+      "brand": "Pixi Beauty",
+      "variant_or_shade": "Soft Black",
+      "evidence_type": "both",
+      "timestamp_s": 808.5,
+      "transcript_quote": "this is the brow pencil that I've been loving it's from pixie beauty",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Wet Shimmer Palette",
+      "brand": "Kylie Cosmetics",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 827.2,
+      "transcript_quote": "I'm gonna finish up the eyes with some inner corner shimmer this is Kylie Jenner's wet shimmer palette",
+      "confidence": 0.92
+    },
+    {
+      "product_name": "Contour Palette",
+      "brand": "Judydoll",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 854.3,
+      "transcript_quote": "good all judy doll contour palette I'm still using this you guys I don't think I'll ever stop",
+      "confidence": 0.92
+    },
+    {
+      "product_name": "Orgasm Powder Blush",
+      "brand": "NARS",
+      "variant_or_shade": "Orgasm",
+      "evidence_type": "spoken",
+      "timestamp_s": 873.0,
+      "transcript_quote": "I'm gonna go in with a little extra blush this is a powder blush from NARS iconic NARS orgasm",
+      "confidence": 0.97
+    },
+    {
+      "product_name": "Stone Lip Liner",
+      "brand": "MAC",
+      "variant_or_shade": "Stone",
+      "evidence_type": "both",
+      "timestamp_s": 889.8,
+      "transcript_quote": "go in with max stone lip liner I used to freaking hate this lip liner when I first tried it and now it is my favorite",
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Cr\u00e8me Cup Lipstick",
+      "brand": "MAC",
+      "variant_or_shade": "Cr\u00e8me Cup",
+      "evidence_type": "both",
+      "timestamp_s": 925.7,
+      "transcript_quote": "we're on top of that with max crumb cup the perfect light pink shade to compliment max stone",
+      "confidence": 0.93
+    },
+    {
+      "product_name": "Forget the Filler Smoothing Gloss",
+      "brand": "Lawless",
+      "variant_or_shade": "Strawberry Milkshake",
+      "evidence_type": "both",
+      "timestamp_s": 944.0,
+      "transcript_quote": "this one is a flawless forget the filler smoothing gloss in the shade strawberry milkshake",
+      "confidence": 0.88
+    },
+    {
+      "product_name": "Infallible 3-Second Setting Mist",
+      "brand": "L'Or\u00e9al",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 968.1,
+      "transcript_quote": "I've been using the lorial infallible three second setting list",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Foundation",
+      "brand": "Wallace",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 116.0,
+      "transcript_quote": "this one is from Wallace this one matches my skin color a little bit better",
+      "confidence": 0.4
+    },
+    {
+      "product_name": "Claylin Iris Toric Halo Browns contacts",
+      "brand": "Claylin",
+      "variant_or_shade": "Halo Browns",
+      "evidence_type": "spoken",
+      "timestamp_s": 176.3,
+      "transcript_quote": "these are the claylin iris toric halo browns",
+      "confidence": 0.75
+    },
+    {
+      "product_name": "Dual Ended Contour Stick",
+      "brand": "Maryford",
+      "variant_or_shade": "Biscuit",
+      "evidence_type": "spoken",
+      "timestamp_s": 254.4,
+      "transcript_quote": "it's a dual ended contour stick from Maryford",
+      "confidence": 0.65
+    },
+    {
+      "product_name": "Blending Brush",
+      "brand": "Real Techniques",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 292.9,
+      "transcript_quote": "using my real technique brush to blend it out",
+      "confidence": 0.8
+    },
+    {
+      "product_name": "Airbrush Pressed Powder",
+      "brand": "Charlotte Tilbury",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 396.9,
+      "transcript_quote": "using my shirt that tilbury press powder this powder deserves every bit of hype",
+      "confidence": 0.8
+    },
+    {
+      "product_name": "White Eyeshadow",
+      "brand": "Makeup by Mario",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 446.6,
+      "transcript_quote": "I'm taking this white eyeshadow from my makeup my mario palette focusing underneath the eyebrow area",
+      "confidence": 0.8
+    },
+    {
+      "product_name": "Eyelash Curler",
+      "brand": "Chisato",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 524.6,
+      "transcript_quote": "this one is my chisato eyelash curl there my beloved",
+      "confidence": 0.7
+    },
+    {
+      "product_name": "Lash Fans - Morning Dew",
+      "brand": "Dope Beauty",
+      "variant_or_shade": "Morning Dew",
+      "evidence_type": "spoken",
+      "timestamp_s": 710.1,
+      "transcript_quote": "this style is morning dew my current favorite lash style from Dope",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Agosal Pen",
+      "brand": "Color Ground",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 745.9,
+      "transcript_quote": "I'm gonna say for now but I cannot wait for you guys to see what we're working on we're gonna finish up the eye makeup I'm using this agosal pen from the color ground",
+      "confidence": 0.75
+    },
+    {
+      "product_name": "Judy Doll Contour Palette",
+      "brand": "Judy Doll",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 854.3,
+      "transcript_quote": "good all judy doll contour palette I'm still using this you guys I don't think I'll ever stop",
+      "confidence": 0.8
+    }
+  ]
+}

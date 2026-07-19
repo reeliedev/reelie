@@ -1,0 +1,45 @@
+# --- secrets (NEVER commit) ---
+.env
+*.env
+!*.env.example
+*.pem
+*.key
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- dev databases ---
+*.db
+*.sqlite
+*.sqlite3
+
+# --- generated / heavy media (rebuilt by the pipeline) ---
+video-llm/videos/
+video-llm/output/*.mp4
+video-llm/cache/
+Reelie App/page-generator/out/
+backend/media/
+
+# --- Xcode ---
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+*.xcworkspace/xcuserdata/
+.swiftpm/
+
+# --- node ---
+node_modules/
+
+# --- OS / editor ---
+.DS_Store
+*.log
+.idea/
+.vscode/

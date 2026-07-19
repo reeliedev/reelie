@@ -1,0 +1,182 @@
+{
+  "video_id": "FaL8JhFuBBo",
+  "source_file": "FaL8JhFuBBo.mp4",
+  "duration_s": 770.3,
+  "num_frames": 101,
+  "num_products": 18,
+  "model": "claude-sonnet-4-6",
+  "usage": {
+    "input_tokens": 58985,
+    "output_tokens": 4092,
+    "api_calls": 6
+  },
+  "cost_usd": {
+    "transcription": 0.0,
+    "extraction": 0.238335,
+    "total": 0.238335
+  },
+  "products": [
+    {
+      "product_name": "Purple Bandage Sunscreen Primer",
+      "brand": "Judydoll",
+      "variant_or_shade": null,
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 30.0,
+      "transcript_quote": null,
+      "confidence": 0.85
+    },
+    {
+      "product_name": "Pro Concealer Palette",
+      "brand": null,
+      "variant_or_shade": "#01",
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 60.0,
+      "transcript_quote": null,
+      "confidence": 0.65
+    },
+    {
+      "product_name": "Staking Blur Cheek",
+      "brand": "WAKEMAKE",
+      "variant_or_shade": "#03 Squeeze",
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 120.0,
+      "transcript_quote": null,
+      "confidence": 0.85
+    },
+    {
+      "product_name": "Contour & Highlight Duo Pencil",
+      "brand": "out-of-office",
+      "variant_or_shade": "#01",
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 158.9,
+      "transcript_quote": null,
+      "confidence": 0.85
+    },
+    {
+      "product_name": "Waterproof Soft Focus Pressed Powder",
+      "brand": "KATO-KATO",
+      "variant_or_shade": "#1 Clear",
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 191.1,
+      "transcript_quote": "And now I'm going to set my face.",
+      "confidence": 0.85
+    },
+    {
+      "product_name": "lip product",
+      "brand": "Heart Percent",
+      "variant_or_shade": "Strawberry Milk",
+      "evidence_type": "spoken",
+      "timestamp_s": 191.3,
+      "transcript_quote": "I'm going to use the strawberry milk color from Heart Percent",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "lip color",
+      "brand": null,
+      "variant_or_shade": "Bunny Tongue",
+      "evidence_type": "spoken",
+      "timestamp_s": 200.2,
+      "transcript_quote": "for the color today I'm going to try this bunny tongue shade",
+      "confidence": 0.75
+    },
+    {
+      "product_name": "Shadow Palette",
+      "brand": "dasique",
+      "variant_or_shade": "#16 Violet Knit",
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 211.8,
+      "transcript_quote": null,
+      "confidence": 0.85
+    },
+    {
+      "product_name": "My Face Piece Shadow",
+      "brand": "Holika Holika",
+      "variant_or_shade": "#37 Dark Espresso",
+      "evidence_type": "both",
+      "timestamp_s": 238.3,
+      "transcript_quote": "I'm going to stamp along my lash line with my favorite eyeshadow powder from Holoka Holoka.",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Dr. Mascara Fixer For Perfect Lash",
+      "brand": "ETUDE",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 253.9,
+      "transcript_quote": "I'm going to try this eyelash fixer. I've actually not used this yet, but it's like a clear gel that is supposed to hold your lashes and their curl in place without any sort of color so that you don't get denseness if you don't want it.",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "cluster false lashes",
+      "brand": "99 Dreams",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 265.5,
+      "transcript_quote": "Today I'm going to be using these lashes from 99 Dreams.",
+      "confidence": 0.8
+    },
+    {
+      "product_name": "Rotation Coloring Eyebrow",
+      "brand": "Kiss Me Romy",
+      "variant_or_shade": "#15 Dusty Ray",
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 330.0,
+      "transcript_quote": null,
+      "confidence": 0.85
+    },
+    {
+      "product_name": "Multi Eye Color Palette",
+      "brand": "3CE",
+      "variant_or_shade": "#Dry Bouquet",
+      "evidence_type": "both",
+      "timestamp_s": 363.8,
+      "transcript_quote": "I'm going to use the red tone from this eyeshadow palette to line my bottom lash line.",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "2 In 1 Highlighter Contour Palette",
+      "brand": "Judydoll",
+      "variant_or_shade": "#02",
+      "evidence_type": "both",
+      "timestamp_s": 409.3,
+      "transcript_quote": "I'm starting with this sort of medium dark shade and just going over the areas that we had put crayon contour on earlier",
+      "confidence": 0.92
+    },
+    {
+      "product_name": "Slim Liquid Eyeliner",
+      "brand": "Judydoll",
+      "variant_or_shade": "#02 Deep Brown",
+      "evidence_type": "both",
+      "timestamp_s": 437.9,
+      "transcript_quote": "I'm going to draw on some more eyelashes with this Judy Doll Slim Liquid Eyeliner",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "3D Curling Eyelash Iron Mascara",
+      "brand": "Judydoll",
+      "variant_or_shade": "#02 Brown",
+      "evidence_type": "both",
+      "timestamp_s": 455.9,
+      "transcript_quote": "I'm going to add a little bit of brown mascara to the outer edges of my lashes",
+      "confidence": 0.85
+    },
+    {
+      "product_name": "Dual Cheek",
+      "brand": "2AM",
+      "variant_or_shade": "#02 Love, Rosy",
+      "evidence_type": "both",
+      "timestamp_s": 458.9,
+      "transcript_quote": "This blush set is from 2AM. I'm going to start with this lighter shade and just place it on the inner part of my face",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "highlighter palette",
+      "brand": "Judydoll",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 646.5,
+      "transcript_quote": "I'm going to take the highlighter from this Judy doll palette and place it only on the highest points of my face",
+      "confidence": 0.9
+    }
+  ]
+}

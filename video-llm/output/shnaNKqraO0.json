@@ -1,0 +1,128 @@
+{
+  "video_id": "shnaNKqraO0",
+  "source_file": "shnaNKqraO0.mp4",
+  "duration_s": 23.7,
+  "num_frames": 17,
+  "num_products": 12,
+  "model": "claude-sonnet-4-6",
+  "usage": {
+    "input_tokens": 9352,
+    "output_tokens": 1259,
+    "api_calls": 2
+  },
+  "cost_usd": {
+    "transcription": 0.0,
+    "extraction": 0.046941,
+    "total": 0.046941
+  },
+  "products": [
+    {
+      "product_name": "makeup brush (flat/concealer brush)",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "shown",
+      "timestamp_s": 0.9,
+      "transcript_quote": null,
+      "confidence": 0.6
+    },
+    {
+      "product_name": "makeup sponge/puff",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "shown",
+      "timestamp_s": 2.1,
+      "transcript_quote": null,
+      "confidence": 0.65
+    },
+    {
+      "product_name": "eyeliner pencil",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "shown",
+      "timestamp_s": 4.1,
+      "transcript_quote": null,
+      "confidence": 0.65
+    },
+    {
+      "product_name": "eyeshadow brush",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "shown",
+      "timestamp_s": 5.6,
+      "transcript_quote": null,
+      "confidence": 0.6
+    },
+    {
+      "product_name": "concealer stick",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "shown",
+      "timestamp_s": 7.3,
+      "transcript_quote": null,
+      "confidence": 0.6
+    },
+    {
+      "product_name": "powder brush",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "shown",
+      "timestamp_s": 8.4,
+      "transcript_quote": null,
+      "confidence": 0.6
+    },
+    {
+      "product_name": "blush/lip product (pot/compact)",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "shown",
+      "timestamp_s": 10.6,
+      "transcript_quote": null,
+      "confidence": 0.5
+    },
+    {
+      "product_name": "eyeshadow (mauve/purple shade)",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "shown",
+      "timestamp_s": 12.0,
+      "transcript_quote": null,
+      "confidence": 0.6
+    },
+    {
+      "product_name": "Velvet Liner",
+      "brand": "Maybelline",
+      "variant_or_shade": null,
+      "evidence_type": "shown",
+      "timestamp_s": 13.2,
+      "transcript_quote": null,
+      "confidence": 0.55
+    },
+    {
+      "product_name": "mascara",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "shown",
+      "timestamp_s": 14.3,
+      "transcript_quote": null,
+      "confidence": 0.65
+    },
+    {
+      "product_name": "lip liner pencil",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "shown",
+      "timestamp_s": 15.6,
+      "transcript_quote": null,
+      "confidence": 0.65
+    },
+    {
+      "product_name": "lip gloss",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "shown",
+      "timestamp_s": 17.3,
+      "transcript_quote": null,
+      "confidence": 0.7
+    }
+  ]
+}

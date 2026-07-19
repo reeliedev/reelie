@@ -1,0 +1,9 @@
+# Reelie backend. SQLite (stdlib) for dev; Postgres in prod via DATABASE_URL.
+fastapi>=0.110
+uvicorn[standard]>=0.27
+gunicorn>=21.2            # prod process manager (uvicorn workers)
+sqlmodel>=0.0.16
+alembic>=1.13            # managed DB migrations (prod: `alembic upgrade head`)
+pyjwt[crypto]>=2.8       # crypto extra = RS256 verification for OIDC providers
+python-dotenv>=1.0
+psycopg[binary]>=3.1     # Postgres driver (used when DATABASE_URL is postgresql+psycopg://…)

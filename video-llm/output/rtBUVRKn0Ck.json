@@ -1,0 +1,68 @@
+{
+  "video_id": "rtBUVRKn0Ck",
+  "source_file": "rtBUVRKn0Ck.mp4",
+  "duration_s": 180.1,
+  "num_frames": 74,
+  "num_products": 5,
+  "num_video_products": 5,
+  "num_description_products": 0,
+  "mirrored": false,
+  "model": "claude-sonnet-4-6",
+  "usage": {
+    "input_tokens": 36725,
+    "output_tokens": 986,
+    "api_calls": 6
+  },
+  "cost_usd": {
+    "transcription": 0.0,
+    "extraction": 0.124965,
+    "total": 0.124965
+  },
+  "products": [
+    {
+      "product_name": "Fresh Blue Hyaluronic Acid Mochi Cleanser",
+      "brand": "Arencia",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 4.3,
+      "transcript_quote": "This is the Arencia Mochi Cleanser.",
+      "confidence": 0.97
+    },
+    {
+      "product_name": "Toner (spray bottle)",
+      "brand": "Torriden",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 35.5,
+      "transcript_quote": "Time for a toner.",
+      "confidence": 0.6
+    },
+    {
+      "product_name": "PORE 99 Toner Pads",
+      "brand": "Medicube",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 79.8,
+      "transcript_quote": "Next is a frozen toner pad.",
+      "confidence": 0.85
+    },
+    {
+      "product_name": "Dive In Hyaluronic Acid Intensive Serum",
+      "brand": "Torriden",
+      "variant_or_shade": null,
+      "evidence_type": "shown",
+      "timestamp_s": 139.4,
+      "transcript_quote": null,
+      "confidence": 0.92
+    },
+    {
+      "product_name": "Eye patches",
+      "brand": "Summer Fridays",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 160.5,
+      "transcript_quote": "I froze eye patches also and I'm most excited for this one.",
+      "confidence": 0.88
+    }
+  ]
+}

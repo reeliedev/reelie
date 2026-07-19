@@ -1,0 +1,223 @@
+{
+  "video_id": "ls9gPqFxw4o",
+  "source_file": "ls9gPqFxw4o.mp4",
+  "duration_s": 161.6,
+  "num_frames": 70,
+  "num_products": 20,
+  "num_video_products": 20,
+  "num_description_products": 14,
+  "mirrored": false,
+  "model": "claude-sonnet-4-6",
+  "usage": {
+    "input_tokens": 40668,
+    "output_tokens": 4578,
+    "api_calls": 7
+  },
+  "cost_usd": {
+    "transcription": 0.0,
+    "extraction": 0.190674,
+    "total": 0.190674
+  },
+  "products": [
+    {
+      "product_name": "Matte Sorbet Moisturizer",
+      "brand": "Vichy Laboratoires",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 10.2,
+      "transcript_quote": "I'm going to use my moisturizer and my SPF.",
+      "confidence": 0.9,
+      "source": "both"
+    },
+    {
+      "product_name": "Hello Sunshine SPF",
+      "brand": "IT Cosmetics",
+      "variant_or_shade": "SPF 50",
+      "evidence_type": "both",
+      "timestamp_s": 10.2,
+      "transcript_quote": "I'm going to use my moisturizer and my SPF.",
+      "confidence": 0.9,
+      "source": "both"
+    },
+    {
+      "product_name": "Easy Blur Foundation",
+      "brand": "Huda Beauty",
+      "variant_or_shade": "300",
+      "evidence_type": "both",
+      "timestamp_s": 24.9,
+      "transcript_quote": "Don't apply your foundation directly to your face.",
+      "confidence": 0.9,
+      "source": "both"
+    },
+    {
+      "product_name": "Foundation brush",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "shown",
+      "timestamp_s": 35.7,
+      "transcript_quote": null,
+      "confidence": 0.8,
+      "source": "video"
+    },
+    {
+      "product_name": "Bronzer",
+      "brand": "Makeup by Mario",
+      "variant_or_shade": "Light Medium",
+      "evidence_type": "shown",
+      "timestamp_s": 45.0,
+      "transcript_quote": "Apply your bronzer to your cheekbones, temple and forehead.",
+      "confidence": 0.9,
+      "source": "both"
+    },
+    {
+      "product_name": "Bronzer brush",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "shown",
+      "timestamp_s": 49.2,
+      "transcript_quote": null,
+      "confidence": 0.75,
+      "source": "video"
+    },
+    {
+      "product_name": "Blush Veil",
+      "brand": "Makeup by Mario",
+      "variant_or_shade": "Perfect Pink",
+      "evidence_type": "shown",
+      "timestamp_s": 58.8,
+      "transcript_quote": "Then go in with your blush.",
+      "confidence": 0.9,
+      "source": "description"
+    },
+    {
+      "product_name": "Blush brush",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "shown",
+      "timestamp_s": 64.0,
+      "transcript_quote": null,
+      "confidence": 0.8,
+      "source": "video"
+    },
+    {
+      "product_name": "Concealer",
+      "brand": "Tower 28",
+      "variant_or_shade": "Ktown",
+      "evidence_type": "spoken",
+      "timestamp_s": 76.0,
+      "transcript_quote": "Apply your concealer to these areas to brighten and lift the face.",
+      "confidence": 0.9,
+      "source": "both"
+    },
+    {
+      "product_name": "Makeup sponge",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "shown",
+      "timestamp_s": 79.7,
+      "transcript_quote": null,
+      "confidence": 0.8,
+      "source": "video"
+    },
+    {
+      "product_name": "Setting Powder",
+      "brand": "Makeup by Mario",
+      "variant_or_shade": "Fair Pink",
+      "evidence_type": "both",
+      "timestamp_s": 89.3,
+      "transcript_quote": "To apply powder, get yourself a powder puff. Trust me, I'm going to pick up my loose powder",
+      "confidence": 0.9,
+      "source": "description"
+    },
+    {
+      "product_name": "Powder puff",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 89.3,
+      "transcript_quote": "To apply powder, get yourself a powder puff.",
+      "confidence": 0.85,
+      "source": "video"
+    },
+    {
+      "product_name": "Powder Bronzer",
+      "brand": "YSL",
+      "variant_or_shade": "02",
+      "evidence_type": "both",
+      "timestamp_s": 110.9,
+      "transcript_quote": "This is optional, but you can also set your cream bronzer with powder bronzer.",
+      "confidence": 0.9,
+      "source": "both"
+    },
+    {
+      "product_name": "Eyeshadow Quad",
+      "brand": "Charlotte Tilbury",
+      "variant_or_shade": "Pillow Talk",
+      "evidence_type": "both",
+      "timestamp_s": 130.3,
+      "transcript_quote": "I'm going to take a soft brown eyeshadow, adding this to the outer corner of my eye and lightly dragging it out.",
+      "confidence": 0.9,
+      "source": "description"
+    },
+    {
+      "product_name": "Eyeshadow Duo",
+      "brand": "Patrick Ta",
+      "variant_or_shade": "We Need Better Lighting",
+      "evidence_type": "spoken",
+      "timestamp_s": 135.0,
+      "transcript_quote": "apply a light shimmer on the lid to make your eyes pop.",
+      "confidence": 0.9,
+      "source": "both"
+    },
+    {
+      "product_name": "Brown Gel Eyeliner",
+      "brand": "Milk Makeup",
+      "variant_or_shade": "brown",
+      "evidence_type": "both",
+      "timestamp_s": 139.8,
+      "transcript_quote": "With a brown gel eyeliner, I'm drawing a tiny outer corner wing.",
+      "confidence": 0.9,
+      "source": "both"
+    },
+    {
+      "product_name": "Wild Flower Eyelashes",
+      "brand": "Velour Beauty",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 144.6,
+      "transcript_quote": "You can't forget the fluffy lashes, like look at that difference.",
+      "confidence": 0.9,
+      "source": "description"
+    },
+    {
+      "product_name": "Sweet Tea Lip Liner",
+      "brand": "Morphe",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 151.5,
+      "transcript_quote": "I just wanted with a brown lip liner and a nude lip oil.",
+      "confidence": 0.9,
+      "source": "both"
+    },
+    {
+      "product_name": "Lip Oil",
+      "brand": "NYX Cosmetics",
+      "variant_or_shade": "Chillin like a villain",
+      "evidence_type": "both",
+      "timestamp_s": 151.5,
+      "transcript_quote": "I just wanted with a brown lip liner and a nude lip oil.",
+      "confidence": 0.9,
+      "source": "both"
+    },
+    {
+      "product_name": "All Nighter Setting Spray",
+      "brand": "Urban Decay",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 152.8,
+      "transcript_quote": "Finish off with a setting spray so your makeup lasts all day.",
+      "confidence": 0.82,
+      "source": "video"
+    }
+  ]
+}

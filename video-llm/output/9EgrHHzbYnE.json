@@ -1,0 +1,185 @@
+{
+  "video_id": "9EgrHHzbYnE",
+  "source_file": "9EgrHHzbYnE.mp4",
+  "duration_s": 160.8,
+  "num_frames": 79,
+  "num_products": 18,
+  "num_video_products": 18,
+  "num_description_products": 0,
+  "mirrored": true,
+  "model": "claude-sonnet-4-6",
+  "usage": {
+    "input_tokens": 43368,
+    "output_tokens": 3282,
+    "api_calls": 7
+  },
+  "cost_usd": {
+    "transcription": 0.0,
+    "extraction": 0.179334,
+    "total": 0.179334
+  },
+  "products": [
+    {
+      "product_name": "eye patches",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 1.7,
+      "transcript_quote": "5-2-D eye patches.",
+      "confidence": 0.5
+    },
+    {
+      "product_name": "toner",
+      "brand": "Miro",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 15.4,
+      "transcript_quote": "Miro toner.",
+      "confidence": 0.7
+    },
+    {
+      "product_name": "firming serum",
+      "brand": "Miro",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 20.2,
+      "transcript_quote": "Miro firming serum?",
+      "confidence": 0.7
+    },
+    {
+      "product_name": "moisturizer",
+      "brand": "Tatcha",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 26.2,
+      "transcript_quote": "I do not care how to do a moisturizer.",
+      "confidence": 0.8
+    },
+    {
+      "product_name": "sunscreen",
+      "brand": "Glow Recipe",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 32.5,
+      "transcript_quote": "Glow recipe sunscreen?",
+      "confidence": 0.85
+    },
+    {
+      "product_name": "Skin Glow SPF 30 Primer",
+      "brand": "YSE",
+      "variant_or_shade": "SPF 30",
+      "evidence_type": "both",
+      "timestamp_s": 47.1,
+      "transcript_quote": "Why is beauty primer?",
+      "confidence": 0.82
+    },
+    {
+      "product_name": "Ta foundation",
+      "brand": "Patrick Ta",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 64.3,
+      "transcript_quote": "Patrick Tap foundation?",
+      "confidence": 0.82
+    },
+    {
+      "product_name": "beauty sponge",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "shown",
+      "timestamp_s": 65.7,
+      "transcript_quote": null,
+      "confidence": 0.7
+    },
+    {
+      "product_name": "Ta contour",
+      "brand": "Patrick Ta",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 74.4,
+      "transcript_quote": "Patrick Tap contour?",
+      "confidence": 0.82
+    },
+    {
+      "product_name": "Ta blush",
+      "brand": "Patrick Ta",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 82.8,
+      "transcript_quote": "Patrick Tap love!",
+      "confidence": 0.78
+    },
+    {
+      "product_name": "Radiant Creamy Concealer",
+      "brand": "NARS",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 91.6,
+      "transcript_quote": "You know, our screaming concealer?",
+      "confidence": 0.75
+    },
+    {
+      "product_name": "powder",
+      "brand": "Charlotte Tilbury",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 103.3,
+      "transcript_quote": "We make up our own Charlotte Tilbury powder.",
+      "confidence": 0.85
+    },
+    {
+      "product_name": "mascara",
+      "brand": "Benefit",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 109.4,
+      "transcript_quote": "Benefit Van Gogh being mascara is $29.",
+      "confidence": 0.72
+    },
+    {
+      "product_name": "Brow pencil",
+      "brand": "Benefit",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 113.6,
+      "transcript_quote": "And their brow pencil is $26.",
+      "confidence": 0.75
+    },
+    {
+      "product_name": "Forever lip liner",
+      "brand": null,
+      "variant_or_shade": "Anywhere Coffee",
+      "evidence_type": "spoken",
+      "timestamp_s": 120.8,
+      "transcript_quote": "They're forever lip liner in shade Anywhere Coffee.",
+      "confidence": 0.7
+    },
+    {
+      "product_name": "Addict Lip Maximizer",
+      "brand": "Dior",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 125.8,
+      "transcript_quote": "The word lip maximizer?",
+      "confidence": 0.88
+    },
+    {
+      "product_name": "yummy setting spray",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 129.5,
+      "transcript_quote": "setting my face with a Devesa Mirox yummy setting spray.",
+      "confidence": 0.5
+    },
+    {
+      "product_name": "Brow gel",
+      "brand": "Rare Beauty",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 144.6,
+      "transcript_quote": "the rare beauty brow gel that I was using is $21.",
+      "confidence": 0.88
+    }
+  ]
+}

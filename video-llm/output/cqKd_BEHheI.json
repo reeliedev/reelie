@@ -1,0 +1,119 @@
+{
+  "video_id": "cqKd_BEHheI",
+  "source_file": "cqKd_BEHheI.mp4",
+  "duration_s": 252.4,
+  "num_frames": 22,
+  "num_products": 11,
+  "model": "claude-sonnet-4-6",
+  "usage": {
+    "input_tokens": 12200,
+    "output_tokens": 1542,
+    "api_calls": 2
+  },
+  "cost_usd": {
+    "transcription": 0.0,
+    "extraction": 0.05973,
+    "total": 0.05973
+  },
+  "products": [
+    {
+      "product_name": "face mist",
+      "brand": "Caudalie",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 20.6,
+      "transcript_quote": "I love using this Caudalie face mist before I apply my foundation because it has a slight cooling effect",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Cushion Egg-Fit Cover",
+      "brand": "fwee",
+      "variant_or_shade": "#02 Nude",
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 26.0,
+      "transcript_quote": null,
+      "confidence": 0.92
+    },
+    {
+      "product_name": "Match Stix Contour Skinstick",
+      "brand": "Fenty Beauty",
+      "variant_or_shade": "Amber",
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 40.5,
+      "transcript_quote": null,
+      "confidence": 0.92
+    },
+    {
+      "product_name": "Artclass By Rodin Shading",
+      "brand": "too cool for school",
+      "variant_or_shade": "#02 Modern",
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 60.0,
+      "transcript_quote": null,
+      "confidence": 0.92
+    },
+    {
+      "product_name": "Dote Lip Pencil",
+      "brand": "Heartpercent",
+      "variant_or_shade": "Clean Beige",
+      "evidence_type": "spoken",
+      "timestamp_s": 63.1,
+      "transcript_quote": "I just got these lip pencils from Heartpercent and this shade, Clean Beige, is quickly becoming my new favorite",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Juicy Lasting Tint",
+      "brand": "rom&nd",
+      "variant_or_shade": "#27 Honey Dew Melon",
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 90.0,
+      "transcript_quote": null,
+      "confidence": 0.92
+    },
+    {
+      "product_name": "Blending Mood Cheek Knit Edition",
+      "brand": "dasique",
+      "variant_or_shade": "#04 Beige Knit",
+      "evidence_type": "both",
+      "timestamp_s": 91.7,
+      "transcript_quote": "I'm taking this super corally peachy blush and just kind of running it across the tops of my cheeks",
+      "confidence": 0.92
+    },
+    {
+      "product_name": "Shadow Palette",
+      "brand": "dasique",
+      "variant_or_shade": "#15 Beige Knit",
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 120.0,
+      "transcript_quote": null,
+      "confidence": 0.92
+    },
+    {
+      "product_name": "My Fave Piece Shadow",
+      "brand": "Holika Holika",
+      "variant_or_shade": "#20 Two Shot Americano",
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 150.3,
+      "transcript_quote": null,
+      "confidence": 0.92
+    },
+    {
+      "product_name": "super idol type lashes",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 158.1,
+      "transcript_quote": "I'm just doing a coat of mascara before applying a set of super idle type lashes",
+      "confidence": 0.7
+    },
+    {
+      "product_name": "Kill Brow Dual Tattoo Pen",
+      "brand": "CLIO",
+      "variant_or_shade": "#02 Light Brown",
+      "evidence_type": "on-screen-text",
+      "timestamp_s": 171.4,
+      "transcript_quote": null,
+      "confidence": 0.92
+    }
+  ]
+}

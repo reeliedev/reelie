@@ -1,0 +1,2872 @@
+{
+  "|eye patches| <=> yse|eye patches|": {
+    "match": false,
+    "variant_match": true,
+    "reasoning": "The predicted product has no brand specified, but the ground-truth is specifically YSE Beauty Eye Patches; without brand confirmation, these cannot be confirmed as the same product."
+  },
+  "|eye patches| <=> byroe|toner|": {
+    "match": false,
+    "variant_match": true,
+    "reasoning": "Eye patches and a toner are completely different product types, regardless of brand."
+  },
+  "|eye patches| <=> tatcha|the dewy skin cream|": {
+    "match": false,
+    "variant_match": true,
+    "reasoning": "Eye patches and a moisturizing cream are completely different product types."
+  },
+  "|eye patches| <=> benefit|mascara|": {
+    "match": false,
+    "variant_match": true,
+    "reasoning": "Eye patches and mascara are completely different product types."
+  },
+  "miro|toner| <=> byroe|toner|": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "\"Miro\" is a speech-to-text mishearing of \"Byroe\", and both refer to the same Byroe Toner product."
+  },
+  "miro|toner| <=> byroe|firming serum|": {
+    "match": false,
+    "variant_match": true,
+    "reasoning": "Even accounting for 'Miro' as a mishearing of 'Byroe', a toner and a firming serum are different product types."
+  },
+  "miro|toner| <=> |forever lipliner|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A toner and a lipliner are completely different product types with no overlap."
+  },
+  "miro|toner| <=> danessa myricks|setting spray|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: a toner from Miro vs. a setting spray from Danessa Myricks."
+  },
+  "miro|firming serum| <=> byroe|firming serum|": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "\"Miro\" is a speech-to-text mishearing of \"Byroe\", and the product name \"Firming Serum\" matches exactly."
+  },
+  "miro|firming serum| <=> dior|addict lip maximizer|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: a firming serum vs. a lip maximizer, and different brands (Miro/Byroe vs. Dior)."
+  },
+  "miro|firming serum| <=> benefit|mascara|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and product types: a firming serum vs. a mascara."
+  },
+  "miro|firming serum| <=> benefit|precisely my brow pencil|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: a firming serum vs. a brow pencil from different brands."
+  },
+  "tatcha|moisturizer| <=> tatcha|the dewy skin cream|": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Generic 'Tatcha moisturizer' is tolerably matched to the specific 'Tatcha The Dewy Skin Cream' per the stated naming rules."
+  },
+  "tatcha|moisturizer| <=> yse|eye patches|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different brands and completely different product types (Tatcha moisturizer vs YSE Beauty Eye Patches)."
+  },
+  "tatcha|moisturizer| <=> benefit|mascara|": {
+    "match": false,
+    "variant_match": true,
+    "reasoning": "Completely different brands and product types (Tatcha moisturizer vs Benefit Cosmetics mascara)."
+  },
+  "tatcha|moisturizer| <=> patrick ta|major headlines double take creme and powder blush duo|": {
+    "match": false,
+    "variant_match": true,
+    "reasoning": "Tatcha moisturizer and Patrick Ta blush duo are completely different products from different brands."
+  },
+  "glow recipe|sunscreen| <=> glow recipe|sunscreen|": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same brand and product name, only difference is capitalization."
+  },
+  "glow recipe|sunscreen| <=> yse|skin glow spf 30 tinted sunscreen primer|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different brands (Glow Recipe vs YSE Beauty) and different products entirely."
+  },
+  "glow recipe|sunscreen| <=> |forever lipliner|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Glow Recipe sunscreen vs. a lipliner with no brand specified."
+  },
+  "glow recipe|sunscreen| <=> benefit|precisely my brow pencil|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and product types: Glow Recipe sunscreen vs Benefit Cosmetics brow pencil."
+  },
+  "yse|skin glow spf 30 primer|spf 30 <=> yse|skin glow spf 30 tinted sunscreen primer|": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same brand (YSE/YSE Beauty) and same product (Skin Glow SPF 30 Primer/Tinted Sunscreen Primer) - the extra descriptor 'Tinted Sunscreen' is just a more complete name for the same item."
+  },
+  "yse|skin glow spf 30 primer|spf 30 <=> glow recipe|sunscreen|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "YSE Skin Glow SPF 30 Primer and Glow Recipe Sunscreen are different products from different brands."
+  },
+  "yse|skin glow spf 30 primer|spf 30 <=> tatcha|the dewy skin cream|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "YSE Skin Glow SPF 30 Primer and Tatcha The Dewy Skin Cream are completely different products from different brands."
+  },
+  "yse|skin glow spf 30 primer|spf 30 <=> danessa myricks|setting spray|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products from different brands: YSE Skin Glow SPF 30 Primer vs Danessa Myricks Setting Spray."
+  },
+  "patrick ta|ta foundation| <=> patrick ta|major skin hydra luxe luminous skin perfecting foundation|": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Patrick Ta only has one foundation line, so 'Ta foundation' generically refers to the Major Skin Hydra-Luxe Luminous Skin Perfecting Foundation."
+  },
+  "patrick ta|ta foundation| <=> patrick ta|major sculpt creme contour and powder bronzer duo|": {
+    "match": false,
+    "variant_match": true,
+    "reasoning": "A foundation is a completely different product from a contour & bronzer duo, even if both are from Patrick Ta."
+  },
+  "patrick ta|ta foundation| <=> patrick ta|major headlines double take creme and powder blush duo|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A foundation and a blush duo are completely different product types, even from the same brand."
+  },
+  "patrick ta|ta foundation| <=> danessa myricks|setting spray|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and product types (foundation vs. setting spray)."
+  },
+  "|beauty sponge| <=> byroe|toner|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A beauty sponge and a toner are completely different product types, regardless of brand."
+  },
+  "|beauty sponge| <=> yse|eye patches|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A beauty sponge and eye patches are completely different product types."
+  },
+  "|beauty sponge| <=> byroe|firming serum|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A beauty sponge and a firming serum are completely different product types, regardless of brand."
+  },
+  "|beauty sponge| <=> tatcha|the dewy skin cream|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A beauty sponge is a makeup applicator tool, completely different from Tatcha's The Dewy Skin Cream moisturizer."
+  },
+  "patrick ta|ta contour| <=> patrick ta|major sculpt creme contour and powder bronzer duo|": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Patrick Ta's contour product is the Major Sculpt Creme Contour & Powder Bronzer Duo, commonly referred to informally as 'Ta contour'."
+  },
+  "patrick ta|ta contour| <=> patrick ta|major skin hydra luxe luminous skin perfecting foundation|": {
+    "match": false,
+    "variant_match": true,
+    "reasoning": "Patrick Ta contour product is completely different from the Major Skin Hydra-Luxe Luminous Skin Perfecting Foundation."
+  },
+  "patrick ta|ta contour| <=> patrick ta|major headlines double take creme and powder blush duo|": {
+    "match": false,
+    "variant_match": true,
+    "reasoning": "A contour product and a blush duo are different products even from the same brand."
+  },
+  "patrick ta|ta contour| <=> nars|radiant creamy concealer|": {
+    "match": false,
+    "variant_match": true,
+    "reasoning": "Patrick Ta contour product is completely different from NARS Radiant Creamy Concealer - different brands and different product types."
+  },
+  "patrick ta|ta blush| <=> patrick ta|major headlines double take creme and powder blush duo|": {
+    "match": false,
+    "variant_match": true,
+    "reasoning": "The predicted product is vaguely named 'Ta blush' which could refer to any Patrick Ta blush, but without more specificity it cannot be confirmed to match the specific 'Major Headlines Double-Take Creme & Powder Blush Duo' product."
+  },
+  "patrick ta|ta blush| <=> patrick ta|major skin hydra luxe luminous skin perfecting foundation|": {
+    "match": false,
+    "variant_match": true,
+    "reasoning": "A blush and a foundation are completely different product types, even from the same brand."
+  },
+  "patrick ta|ta blush| <=> patrick ta|major sculpt creme contour and powder bronzer duo|": {
+    "match": false,
+    "variant_match": true,
+    "reasoning": "A blush and a contour/bronzer duo are different products, even from the same brand."
+  },
+  "patrick ta|ta blush| <=> danessa myricks|setting spray|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and product types (blush vs. setting spray)."
+  },
+  "nars|radiant creamy concealer| <=> nars|radiant creamy concealer|": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand and product name."
+  },
+  "nars|radiant creamy concealer| <=> tatcha|the dewy skin cream|": {
+    "match": false,
+    "variant_match": true,
+    "reasoning": "NARS Radiant Creamy Concealer and Tatcha The Dewy Skin Cream are completely different products from different brands."
+  },
+  "nars|radiant creamy concealer| <=> danessa myricks|setting spray|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and product types: NARS concealer vs Danessa Myricks setting spray."
+  },
+  "nars|radiant creamy concealer| <=> benefit|mascara|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and product types: NARS concealer vs Benefit mascara."
+  },
+  "charlotte tilbury|powder| <=> charlotte tilbury|airbrush flawless finish setting powder|": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "The predicted 'Charlotte Tilbury powder' is a generic reference that matches the specific Charlotte Tilbury Airbrush Flawless Finish Setting Powder, their iconic/flagship powder product."
+  },
+  "charlotte tilbury|powder| <=> byroe|toner|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different brands (Charlotte Tilbury vs Byroe) and different product types (powder vs toner)."
+  },
+  "charlotte tilbury|powder| <=> patrick ta|major sculpt creme contour and powder bronzer duo|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different brands (Charlotte Tilbury vs Patrick Ta) and different products entirely."
+  },
+  "charlotte tilbury|powder| <=> patrick ta|major headlines double take creme and powder blush duo|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different brands (Charlotte Tilbury vs Patrick Ta) and different products entirely."
+  },
+  "benefit|mascara| <=> benefit|mascara|": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same brand (Benefit/Benefit Cosmetics) and same product (mascara), just generic naming with no conflicting details."
+  },
+  "benefit|mascara| <=> benefit|precisely my brow pencil|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A mascara is a completely different product from a brow pencil, even if both are from Benefit Cosmetics."
+  },
+  "benefit|mascara| <=> byroe|firming serum|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Benefit mascara vs Byroe Firming Serum - different brands and different product types."
+  },
+  "benefit|mascara| <=> byroe|toner|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and product types: Benefit mascara vs Byroe Toner."
+  },
+  "benefit|brow pencil| <=> benefit|precisely my brow pencil|": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Benefit's iconic brow pencil is the 'Precisely, My Brow Pencil', so the generic description matches this specific product."
+  },
+  "benefit|brow pencil| <=> benefit|mascara|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A brow pencil and a mascara are completely different product types, even from the same brand."
+  },
+  "benefit|brow pencil| <=> byroe|firming serum|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and product types: Benefit brow pencil vs Byroe Firming Serum."
+  },
+  "benefit|brow pencil| <=> glow recipe|sunscreen|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and product types: Benefit brow pencil vs Glow Recipe sunscreen."
+  },
+  "|forever lip liner|anywhere coffee <=> |forever lipliner|": {
+    "match": true,
+    "variant_match": false,
+    "reasoning": "Both refer to the same Forever Lipliner product, but the predicted item specifies shade 'Anywhere Coffee' while the ground truth omits any shade, creating a variant conflict."
+  },
+  "|forever lip liner|anywhere coffee <=> dior|addict lip maximizer|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A lip liner and a lip maximizer/plumper are completely different product types, and the brands differ as well."
+  },
+  "|forever lip liner|anywhere coffee <=> byroe|toner|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A lip liner and a toner are completely different product types from different brands."
+  },
+  "|forever lip liner|anywhere coffee <=> nars|radiant creamy concealer|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A lip liner and a concealer are completely different product types, and the names/brands do not match."
+  },
+  "dior|addict lip maximizer| <=> dior|addict lip maximizer|": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand and product name."
+  },
+  "dior|addict lip maximizer| <=> |forever lipliner|": {
+    "match": false,
+    "variant_match": true,
+    "reasoning": "Dior Addict Lip Maximizer is a lip plumping gloss, completely different from a Forever Lipliner product."
+  },
+  "dior|addict lip maximizer| <=> patrick ta|major headlines double take creme and powder blush duo|": {
+    "match": false,
+    "variant_match": true,
+    "reasoning": "Completely different products: Dior lip plumper vs Patrick Ta blush duo."
+  },
+  "dior|addict lip maximizer| <=> patrick ta|major sculpt creme contour and powder bronzer duo|": {
+    "match": false,
+    "variant_match": true,
+    "reasoning": "Completely different products: Dior lip plumper vs. Patrick Ta contour/bronzer duo."
+  },
+  "|yummy setting spray| <=> danessa myricks|setting spray|": {
+    "match": false,
+    "variant_match": true,
+    "reasoning": "The predicted product is 'yummy setting spray' (likely Yummy Skin brand) while the ground-truth is Danessa Myricks Setting Spray — these are different brands and different products."
+  },
+  "|yummy setting spray| <=> charlotte tilbury|airbrush flawless finish setting powder|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A setting spray and a setting powder are different product types, and the names are completely different."
+  },
+  "|yummy setting spray| <=> byroe|firming serum|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A setting spray and a firming serum are completely different product types from different brands."
+  },
+  "|yummy setting spray| <=> yse|eye patches|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A setting spray and eye patches are completely different product types, and the brands differ as well."
+  },
+  "rare|brow gel| <=> byroe|toner|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and product types: Rare Beauty brow gel vs Byroe toner."
+  },
+  "rare|brow gel| <=> benefit|precisely my brow pencil|": {
+    "match": false,
+    "variant_match": true,
+    "reasoning": "Different brands (Rare Beauty vs Benefit Cosmetics) and different product types (brow gel vs brow pencil)."
+  },
+  "rare|brow gel| <=> byroe|firming serum|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and product types: Rare Beauty brow gel vs Byroe Firming Serum."
+  },
+  "rare|brow gel| <=> glow recipe|sunscreen|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and product types: Rare Beauty brow gel vs Glow Recipe sunscreen."
+  },
+  "nyx|fluff and snatch brow powder pen|cool ash brown <=> nyx|fluff and snatch brow powder pen|": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same brand and product (NYX Fluff & Snatch Brow Powder Pen); ground truth omits shade so no conflict."
+  },
+  "judydoll|purple bandage sunscreen primer| <=> judydoll|purple bandage sunscreen primer|": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand and product name."
+  },
+  "judydoll|purple bandage sunscreen primer| <=> judydoll|ultra fine liquid eyeliner|02 deep brown": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Sunscreen primer and liquid eyeliner are completely different product types despite sharing the same brand."
+  },
+  "judydoll|purple bandage sunscreen primer| <=> judydoll|3d curling eyelash iron mascara|02 brown": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different product types: a sunscreen/primer vs. a mascara."
+  },
+  "judydoll|purple bandage sunscreen primer| <=> judydoll|2 in 1 highlighter contour palette|02": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: one is a sunscreen primer, the other is a highlighter contour palette."
+  },
+  "|pro concealer palette|01 <=> dasique|pro concealer palette|01": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same product name, same shade #01; predicted simply omits the brand 'dasique' which is consistent with generic-vs-specific naming tolerance."
+  },
+  "|pro concealer palette|01 <=> dasique|shadow palette|16 violet knit": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A concealer palette and a shadow palette are completely different product types, and the shades also differ."
+  },
+  "|pro concealer palette|01 <=> 3ce|multi eye color palette|dry bouquet": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A concealer palette and an eye color palette are completely different product types, and the shades also differ."
+  },
+  "|pro concealer palette|01 <=> judydoll|2 in 1 highlighter contour palette|02": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A concealer palette and a highlighter/contour palette are fundamentally different product types, and the shades also differ."
+  },
+  "wakemake|staking blur cheek|03 squeeze <=> wakemake|shaking blur cheek|03 squeeze": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same brand, same product (Staking vs Shaking is a speech-to-text mishearing), same shade #03 Squeeze."
+  },
+  "wakemake|staking blur cheek|03 squeeze <=> wakemake|shaking blur cheek|06 fig tea": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different shades (#03 Squeeze vs #06 Fig Tea) and likely different product names (Staking vs Shaking could be same, but the shades clearly differ making these different products)."
+  },
+  "wakemake|staking blur cheek|03 squeeze <=> 2an|dual cheek|02 love rosy": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different brands (WAKEMAKE vs 2aN) and different product names (Staking Blur Cheek vs Dual Cheek), clearly not the same product."
+  },
+  "wakemake|staking blur cheek|03 squeeze <=> 3ce|multi eye color palette|dry bouquet": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: WAKEMAKE blush vs 3CE eye color palette, different brands, names, and shades."
+  },
+  "out of office|contour and highlight duo pencil|01 <=> out of office|contour and highlight duo pencil|01": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same brand, same product name, and same shade #01."
+  },
+  "out of office|contour and highlight duo pencil|01 <=> judydoll|2 in 1 highlighter contour palette|02": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different brands (out-of-office vs Judydoll), different product formats (pencil vs palette), and different shades (#01 vs #02)."
+  },
+  "out of office|contour and highlight duo pencil|01 <=> heart percent|dote on mood lip pencil|04 strawberry milk": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: a contour & highlight duo pencil vs. a lip pencil from different brands."
+  },
+  "out of office|contour and highlight duo pencil|01 <=> fenty|match stix contour skinstick|amber": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different brands (out-of-office vs Fenty Beauty) and different products (Contour & Highlight Duo Pencil vs Match Stix Contour Skinstick)."
+  },
+  "kato kato|waterproof soft focus pressed powder|1 clear <=> kato kato|waterproof soft focus pressed powder|1 clear": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand, product name, and shade."
+  },
+  "kato kato|waterproof soft focus pressed powder|1 clear <=> ninetynine dreams|sunflower lash clusters|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: a pressed powder vs. lash clusters from different brands."
+  },
+  "kato kato|waterproof soft focus pressed powder|1 clear <=> dasique|pro concealer palette|01": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different brands (KATO-KATO vs dasique) and different product types (pressed powder vs concealer palette)."
+  },
+  "kato kato|waterproof soft focus pressed powder|1 clear <=> too cool for school|artclass by rodin shading|02 modern": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and products - KATO-KATO pressed powder vs too cool for school shading product."
+  },
+  "heart percent|lip product|strawberry milk <=> heart percent|dote on mood lip pencil|04 strawberry milk": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same brand and Strawberry Milk shade; 'lip product' is a generic reference to the Heart Percent Dote on Mood Lip Pencil in that shade."
+  },
+  "heart percent|lip product|strawberry milk <=> charlotte tilbury|lip cheat lip liner|pillow talk": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different brands (Heart Percent vs Charlotte Tilbury) and different products entirely."
+  },
+  "heart percent|lip product|strawberry milk <=> dasique|pro concealer palette|01": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different brands (Heart Percent vs dasique) and completely different product types (lip product vs concealer palette)."
+  },
+  "heart percent|lip product|strawberry milk <=> isehan|heavy rotation eyebrow pencil|12 gray beige": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands, product types (lip product vs eyebrow pencil), and shades."
+  },
+  "|lip color|bunny tongue <=> 3ce|multi eye color palette|dry bouquet": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: predicted is a lip color while ground-truth is an eye color palette, with different shades and different brands."
+  },
+  "|lip color|bunny tongue <=> heart percent|dote on mood lip pencil|04 strawberry milk": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different product names and conflicting shades (Bunny Tongue vs #04 Strawberry Milk) indicate these are not the same product."
+  },
+  "|lip color|bunny tongue <=> charlotte tilbury|lip cheat lip liner|pillow talk": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different products entirely: predicted is a lip color in shade 'Bunny Tongue' while ground-truth is a Charlotte Tilbury Lip Cheat Lip Liner in shade 'Pillow Talk'."
+  },
+  "|lip color|bunny tongue <=> dior|lip addict lip maximizer gloss|030 shimmer rose": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different products entirely: predicted is a lip color in shade 'Bunny Tongue' with no brand, ground-truth is Dior Lip Addict Lip Maximizer Gloss in #030 Shimmer Rose."
+  },
+  "dasique|shadow palette|16 violet knit <=> dasique|shadow palette|16 violet knit": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand, product name, and shade."
+  },
+  "dasique|shadow palette|16 violet knit <=> dasique|pro concealer palette|01": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Shadow Palette and Pro Concealer Palette are completely different product types, and the shade numbers also differ."
+  },
+  "dasique|shadow palette|16 violet knit <=> holika holika|my fave piece shadow|37 dark espresso": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different brands (Dasique vs Holika Holika) and different products entirely."
+  },
+  "dasique|shadow palette|16 violet knit <=> judydoll|2 in 1 highlighter contour palette|02": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Dasique Shadow Palette vs Judydoll 2 IN 1 Highlighter Contour Palette, different brands and product types."
+  },
+  "holika holika|my face piece shadow|37 dark espresso <=> holika holika|my fave piece shadow|37 dark espresso": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same brand, same shade #37 Dark Espresso, and 'My Face Piece Shadow' vs 'My Fave Piece Shadow' is a minor speech-to-text mishearing of the same product name."
+  },
+  "holika holika|my face piece shadow|37 dark espresso <=> dasique|shadow palette|16 violet knit": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different brands (Holika Holika vs dasique), different product names, and different shades - these are clearly not the same product."
+  },
+  "holika holika|my face piece shadow|37 dark espresso <=> too cool for school|artclass by rodin shading|02 modern": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands (Holika Holika vs too cool for school) and different products (eyeshadow vs shading/contour)."
+  },
+  "holika holika|my face piece shadow|37 dark espresso <=> kato kato|waterproof soft focus pressed powder|1 clear": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands, product types, and shades - an eyeshadow vs. a pressed powder."
+  },
+  "etude|dr mascara fixer for perfect lash| <=> etude|dr mascara fixer for perfect lash|": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand and product name."
+  },
+  "etude|dr mascara fixer for perfect lash| <=> judydoll|3d curling eyelash iron mascara|02 brown": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "These are completely different products from different brands - ETUDE Dr. Mascara Fixer is a mascara topcoat/fixer, while Judydoll 3D Curling Eyelash Iron Mascara is a regular mascara."
+  },
+  "etude|dr mascara fixer for perfect lash| <=> heart percent|dote on mood lip pencil|04 strawberry milk": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: ETUDE mascara fixer vs Heart Percent lip pencil."
+  },
+  "etude|dr mascara fixer for perfect lash| <=> judydoll|purple bandage sunscreen primer|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: ETUDE mascara fixer vs Judydoll sunscreen primer."
+  },
+  "99 dreams|cluster false lashes| <=> ninetynine dreams|sunflower lash clusters|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "While '99 Dreams' and 'Ninetynine Dreams' likely refer to the same brand, 'cluster false lashes' is too generic to confirm it matches the specific 'Sunflower Lash Clusters' product."
+  },
+  "99 dreams|cluster false lashes| <=> dasique|pro concealer palette|01": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: predicted is false lashes from 99 Dreams, ground-truth is a concealer palette from dasique."
+  },
+  "99 dreams|cluster false lashes| <=> kato kato|waterproof soft focus pressed powder|1 clear": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: predicted is false lashes from 99 Dreams, ground-truth is a pressed powder from KATO-KATO."
+  },
+  "99 dreams|cluster false lashes| <=> 3ce|multi eye color palette|dry bouquet": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: predicted is false lashes from 99 Dreams, ground truth is an eye color palette from 3CE."
+  },
+  "kiss me romy|rotation coloring eyebrow|15 dusty ray <=> isehan|kiss me heavy rotation coloring eyebrow|15 dusky rose": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Kiss Me Romy is a speech-to-text mishearing of ISEHAN's Kiss Me brand; 'Heavy Rotation Coloring Eyebrow' matches with 'Heavy' dropped; shade #15 'Dusty Ray' is a mishearing of 'Dusky Rose' - same shade number confirms same variant."
+  },
+  "kiss me romy|rotation coloring eyebrow|15 dusty ray <=> isehan|heavy rotation eyebrow pencil|12 gray beige": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Kiss Me Romy Rotation Coloring Eyebrow and ISEHAN Heavy Rotation Eyebrow Pencil are different products (different brand names and product lines), and the shades also differ (#15 vs #12)."
+  },
+  "kiss me romy|rotation coloring eyebrow|15 dusty ray <=> 3ce|multi eye color palette|dry bouquet": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands (Kiss Me Romy vs 3CE) and different product types (eyebrow pencil vs eye color palette)."
+  },
+  "kiss me romy|rotation coloring eyebrow|15 dusty ray <=> judydoll|3d curling eyelash iron mascara|02 brown": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: predicted is a Kiss Me Romy eyebrow product while ground-truth is a Judydoll mascara."
+  },
+  "3ce|multi eye color palette|dry bouquet <=> 3ce|multi eye color palette|dry bouquet": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same brand, product, and shade (the '#' prefix is just a formatting convention used by 3CE, not a different shade)."
+  },
+  "3ce|multi eye color palette|dry bouquet <=> dasique|pro concealer palette|01": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: 3CE eye shadow palette vs dasique concealer palette, different brands and product types."
+  },
+  "3ce|multi eye color palette|dry bouquet <=> judydoll|2 in 1 highlighter contour palette|02": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: 3CE Multi Eye Color Palette vs Judydoll 2 IN 1 Highlighter Contour Palette, different brands and product types."
+  },
+  "3ce|multi eye color palette|dry bouquet <=> dasique|shadow palette|16 violet knit": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different brands (3CE vs dasique) and different products entirely."
+  },
+  "judydoll|2 in 1 highlighter contour palette|02 <=> judydoll|2 in 1 highlighter contour palette|02": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same brand, same product name (only capitalization differs), same shade #02."
+  },
+  "judydoll|2 in 1 highlighter contour palette|02 <=> out of office|contour and highlight duo pencil|01": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different brands (Judydoll vs OUT-OF-OFFICE) and different product types (palette vs pencil), clearly not the same product."
+  },
+  "judydoll|2 in 1 highlighter contour palette|02 <=> judydoll|3d curling eyelash iron mascara|02 brown": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A highlighter/contour palette and a mascara are completely different product types despite sharing the same brand and shade number."
+  },
+  "judydoll|2 in 1 highlighter contour palette|02 <=> 3ce|multi eye color palette|dry bouquet": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands (Judydoll vs 3CE) and different product types (highlighter/contour palette vs eye color palette)."
+  },
+  "judydoll|slim liquid eyeliner|02 deep brown <=> judydoll|ultra fine liquid eyeliner|02 deep brown": {
+    "match": false,
+    "variant_match": true,
+    "reasoning": "Both are Judydoll liquid eyeliners in the same shade, but 'Slim Liquid Eyeliner' and 'Ultra-fine Liquid Eyeliner' appear to be different product lines with different names, not just naming variants of the same product."
+  },
+  "judydoll|slim liquid eyeliner|02 deep brown <=> judydoll|purple bandage sunscreen primer|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "These are completely different products: one is a liquid eyeliner and the other is a sunscreen primer, both from Judydoll but not the same product."
+  },
+  "judydoll|slim liquid eyeliner|02 deep brown <=> judydoll|3d curling eyelash iron mascara|02 brown": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "These are completely different product types: a liquid eyeliner vs. a mascara, despite being from the same brand."
+  },
+  "judydoll|slim liquid eyeliner|02 deep brown <=> judydoll|2 in 1 highlighter contour palette|02": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "These are completely different products: a slim liquid eyeliner vs. a 2-in-1 highlighter contour palette, despite sharing the same brand and shade number."
+  },
+  "judydoll|3d curling eyelash iron mascara|02 brown <=> judydoll|3d curling eyelash iron mascara|02 brown": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand, product name, and shade."
+  },
+  "judydoll|3d curling eyelash iron mascara|02 brown <=> judydoll|2 in 1 highlighter contour palette|02": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: predicted is a mascara while ground-truth is a highlighter contour palette."
+  },
+  "judydoll|3d curling eyelash iron mascara|02 brown <=> judydoll|ultra fine liquid eyeliner|02 deep brown": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A mascara and a liquid eyeliner are completely different product types, even though they share the same brand and a similar shade name."
+  },
+  "judydoll|3d curling eyelash iron mascara|02 brown <=> judydoll|purple bandage sunscreen primer|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "These are completely different products: a mascara vs. a sunscreen primer, both from Judydoll but entirely different items."
+  },
+  "2am|dual cheek|02 love rosy <=> 2an|dual cheek|02 love rosy": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same brand (2aN, minor OCR/speech difference), same product name Dual Cheek, same shade #02 Love Rosy (comma vs space is trivial)."
+  },
+  "2am|dual cheek|02 love rosy <=> wakemake|shaking blur cheek|03 squeeze": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different brands (2AM vs WAKEMAKE) and different product names and shades - these are clearly distinct products."
+  },
+  "2am|dual cheek|02 love rosy <=> wakemake|shaking blur cheek|06 fig tea": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different brands (2AM vs WAKEMAKE), different product names, and different shades - these are clearly distinct products."
+  },
+  "2am|dual cheek|02 love rosy <=> 3ce|multi eye color palette|dry bouquet": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands (2AM vs 3CE), different product types (cheek vs eye color palette), and different shades."
+  },
+  "judydoll|highlighter palette| <=> judydoll|2 in 1 highlighter contour palette|02": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A highlighter palette is not the same as a 2-in-1 Highlighter Contour Palette; the predicted product lacks contour functionality and could be a different Judydoll palette entirely."
+  },
+  "judydoll|highlighter palette| <=> judydoll|purple bandage sunscreen primer|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A highlighter palette and a sunscreen primer are completely different product types, despite sharing the same brand."
+  },
+  "judydoll|highlighter palette| <=> dasique|shadow palette|16 violet knit": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Judydoll highlighter palette and Dasique Shadow Palette are completely different products from different brands."
+  },
+  "judydoll|highlighter palette| <=> judydoll|ultra fine liquid eyeliner|02 deep brown": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A highlighter palette and a liquid eyeliner are completely different product types, despite sharing the same brand."
+  },
+  "aesop|immediate moisture facial hydrasol| <=> aesop|immediate moisture facial hydrosol|": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same Aesop product, 'Hydrasol' vs 'Hydrosol' is a minor spelling variation of the same item."
+  },
+  "aesop|immediate moisture facial hydrasol| <=> dasique|pro concealer palette|01": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and products: Aesop facial hydrosol vs. dasique concealer palette."
+  },
+  "aesop|immediate moisture facial hydrasol| <=> judydoll|purple bandage sunscreen primer|": {
+    "match": false,
+    "variant_match": true,
+    "reasoning": "Completely different brands and products: Aesop facial hydrosol vs Judydoll sunscreen primer."
+  },
+  "aesop|immediate moisture facial hydrasol| <=> clio|pro eye palette air|11 shopping cheese and 03 mute library": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Aesop facial hydrosol vs CLIO eye palette."
+  },
+  "judydoll|purple bandage sunscreen primer| <=> judydoll|3d curling eyelash iron mascara|01 black": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different product types: a sunscreen/primer vs. a mascara."
+  },
+  "judydoll|purple bandage sunscreen primer| <=> clio|super proof brush liner kill ash|02 ash brown": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Judydoll sunscreen primer vs CLIO eyeliner from different brands."
+  },
+  "fwee|cushion egg fit cover|02 nude <=> fwee|cushion egg fit cover|02 nude": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand, product name, and shade."
+  },
+  "fwee|cushion egg fit cover|02 nude <=> 3ce|blur water tint|dear march": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Fwee Cushion foundation vs 3CE lip tint, different brands, names, and shades."
+  },
+  "fwee|cushion egg fit cover|02 nude <=> out of office|contour and highlight duo pencil|01": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Fwee cushion foundation vs OUT-OF-OFFICE contour & highlight pencil."
+  },
+  "fwee|cushion egg fit cover|02 nude <=> dasique|pro concealer palette|01": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Fwee Cushion Egg-Fit Cover vs Dasique Pro Concealer Palette, different brands and product types."
+  },
+  "dasique|pro concealer palette|01 <=> dasique|pro concealer palette|01": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand, product name, and shade."
+  },
+  "dasique|pro concealer palette|01 <=> clio|pro eye palette air|11 shopping cheese and 03 mute library": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Dasique Pro Concealer Palette and CLIO Pro Eye Palette Air are completely different products from different brands."
+  },
+  "dasique|pro concealer palette|01 <=> dasique|blending mood cheek knit edition|05 violet knit": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "These are completely different products: a concealer palette vs. a cheek (blush) product, with different names and shades."
+  },
+  "dasique|pro concealer palette|01 <=> judydoll|2 in 1 highlighter contour palette|02": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Dasique Pro Concealer Palette vs Judydoll 2 IN 1 Highlighter Contour Palette, different brands, different product types, and different shades."
+  },
+  "|yellow beauty sponge| <=> dior|backstage rosy glow|001 pink": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A yellow beauty sponge is a completely different product from Dior Backstage Rosy Glow blush."
+  },
+  "|yellow beauty sponge| <=> huda|easy bake powder|ube birthday cake": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A yellow beauty sponge is a makeup applicator tool, completely different from Huda Beauty Easy Bake Powder."
+  },
+  "|yellow beauty sponge| <=> isehan|kiss me heavy rotation eyebrow pencil|12 gray beige": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A yellow beauty sponge is completely different from an ISEHAN Kiss Me Heavy Rotation Eyebrow Pencil."
+  },
+  "|yellow beauty sponge| <=> rom and nd|juicy lasting tint|32 tanny guava": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A yellow beauty sponge is a completely different product category from rom&nd Juicy Lasting Tint lip color."
+  },
+  "judydoll|2 in 1 highlighter contour palette|02 <=> judydoll|3d curling eyelash iron mascara|01 black": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different product types: a highlighter/contour palette vs. a mascara."
+  },
+  "judydoll|2 in 1 highlighter contour palette|02 <=> dasique|pro concealer palette|01": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Judydoll highlighter/contour palette vs. dasique concealer palette, different brands and product types."
+  },
+  "clio|pro eye palette air|11 shopping cheese <=> clio|pro eye palette air|11 shopping cheese and 03 mute library": {
+    "match": true,
+    "variant_match": false,
+    "reasoning": "Same product line and brand, but predicted specifies only shade #11 Shopping Cheese while ground-truth includes both #11 Shopping Cheese and #03 Mute Library, indicating conflicting/incomplete shade specification."
+  },
+  "clio|pro eye palette air|11 shopping cheese <=> dasique|pro concealer palette|01": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different brands (CLIO vs dasique) and completely different products (eye palette vs concealer palette)."
+  },
+  "clio|pro eye palette air|11 shopping cheese <=> clio|super proof brush liner kill ash|02 ash brown": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "These are completely different products: one is an eye palette and the other is a brush liner."
+  },
+  "clio|pro eye palette air|11 shopping cheese <=> rom and nd|lip mate pencil|03 kaya beige": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands, product types (eye palette vs lip pencil), and shades."
+  },
+  "judydoll|3d curling eyelash iron mascara|01 black <=> judydoll|3d curling eyelash iron mascara|01 black": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand, product name, and shade."
+  },
+  "judydoll|3d curling eyelash iron mascara|01 black <=> judydoll|2 in 1 highlighter contour palette|02": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: one is a mascara and the other is a highlighter/contour palette."
+  },
+  "judydoll|3d curling eyelash iron mascara|01 black <=> judydoll|purple bandage sunscreen primer|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "These are completely different products: a mascara vs. a sunscreen primer, both from Judydoll but entirely different items."
+  },
+  "judydoll|3d curling eyelash iron mascara|01 black <=> isehan|kiss me heavy rotation coloring eyebrow|15 dusky rose": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Judydoll mascara vs ISEHAN eyebrow product, different brands, categories, and shades."
+  },
+  "|eyelash curler| <=> judydoll|3d curling eyelash iron mascara|01 black": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "An eyelash curler is a mechanical tool, while the Judydoll 3D Curling Eyelash Iron Mascara is a mascara product; these are genuinely different products."
+  },
+  "|eyelash curler| <=> clio|pro eye palette air|11 shopping cheese and 03 mute library": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "An eyelash curler is a completely different product from an eye shadow palette."
+  },
+  "|eyelash curler| <=> judydoll|2 in 1 highlighter contour palette|02": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "An eyelash curler is a completely different product from a highlighter contour palette."
+  },
+  "|eyelash curler| <=> huda|easy bake powder|ube birthday cake": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "An eyelash curler is a completely different product from Huda Beauty Easy Bake Powder."
+  },
+  "clio|super proof brush liner kill ash|02 ash brown <=> clio|super proof brush liner kill ash|02 ash brown": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand, product name, and shade."
+  },
+  "clio|super proof brush liner kill ash|02 ash brown <=> clinique|cheek pop powder blush|black honey pop": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: CLIO eyeliner vs Clinique blush, different brands, categories, and shades."
+  },
+  "clio|super proof brush liner kill ash|02 ash brown <=> too cool for school|artclass smudging under liner|06 dusk": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands (CLIO vs too cool for school) and different products (brush liner vs smudging under liner)."
+  },
+  "clio|super proof brush liner kill ash|02 ash brown <=> clio|pro eye palette air|11 shopping cheese and 03 mute library": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "These are completely different products: one is an eyeliner and the other is an eye palette."
+  },
+  "out of office|contour and highlight duo pencil|01 <=> rom and nd|lip mate pencil|03 kaya beige": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and products: a contour & highlight duo pencil vs. a lip mate pencil."
+  },
+  "out of office|contour and highlight duo pencil|01 <=> too cool for school|artclass frottage pencil|11 dew beige": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "These are completely different products from different brands (OUT-OF-OFFICE vs too cool for school) with different product names."
+  },
+  "too cool for school|artclass smudging under liner|06 dusk <=> too cool for school|artclass smudging under liner|06 dusk": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand, product name, and shade."
+  },
+  "too cool for school|artclass smudging under liner|06 dusk <=> too cool for school|artclass by rodin shading|1": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "These are different products: Artclass Smudging Under Liner (an eyeliner) vs Artclass By Rodin Shading (a face shading/contour product), with different shades."
+  },
+  "too cool for school|artclass smudging under liner|06 dusk <=> too cool for school|artclass frottage pencil|11 dew beige": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "These are different products from the same brand: 'Smudging Under Liner' vs 'Frottage Pencil' are distinct product lines with different names and different shade numbers/names."
+  },
+  "too cool for school|artclass smudging under liner|06 dusk <=> clio|super proof brush liner kill ash|02 ash brown": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands (Too Cool for School vs CLIO) and different products (Artclass Smudging Under Liner vs Super Proof Brush Liner Kill Ash)."
+  },
+  "too cool for school|artclass by rodin shading 1|1 <=> too cool for school|artclass by rodin shading|1": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same brand, same product name (the '#1' in predicted is just the shade number included in the name), and same shade #1."
+  },
+  "too cool for school|artclass by rodin shading 1|1 <=> too cool for school|artclass frottage pencil|11 dew beige": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Artclass By Rodin Shading and Artclass Frottage Pencil are completely different product types (shading/contouring vs. pencil), so they are not the same product."
+  },
+  "too cool for school|artclass by rodin shading 1|1 <=> too cool for school|artclass smudging under liner|06 dusk": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "These are completely different products: one is a shading/contouring product and the other is an under-eye liner, with different shades."
+  },
+  "too cool for school|artclass by rodin shading 1|1 <=> the tool lab|foundation brush and aqua puff|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: one is a shading/contour product by Too Cool for School, the other is a foundation brush and puff by THE TOOL LAB."
+  },
+  "dior|backstage rosy glow blush|001 pink <=> dior|backstage rosy glow|001 pink": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same brand, same product (Dior Backstage Rosy Glow Blush), same shade #001 Pink; 'Blush' is just a descriptor added to the name."
+  },
+  "dior|backstage rosy glow blush|001 pink <=> clinique|cheek pop powder blush|black honey pop": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different brands (Dior vs Clinique) and completely different products."
+  },
+  "dior|backstage rosy glow blush|001 pink <=> clio|super proof brush liner kill ash|02 ash brown": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Dior blush vs CLIO eyeliner from different brands."
+  },
+  "dior|backstage rosy glow blush|001 pink <=> huda|easy bake powder|ube birthday cake": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and products: Dior blush vs Huda Beauty setting powder."
+  },
+  "dasique|blending mood cheek knit edition|05 violet knit <=> dasique|blending mood cheek knit edition|05 violet knit": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand, product name, and shade."
+  },
+  "dasique|blending mood cheek knit edition|05 violet knit <=> clinique|cheek pop powder blush|black honey pop": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands (Dasique vs Clinique) and different products."
+  },
+  "dasique|blending mood cheek knit edition|05 violet knit <=> dasique|pro concealer palette|01": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: predicted is a blush/cheek product while ground-truth is a concealer palette."
+  },
+  "dasique|blending mood cheek knit edition|05 violet knit <=> isehan|kiss me heavy rotation coloring eyebrow|15 dusky rose": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands, product types (blush vs eyebrow), and shades."
+  },
+  "3ce|blur water tint|dear march <=> 3ce|blur water tint|dear march": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand, product name, and shade."
+  },
+  "3ce|blur water tint|dear march <=> dasique|pro concealer palette|01": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: 3CE Blur Water Tint vs dasique Pro Concealer Palette, different brands and product types."
+  },
+  "3ce|blur water tint|dear march <=> rom and nd|juicy lasting tint|32 tanny guava": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different brands (3CE vs rom&nd) and different products (Blur Water Tint vs Juicy Lasting Tint)."
+  },
+  "3ce|blur water tint|dear march <=> fwee|cushion egg fit cover|02 nude": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands (3CE vs fwee) and different products (lip tint vs cushion foundation)."
+  },
+  "isehan|kiss me heavy rotation eyebrow pencil|12 gray beige <=> isehan|kiss me heavy rotation eyebrow pencil|12 gray beige": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand, product name, and shade #12 Gray Beige."
+  },
+  "isehan|kiss me heavy rotation eyebrow pencil|12 gray beige <=> isehan|kiss me heavy rotation coloring eyebrow|15 dusky rose": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different product names (Eyebrow Pencil vs Coloring Eyebrow) and different shade numbers (#12 vs #15), indicating these are distinct products."
+  },
+  "isehan|kiss me heavy rotation eyebrow pencil|12 gray beige <=> rom and nd|lip mate pencil|03 kaya beige": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: ISEHAN eyebrow pencil vs rom&nd lip pencil, different brands and product categories."
+  },
+  "isehan|kiss me heavy rotation eyebrow pencil|12 gray beige <=> too cool for school|artclass frottage pencil|11 dew beige": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "These are completely different products from different brands (ISEHAN vs too cool for school)."
+  },
+  "isehan|kiss me heavy rotation coloring eyebrow|15 dusky rose <=> isehan|kiss me heavy rotation coloring eyebrow|15 dusky rose": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand, product name, and shade #15 Dusky Rose."
+  },
+  "isehan|kiss me heavy rotation coloring eyebrow|15 dusky rose <=> isehan|kiss me heavy rotation eyebrow pencil|12 gray beige": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different product types (Coloring Eyebrow vs Eyebrow Pencil) and different shade numbers (#15 vs #12), so these are not the same product."
+  },
+  "isehan|kiss me heavy rotation coloring eyebrow|15 dusky rose <=> hapa kristin|dolly kristin|gray": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and products: ISEHAN Kiss Me eyebrow product vs Hapa Kristin Dolly Kristin colored contacts."
+  },
+  "isehan|kiss me heavy rotation coloring eyebrow|15 dusky rose <=> dasique|blending mood cheek knit edition|05 violet knit": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: ISEHAN eyebrow product vs dasique blush/cheek product from different brands."
+  },
+  "clinique|cheek pop powder blush|black honey pop <=> clinique|cheek pop powder blush|black honey pop": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand, product name, and shade."
+  },
+  "clinique|cheek pop powder blush|black honey pop <=> clio|super proof brush liner kill ash|02 ash brown": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Clinique blush vs CLIO eyeliner, different brands, different product types, different shades."
+  },
+  "clinique|cheek pop powder blush|black honey pop <=> dasique|blending mood cheek knit edition|05 violet knit": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands (Clinique vs dasique) and different products."
+  },
+  "clinique|cheek pop powder blush|black honey pop <=> huda|easy bake powder|ube birthday cake": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands, product types, and shades - Clinique blush vs Huda Beauty setting powder."
+  },
+  "too cool for school|artclass frottage pencil|11 dew beige <=> too cool for school|artclass frottage pencil|11 dew beige": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand, product name, and shade."
+  },
+  "too cool for school|artclass frottage pencil|11 dew beige <=> too cool for school|artclass smudging under liner|06 dusk": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "These are different products from the same brand: 'Artclass Frottage Pencil' vs 'Artclass Smudging Under Liner', with different shades as well."
+  },
+  "too cool for school|artclass frottage pencil|11 dew beige <=> too cool for school|artclass by rodin shading|1": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "These are different products: Artclass Frottage Pencil (a pencil product) vs Artclass By Rodin Shading (a shading/contour product), with different names and different shade numbering systems."
+  },
+  "too cool for school|artclass frottage pencil|11 dew beige <=> out of office|contour and highlight duo pencil|01": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "These are completely different products from different brands - Too Cool for School Artclass Frottage Pencil vs OUT-OF-OFFICE Contour & Highlight Duo Pencil."
+  },
+  "huda|easy bake powder|birthday cake <=> huda|easy bake powder|ube birthday cake": {
+    "match": true,
+    "variant_match": false,
+    "reasoning": "Same brand and product but predicted shade 'Birthday Cake' conflicts with ground-truth 'Ube Birthday Cake', which is a distinct shade variant."
+  },
+  "huda|easy bake powder|birthday cake <=> clinique|cheek pop powder blush|black honey pop": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands (Huda Beauty vs Clinique) and different products (setting powder vs blush)."
+  },
+  "huda|easy bake powder|birthday cake <=> dior|backstage rosy glow|001 pink": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and products: Huda Beauty Easy Bake Powder vs Dior Backstage Rosy Glow."
+  },
+  "huda|easy bake powder|birthday cake <=> dasique|pro concealer palette|01": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Huda Beauty Easy Bake Powder vs dasique Pro Concealer Palette from different brands."
+  },
+  "l oreal|revitalift glass skin hydrogel glow mask| <=> l oreal|glass skin hydrogel glow mask|": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same product from L'Oreal Paris; predicted includes 'Revitalift' prefix which is the product line name, but refers to the same Glass Skin Hydrogel Glow Mask."
+  },
+  "l oreal|revitalift glass skin hydrogel glow mask| <=> l oreal|revitalift glass skin liquid cream|": {
+    "match": false,
+    "variant_match": true,
+    "reasoning": "Both are L'Oreal Paris Revitalift Glass Skin products but different product types: Hydrogel Glow Mask vs Liquid Cream."
+  },
+  "l oreal|revitalift glass skin liquid cream| <=> l oreal|revitalift glass skin liquid cream|": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand and product name."
+  },
+  "l oreal|revitalift glass skin liquid cream| <=> l oreal|glass skin hydrogel glow mask|": {
+    "match": false,
+    "variant_match": true,
+    "reasoning": "These are two different L'Oreal Paris products: the Revitalift Glass Skin Liquid Cream is a moisturizer, while the Glass Skin Hydrogel Glow Mask is a mask product."
+  },
+  "|tattoo lip stick multicolor cotton swab q tips|pink <=> |tattoo lipstick multicolour q tips|": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same product (Tattoo Lipstick Multicolour Q-tips/Cotton Swab), just minor spelling differences; shade 'pink' is not conflicting since ground truth omits shade."
+  },
+  "|tattoo lip stick multicolor cotton swab q tips|pink <=> benefit|rose tinted lip and cheek stain|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "The predicted product is a tattoo lip stick/cotton swab product while the ground-truth is Benefit Cosmetics' Benetint rose-tinted lip & cheek stain - these are different products."
+  },
+  "|red lipstick used as colour corrector| <=> iconic london|illuminator drops liquid highlighter|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A red lipstick used as colour corrector is a completely different product from Iconic London Illuminator Drops Liquid Highlighter."
+  },
+  "|red lipstick used as colour corrector| <=> armani|luminous silk concealer|2": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A red lipstick used as a color corrector is a completely different product from Armani Beauty Luminous Silk Concealer."
+  },
+  "|red lipstick used as colour corrector| <=> make up for ever|hd skin face essentials palette|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A red lipstick used as a color corrector is a completely different product from Make Up For Ever's HD Skin Face Essentials Palette."
+  },
+  "armani|luminous silk concealer|shade 2 <=> armani|luminous silk concealer|2": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same brand, product, and shade (2 = Shade 2)."
+  },
+  "armani|luminous silk concealer|shade 2 <=> iconic london|illuminator drops liquid highlighter|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Armani Beauty concealer vs. Iconic London liquid highlighter."
+  },
+  "armani|luminous silk concealer|shade 2 <=> make up for ever|hd skin face essentials palette|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and products: Armani Beauty concealer vs Make Up For Ever palette."
+  },
+  "armani|luminous silk concealer|shade 2 <=> kylie|skin tint|2w": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and products: Armani Beauty Luminous Silk Concealer vs Kylie Cosmetics Skin Tint."
+  },
+  "kylie|skin tint|2w <=> kylie|skin tint|2w": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand, product name, and shade."
+  },
+  "kylie|skin tint|2w <=> make up for ever|hd skin face essentials palette|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and products: Kylie Cosmetics Skin Tint vs Make Up For Ever HD Skin Face Essentials Palette."
+  },
+  "kylie|skin tint|2w <=> armani|luminous silk concealer|2": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Kylie Cosmetics Skin Tint vs Armani Beauty Luminous Silk Concealer, different brands and product types."
+  },
+  "kylie|skin tint|2w <=> iconic london|illuminator drops liquid highlighter|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Kylie Cosmetics Skin Tint and Iconic London Illuminator Drops are completely different products from different brands."
+  },
+  "huda|easy bake powder|poundcake <=> huda|easy bake powder|poundcake": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand, product name, and shade."
+  },
+  "huda|easy bake powder|poundcake <=> make up for ever|hd skin face essentials palette|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and products: Huda Beauty Easy Bake Powder vs Make Up For Ever HD Skin Face Essentials Palette."
+  },
+  "|black face paint| <=> make up for ever|hd skin face essentials palette|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Black face paint is a completely different product from Make Up For Ever's HD Skin Face Essentials Palette."
+  },
+  "|black face paint| <=> kylie|skin tint|2w": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Black face paint is a completely different product from Kylie Cosmetics Skin Tint in shade 2W."
+  },
+  "|black face paint| <=> huda|easy bake powder|poundcake": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Black face paint is a completely different product from Huda Beauty Easy Bake Powder in Poundcake shade."
+  },
+  "|black face paint| <=> armani|luminous silk concealer|2": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Black face paint is a completely different product from Armani Beauty Luminous Silk Concealer."
+  },
+  "make up for ever|hd skin face essentials palette| <=> make up for ever|hd skin face essentials palette|": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand and product name."
+  },
+  "make up for ever|hd skin face essentials palette| <=> kylie|skin tint|2w": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and products: Make Up For Ever HD Skin Face Essentials Palette vs Kylie Cosmetics Skin Tint."
+  },
+  "make up for ever|hd skin face essentials palette| <=> armani|luminous silk concealer|2": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and products: Make Up For Ever HD Skin palette vs Armani Beauty Luminous Silk Concealer."
+  },
+  "make up for ever|hd skin face essentials palette| <=> huda|easy bake powder|poundcake": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different brands (Make Up For Ever vs Huda Beauty) and completely different products (palette vs setting powder)."
+  },
+  "johnson s|baby oil| <=> kylie|skin tint|2w": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Johnson's Baby Oil and Kylie Cosmetics Skin Tint are completely different products from different brands."
+  },
+  "johnson s|baby oil| <=> huda|easy bake powder|poundcake": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Johnson's Baby Oil and Huda Beauty Easy Bake Powder are completely different products from different brands."
+  },
+  "johnson s|baby oil| <=> armani|luminous silk concealer|2": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Johnson's Baby Oil and Armani Beauty Luminous Silk Concealer are completely different products from different brands."
+  },
+  "iconic london|illuminator drops liquid highlighter| <=> iconic london|illuminator drops liquid highlighter|": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand and product name."
+  },
+  "iconic london|illuminator drops liquid highlighter| <=> armani|luminous silk concealer|2": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different brands (Iconic London vs Armani Beauty) and different product types (illuminator drops vs concealer)."
+  },
+  "iconic london|illuminator drops liquid highlighter| <=> kylie|skin tint|2w": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and products: Iconic London Illuminator Drops vs Kylie Cosmetics Skin Tint."
+  },
+  "iconic london|illuminator drops liquid highlighter| <=> make up for ever|hd skin face essentials palette|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products from different brands - Iconic London Illuminator Drops vs Make Up For Ever HD Skin Face Essentials Palette."
+  },
+  "caudalie|face mist| <=> caudalie|beauty elixir face mist|": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Both refer to Caudalie's face mist product, with the ground truth simply providing the full name 'Beauty Elixir Face Mist' while the prediction uses the generic 'face mist' shorthand."
+  },
+  "caudalie|face mist| <=> dasique|shadow palette|15 beige knit": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and product types: Caudalie face mist vs. dasique Shadow Palette."
+  },
+  "caudalie|face mist| <=> rom and nd|color lip matte|07 teddy beige": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and product types: Caudalie face mist vs rom&nd lip product."
+  },
+  "caudalie|face mist| <=> fenty|match stix contour skinstick|amber": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and product types: Caudalie face mist vs Fenty Beauty contour stick."
+  },
+  "fwee|cushion egg fit cover|02 nude <=> heart percent|dote on mood lip pencil|10 clean beige": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Fwee cushion foundation vs Heart Percent lip pencil."
+  },
+  "fwee|cushion egg fit cover|02 nude <=> rom and nd|glasting color gloss|12 cream shell": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Fwee cushion foundation vs rom&nd lip gloss."
+  },
+  "fenty|match stix contour skinstick|amber <=> fenty|match stix contour skinstick|amber": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand, product name, and shade."
+  },
+  "fenty|match stix contour skinstick|amber <=> out of office|contour and highlight duo pencil|01": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Fenty Beauty Match Stix Contour Skinstick and OUT-OF-OFFICE Contour & Highlight Duo Pencil are completely different products from different brands."
+  },
+  "fenty|match stix contour skinstick|amber <=> isehan|kiss me heavy rotation coloring eyebrow|15 dusky rose": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Fenty Beauty contour stick vs. ISEHAN eyebrow product from different brands."
+  },
+  "fenty|match stix contour skinstick|amber <=> rom and nd|color lip matte|07 teddy beige": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Fenty Beauty contour stick vs. rom&nd lip matte."
+  },
+  "too cool for school|artclass by rodin shading|02 modern <=> too cool for school|artclass by rodin shading|02 modern": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand, product name, and shade."
+  },
+  "too cool for school|artclass by rodin shading|02 modern <=> too cool for school|artclass frottage pencil|01 shining linen": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Artclass By Rodin Shading and Artclass Frottage Pencil are different product types from the same brand, not the same product."
+  },
+  "too cool for school|artclass by rodin shading|02 modern <=> rom and nd|glasting color gloss|12 cream shell": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and products: a shading/contour product vs a lip gloss."
+  },
+  "too cool for school|artclass by rodin shading|02 modern <=> holika holika|my fave piece shadow|20 two shot americano": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands (Too Cool for School vs Holika Holika) and different products (shading vs eyeshadow)."
+  },
+  "heartpercent|dote lip pencil|clean beige <=> heart percent|dote on mood lip pencil|10 clean beige": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Heartpercent/Heart Percent is the same brand, 'Dote Lip Pencil' matches 'Dote on Mood Lip Pencil', and shade 'Clean Beige' matches '#10 Clean Beige'."
+  },
+  "heartpercent|dote lip pencil|clean beige <=> rom and nd|color lip matte|07 teddy beige": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Heartpercent Dote Lip Pencil and rom&nd Color Lip Matte are completely different products from different brands."
+  },
+  "heartpercent|dote lip pencil|clean beige <=> out of office|contour and highlight duo pencil|01": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Heartpercent Dote Lip Pencil and OUT-OF-OFFICE Contour & Highlight Duo Pencil are completely different products from different brands."
+  },
+  "heartpercent|dote lip pencil|clean beige <=> too cool for school|artclass frottage pencil|01 shining linen": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and products: Heartpercent Dote Lip Pencil vs too cool for school Artclass Frottage Pencil."
+  },
+  "rom and nd|juicy lasting tint|27 honey dew melon <=> rom and nd|juicy lasting tint|27 honey dew melon": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand, product name, and shade."
+  },
+  "rom and nd|juicy lasting tint|27 honey dew melon <=> rom and nd|glasting color gloss|12 cream shell": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "These are two different rom&nd lip products: Juicy Lasting Tint vs Glasting Color Gloss, with different shades."
+  },
+  "rom and nd|juicy lasting tint|27 honey dew melon <=> rom and nd|color lip matte|07 teddy beige": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "These are two different rom&nd lip products: Juicy Lasting Tint vs Color Lip Matte, with different shades."
+  },
+  "rom and nd|juicy lasting tint|27 honey dew melon <=> dermablend|illuminating banana powder|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: rom&nd lip tint vs Dermablend face powder from different brands."
+  },
+  "dasique|blending mood cheek knit edition|04 beige knit <=> dasique|blending mood cheek knit edition|04 beige knit": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand, product name, and shade."
+  },
+  "dasique|blending mood cheek knit edition|04 beige knit <=> dasique|shadow palette|15 beige knit": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "These are different product types: Blending Mood Cheek (blush/cheek product) vs Shadow Palette (eyeshadow palette), even though both are from dasique and share 'Beige Knit' in the shade name."
+  },
+  "dasique|blending mood cheek knit edition|04 beige knit <=> heart percent|dote on mood lip pencil|10 clean beige": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Dasique blush vs Heart Percent lip pencil, different brands and product types."
+  },
+  "dasique|blending mood cheek knit edition|04 beige knit <=> isehan|kiss me heavy rotation coloring eyebrow|15 dusky rose": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands, product types (blush vs eyebrow), and shades."
+  },
+  "dasique|shadow palette|15 beige knit <=> dasique|shadow palette|15 beige knit": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand, product name, and shade."
+  },
+  "dasique|shadow palette|15 beige knit <=> holika holika|my fave piece shadow|20 two shot americano": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different brands (Dasique vs Holika Holika) and different products entirely."
+  },
+  "dasique|shadow palette|15 beige knit <=> dasique|blending mood cheek knit edition|04 beige knit": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "These are different product types: a Shadow Palette vs. a Blending Mood Cheek (blush/cheek product), even though both share the 'Knit Edition' theme and similar shade name."
+  },
+  "dasique|shadow palette|15 beige knit <=> rom and nd|color lip matte|07 teddy beige": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Dasique Shadow Palette vs rom&nd Color Lip Matte, different brands and product types."
+  },
+  "holika holika|my fave piece shadow|20 two shot americano <=> holika holika|my fave piece shadow|20 two shot americano": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical product and shade, only brand capitalization differs."
+  },
+  "holika holika|my fave piece shadow|20 two shot americano <=> dasique|shadow palette|15 beige knit": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different brands (Holika Holika vs dasique) and different products entirely."
+  },
+  "holika holika|my fave piece shadow|20 two shot americano <=> rom and nd|color lip matte|07 teddy beige": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands (Holika Holika vs rom&nd) and different product types (eyeshadow vs lip matte)."
+  },
+  "holika holika|my fave piece shadow|20 two shot americano <=> heart percent|dote on mood lip pencil|10 clean beige": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands, product types (eyeshadow vs lip pencil), and shades."
+  },
+  "|super idol type lashes| <=> dasique|shadow palette|15 beige knit": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Predicted product is a lash/mascara item while ground-truth is a Dasique eyeshadow palette; completely different products."
+  },
+  "|super idol type lashes| <=> clio|kill brow dual tattoo pen|02 light brown": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Super idol type lashes is a mascara/lash product, completely different from CLIO Kill Brow Dual Tattoo Pen, a brow product."
+  },
+  "|super idol type lashes| <=> rom and nd|glasting color gloss|12 cream shell": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Predicted product is a lash/mascara item while ground-truth is a lip gloss from rom&nd; completely different products."
+  },
+  "|super idol type lashes| <=> fwee|cushion egg fit cover|02 nude": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Super idol type lashes is a completely different product (lashes) from Fwee Cushion Egg-Fit Cover (a cushion foundation)."
+  },
+  "clio|kill brow dual tattoo pen|02 light brown <=> clio|kill brow dual tattoo pen|02 light brown": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand, product name, and shade."
+  },
+  "clio|kill brow dual tattoo pen|02 light brown <=> rom and nd|color lip matte|07 teddy beige": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: CLIO eyebrow pen vs rom&nd lip matte, different brands, categories, and shades."
+  },
+  "clio|kill brow dual tattoo pen|02 light brown <=> isehan|kiss me heavy rotation coloring eyebrow|15 dusky rose": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "These are completely different products from different brands (CLIO vs ISEHAN) with different names and shades."
+  },
+  "clio|kill brow dual tattoo pen|02 light brown <=> heart percent|dote on mood lip pencil|10 clean beige": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and products: CLIO eyebrow tattoo pen vs Heart Percent lip pencil."
+  },
+  "skin 1004|madagascar centella probio cica glow sun ampoule| <=> skin 1004|madagascar centella probio cica glow sun ampoule|spf 50": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same brand and product name; SPF 50 is a product specification not a conflicting variant."
+  },
+  "skin 1004|madagascar centella probio cica glow sun ampoule| <=> clio|kill lash superproof mascara|01 long curling": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Skin 1004 sunscreen ampoule vs CLIO mascara."
+  },
+  "skin 1004|madagascar centella probio cica glow sun ampoule| <=> unleashia|shaper pomade eyebrow fixer brow gel|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products from different brands - one is a sun ampoule, the other is a brow gel."
+  },
+  "skin 1004|madagascar centella probio cica glow sun ampoule| <=> ysl|volume effet faux cils mascara|1 high density black": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and products: Skin 1004 sunscreen ampoule vs YSL mascara."
+  },
+  "isntree|hyaluronic acid water resin gel| <=> one size|point made waterproof liquid eyeliner|bodacious black": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Isntree skincare gel vs ONE/SIZE eyeliner."
+  },
+  "isntree|hyaluronic acid water resin gel| <=> nyx|epic ink waterproof liquid eyeliner|black": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products from different brands - Isntree gel vs NYX eyeliner."
+  },
+  "isntree|hyaluronic acid water resin gel| <=> unleashia|shaper pomade eyebrow fixer brow gel|": {
+    "match": false,
+    "variant_match": true,
+    "reasoning": "Completely different products from different brands - Isntree face gel vs Unleashia brow gel."
+  },
+  "isntree|hyaluronic acid water resin gel| <=> flower knows|butterfly cloud collar embossed highlight and contour palette|02 tawny tea": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Isntree skincare gel vs Flower Knows makeup highlight & contour palette."
+  },
+  "parnell|ciclamanu serum cushion|27n rosy <=> parnell|cushion puff|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "The predicted product is a Ciclamanu Serum Cushion (a cushion foundation) while the ground-truth is a Cushion Puff (an applicator accessory), these are different products."
+  },
+  "parnell|ciclamanu serum cushion|27n rosy <=> parnell|cicamanu serum cushion foundation|21n rosy": {
+    "match": true,
+    "variant_match": false,
+    "reasoning": "Same brand and product (Ciclamanu/Cicamanu Serum Cushion Foundation by Parnell, minor spelling difference), but conflicting shades: 27N vs 21N."
+  },
+  "parnell|ciclamanu serum cushion|27n rosy <=> clio|cat paw cushion puff|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Parnell Ciclamanu Serum Cushion is a completely different product (cushion foundation) from CLIO Cat Paw Cushion Puff (a cushion applicator puff), different brands entirely."
+  },
+  "parnell|ciclamanu serum cushion|27n rosy <=> laura mercier|blush color infusion|chai": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and product types: Parnell serum cushion vs Laura Mercier blush."
+  },
+  "nuse|mousse care cheek handy|dim dumb <=> nuse|mousse care cheek handy|05 dimdumb": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same brand and product name; 'Dim-dumb' and '05 Dimdumb' are the same shade with minor formatting differences."
+  },
+  "nuse|mousse care cheek handy|dim dumb <=> ysl|volume effet faux cils mascara|1 high density black": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Nuse cheek mousse vs YSL mascara, different brands and product categories."
+  },
+  "nuse|mousse care cheek handy|dim dumb <=> rephr|eyelash curler|20r": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and product types: Nuse cheek mousse vs Rephr eyelash curler."
+  },
+  "nuse|mousse care cheek handy|dim dumb <=> make up for ever|artist color pencil|506 endless cacao": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and products: Nuse Mousse Care Cheek vs MAKE UP FOR EVER Artist Color Pencil."
+  },
+  "fenty|matchstick| <=> colorgram|re forming contour stick|03 neutral": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Fenty matchstick and Colorgram Re-Forming Contour Stick are completely different products from different brands."
+  },
+  "fenty|matchstick| <=> dior|addict shine lipstick|521 diorelita": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Fenty Matchstick and Dior Addict Shine Lipstick are completely different products from different brands."
+  },
+  "fenty|matchstick| <=> ysl|volume effet faux cils mascara|1 high density black": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Fenty Matchstick is a completely different product from YSL Volume Effet Faux Cils Mascara, different brand and product type."
+  },
+  "fenty|matchstick| <=> real techniques|everyday eye essentials brush set|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Fenty Matchstick is a completely different product (a contour stick) from the Real Techniques Everyday Eye Essentials Brush Set."
+  },
+  "colorgram|matchstick liner| <=> colorgram|re forming contour stick|03 neutral": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A matchstick liner is an eyeliner product, while the Re-Forming Contour Stick is a face contouring product; these are different product types from the same brand."
+  },
+  "colorgram|matchstick liner| <=> laura mercier|blush color infusion|chai": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and product types: Colorgram matchstick liner vs Laura Mercier blush."
+  },
+  "colorgram|matchstick liner| <=> colourpop|bff liquid liner felt tip eyeliner pen|grande": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Colorgram matchstick liner and ColourPop BFF Liquid Liner are different products from different brands."
+  },
+  "colorgram|matchstick liner| <=> dior|addict shine lipstick|521 diorelita": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Colorgram matchstick liner vs Dior Addict Shine Lipstick, different brands and product types."
+  },
+  "laura mercier|pink translucent loose setting powder|tone up <=> laura mercier|loose brightening setting powder|tone up rose": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "These are different Laura Mercier products: 'Translucent Loose Setting Powder' and 'Loose Brightening Setting Powder' are distinct product lines with different formulations and names."
+  },
+  "laura mercier|pink translucent loose setting powder|tone up <=> laura mercier|blush color infusion|chai": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "These are completely different products: one is a translucent loose setting powder and the other is a blush, with different shades as well."
+  },
+  "laura mercier|pink translucent loose setting powder|tone up <=> kvd|shade light powder contour palette|taupe": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Laura Mercier setting powder vs KVD Beauty contour palette, different brands, different product types, and different shades."
+  },
+  "laura mercier|pink translucent loose setting powder|tone up <=> colourpop|bff liquid liner felt tip eyeliner pen|grande": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands, product types, and shades - a setting powder vs. an eyeliner pen."
+  },
+  "|collagen wrap mask| <=> rephr|eyelash curler|20r": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A collagen wrap mask and an eyelash curler are completely different product types."
+  },
+  "|collagen wrap mask| <=> clio|kill lash superproof mascara|01 long curling": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A collagen wrap mask is completely different from a mascara; these are entirely different product categories."
+  },
+  "|collagen wrap mask| <=> nars|laguna bronzer|laguna 02": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A collagen wrap mask is completely different from a NARS Laguna Bronzer."
+  },
+  "|collagen wrap mask| <=> make up for ever|artist color pencil|506 endless cacao": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A collagen wrap mask is completely different from a MAKE UP FOR EVER Artist Color Pencil eyeliner/lip pencil."
+  },
+  "flower knows|butterfly cloud color embossed highlight and contour palette|02 tawny tea <=> flower knows|butterfly cloud collar embossed highlight and contour palette|02 tawny tea": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same brand, same product (Color vs Collar is a minor transcription difference for the same item), same shade 02 Tawny Tea."
+  },
+  "flower knows|butterfly cloud color embossed highlight and contour palette|02 tawny tea <=> flower knows|swan ballet embossed blush|01 niveous swan": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different product lines: Butterfly Cloud Highlight & Contour Palette vs Swan Ballet Embossed Blush, with different shades."
+  },
+  "flower knows|butterfly cloud color embossed highlight and contour palette|02 tawny tea <=> kvd|shade light powder contour palette|taupe": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands (Flower Knows vs KVD Beauty) and different products (Butterfly Cloud Highlight & Contour Palette vs Shade + Light Powder Contour Palette)."
+  },
+  "flower knows|butterfly cloud color embossed highlight and contour palette|02 tawny tea <=> colorgram|re forming contour stick|03 neutral": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products from different brands - Flower Knows highlight/contour palette vs colorgram contour stick."
+  },
+  "revlon|so fierce vinyl eyeliner|midnight mystery <=> revlon|so fierce vinyl eyeliner|midnight mystery": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand, product name, and shade."
+  },
+  "revlon|so fierce vinyl eyeliner|midnight mystery <=> nyx|epic ink waterproof liquid eyeliner|black": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different brands (Revlon vs NYX) and different products (So Fierce Vinyl Eyeliner vs Epic Ink Waterproof Liquid Eyeliner)."
+  },
+  "revlon|so fierce vinyl eyeliner|midnight mystery <=> one size|point made waterproof liquid eyeliner|bodacious black": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "These are completely different products from different brands (Revlon vs ONE/SIZE) with different names and shades."
+  },
+  "revlon|so fierce vinyl eyeliner|midnight mystery <=> unleashia|shaper pomade eyebrow fixer brow gel|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Revlon eyeliner vs. Unleashia brow gel, different brands and product types."
+  },
+  "kaleidos|quad eyeshadow palette|twilight rush <=> kaleidos|quad eyeshadow palette|twilight rush": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand, product name, and shade."
+  },
+  "kaleidos|quad eyeshadow palette|twilight rush <=> kvd|shade light powder contour palette|taupe": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different brands (Kaleidos vs KVD Beauty) and completely different product types (eyeshadow palette vs contour palette)."
+  },
+  "kaleidos|quad eyeshadow palette|twilight rush <=> flortte|double eyelid tape|s": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and products: Kaleidos eyeshadow palette vs Flortte double eyelid tape."
+  },
+  "kaleidos|quad eyeshadow palette|twilight rush <=> yesstyle|luxeflutter cluster false eyelashes|06 black": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: an eyeshadow palette vs. false eyelashes, different brands."
+  },
+  "make up for ever|artist color pencil|506 endless cacao <=> make up for ever|artist color pencil|506 endless cacao": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same brand, product name, and shade (506 Endless Cacao); only difference is capitalization of brand name."
+  },
+  "make up for ever|artist color pencil|506 endless cacao <=> florasis|luodai floral eyebrow define pencil|01 grey": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "These are completely different products from different brands (Make Up For Ever vs Florasis) with different names and shades."
+  },
+  "make up for ever|artist color pencil|506 endless cacao <=> colourpop|bff liquid liner felt tip eyeliner pen|grande": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands (Make Up For Ever vs ColourPop) and different product types (eye pencil vs liquid liner pen)."
+  },
+  "make up for ever|artist color pencil|506 endless cacao <=> laura mercier|blush color infusion|chai": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands, product types (eye/lip pencil vs blush), and shades."
+  },
+  "flortte|double eyelid tape|5 fine tuned style <=> flortte|double eyelid tape|s": {
+    "match": true,
+    "variant_match": false,
+    "reasoning": "Same brand and product (Flortte Double Eyelid Tape), but predicted shade is '#5 Fine Tuned Style' while ground-truth shade is '#S', which appear to be different variants."
+  },
+  "flortte|double eyelid tape|5 fine tuned style <=> rephr|eyelash curler|20r": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Flortte Double Eyelid Tape vs Rephr Eyelash Curler, different brands and product types."
+  },
+  "flortte|double eyelid tape|5 fine tuned style <=> florasis|luodai floral eyebrow define pencil|01 grey": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: predicted is Flortte double eyelid tape, ground-truth is Florasis eyebrow pencil."
+  },
+  "flortte|double eyelid tape|5 fine tuned style <=> yesstyle|luxeflutter cluster false eyelashes|06 black": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Flortte Double Eyelid Tape and YesStyle LuxeFlutter Cluster False Eyelashes are completely different products from different brands."
+  },
+  "florasis|luodie floral eyebrow define pencil|chwei tip 01 grey <=> florasis|luodai floral eyebrow define pencil|01 grey": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same brand and product (Luodie/Luodai is a transliteration variant of the same Chinese name), same shade 01 Grey; 'Chwei tip' appears to be a speech-to-text artifact."
+  },
+  "florasis|luodie floral eyebrow define pencil|chwei tip 01 grey <=> unleashia|shaper pomade eyebrow fixer brow gel|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Florasis eyebrow pencil and Unleashia brow gel are completely different products from different brands."
+  },
+  "florasis|luodie floral eyebrow define pencil|chwei tip 01 grey <=> make up for ever|artist color pencil|506 endless cacao": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands (Florasis vs MAKE UP FOR EVER) and different products."
+  },
+  "florasis|luodie floral eyebrow define pencil|chwei tip 01 grey <=> flortte|double eyelid tape|s": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Florasis eyebrow pencil and Flortte double eyelid tape are completely different products from different brands."
+  },
+  "unleashia|shaper pomade eyebrow fixer| <=> unleashia|shaper pomade eyebrow fixer brow gel|": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same brand and product (Unleashia Shaper Pomade Eyebrow Fixer), with the ground truth simply including 'Brow Gel' as an additional descriptor for the same item."
+  },
+  "unleashia|shaper pomade eyebrow fixer| <=> florasis|luodai floral eyebrow define pencil|01 grey": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different brands (Unleashia vs Florasis) and different products (pomade eyebrow fixer vs eyebrow pencil)."
+  },
+  "unleashia|shaper pomade eyebrow fixer| <=> revlon|so fierce vinyl eyeliner|midnight mystery": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and products: Unleashia eyebrow pomade vs. Revlon vinyl eyeliner."
+  },
+  "unleashia|shaper pomade eyebrow fixer| <=> kaleidos|quad eyeshadow palette|twilight rush": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Unleashia eyebrow pomade vs Kaleidos eyeshadow palette."
+  },
+  "rephr|eyelash curler|20r <=> rephr|eyelash curler|20r": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand, product name, and shade/variant (20R)."
+  },
+  "rephr|eyelash curler|20r <=> flortte|double eyelid tape|s": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Rephr Eyelash Curler vs Flortte Double Eyelid Tape, different brands and product types."
+  },
+  "rephr|eyelash curler|20r <=> yesstyle|luxeflutter cluster false eyelashes|06 black": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "An eyelash curler from Rephr is a completely different product from YesStyle cluster false eyelashes."
+  },
+  "rephr|eyelash curler|20r <=> clio|kill lash superproof mascara|01 long curling": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Rephr Eyelash Curler and CLIO Kill Lash Superproof Mascara are completely different products from different brands."
+  },
+  "clio|kill lash superproof mascara long curling|01 long curling <=> clio|kill lash superproof mascara|01 long curling": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same brand, same mascara product with 'Long Curling' as part of the name/shade designation, and same shade 01 Long Curling."
+  },
+  "clio|kill lash superproof mascara long curling|01 long curling <=> nyx|epic ink waterproof liquid eyeliner|black": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Clio mascara vs NYX liquid eyeliner, different brands and product types."
+  },
+  "clio|kill lash superproof mascara long curling|01 long curling <=> one size|point made waterproof liquid eyeliner|bodacious black": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Clio mascara vs ONE/SIZE liquid eyeliner from different brands."
+  },
+  "clio|kill lash superproof mascara long curling|01 long curling <=> clio|cat paw cushion puff|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "These are completely different products: one is a mascara and the other is a cushion puff applicator."
+  },
+  "ysl|mascara volume effet faux cils|1 high density black <=> ysl|volume effet faux cils mascara|1 high density black": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same brand (YSL/YSL Beauty), same product (Volume Effet Faux Cils Mascara), same shade (1 High Density Black) — only word order differs."
+  },
+  "ysl|mascara volume effet faux cils|1 high density black <=> clio|kill lash superproof mascara|01 long curling": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "These are completely different mascaras from different brands (YSL vs CLIO) with different product names."
+  },
+  "ysl|mascara volume effet faux cils|1 high density black <=> yesstyle|luxeflutter cluster false eyelashes|06 black": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "YSL Beauty Mascara Volume Effet Faux Cils is a mascara product, while YesStyle LuxeFlutter Cluster False Eyelashes are false eyelashes - these are completely different product types from different brands."
+  },
+  "ysl|mascara volume effet faux cils|1 high density black <=> nuse|mousse care cheek handy|05 dimdumb": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: YSL mascara vs. nuse cheek mousse from different brands."
+  },
+  "|luxeflutter natural wispy glue free cluster false eyelashes|06 black <=> yesstyle|luxeflutter cluster false eyelashes|06 black": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Both refer to LuxeFlutter Cluster False Eyelashes in shade 06 Black; the additional descriptors 'Natural Wispy Glue-Free' and brand attribution to YesStyle are minor differences for the same product."
+  },
+  "|luxeflutter natural wispy glue free cluster false eyelashes|06 black <=> colourpop|bff liquid liner felt tip eyeliner pen|grande": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: predicted is cluster false eyelashes while ground-truth is a liquid liner pen from ColourPop."
+  },
+  "|luxeflutter natural wispy glue free cluster false eyelashes|06 black <=> real techniques|everyday eye essentials brush set|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "These are completely different products: one is cluster false eyelashes and the other is an eye brush set from Real Techniques."
+  },
+  "|luxeflutter natural wispy glue free cluster false eyelashes|06 black <=> flortte|double eyelid tape|s": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: predicted is cluster false eyelashes while ground-truth is double eyelid tape from a different brand."
+  },
+  "nyx|epic ink liner|black <=> nyx|epic ink waterproof liquid eyeliner|black": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same NYX Epic Ink liquid eyeliner product, 'Waterproof' is part of the full name but both refer to the same item, and shade is Black in both."
+  },
+  "nyx|epic ink liner|black <=> colourpop|bff liquid liner felt tip eyeliner pen|grande": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different brands (NYX vs ColourPop) and different product names, these are clearly distinct eyeliners."
+  },
+  "nyx|epic ink liner|black <=> peripera|ink mood glowy tint|33 rosy wish": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: NYX Epic Ink Liner (eyeliner) vs Peripera Ink Mood Glowy Tint (lip tint), different brands and product types."
+  },
+  "nyx|epic ink liner|black <=> dior|addict shine lipstick|521 diorelita": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: NYX eyeliner vs Dior lipstick."
+  },
+  "laura mercier|blush color infusion|chi <=> laura mercier|blush color infusion|chai": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same brand and product; 'Chi' is a speech-to-text mishearing of 'Chai', clearly the same shade."
+  },
+  "laura mercier|blush color infusion|chi <=> laura mercier|loose brightening setting powder|tone up rose": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "These are completely different products: a blush vs. a loose setting powder, with different names and shades."
+  },
+  "laura mercier|blush color infusion|chi <=> etude|heart cookie blusher|pink salt": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "These are completely different products from different brands (Laura Mercier vs Etude) with different names and shades."
+  },
+  "laura mercier|blush color infusion|chi <=> colourpop|bff liquid liner felt tip eyeliner pen|grande": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands, product types, and shades - a blush vs. a liquid eyeliner pen."
+  },
+  "kvd|taupe contour|taupe <=> kvd|shade light powder contour palette|taupe": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Both refer to KVD Beauty's Shade + Light Powder Contour in the Taupe shade; the predicted name is an abbreviated description of the same product."
+  },
+  "kvd|taupe contour|taupe <=> colorgram|re forming contour stick|03 neutral": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "KVD and Colorgram are completely different brands, and the product names differ entirely."
+  },
+  "kvd|taupe contour|taupe <=> flower knows|butterfly cloud collar embossed highlight and contour palette|02 tawny tea": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "KVD taupe contour and Flower Knows Butterfly Cloud Collar Highlight & Contour Palette are completely different products from different brands."
+  },
+  "kvd|taupe contour|taupe <=> flortte|double eyelid tape|s": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: KVD contour vs Flortte Double Eyelid Tape, different brands and product types."
+  },
+  "make up for ever|artist color pencil lip liner| <=> make up for ever|artist color pencil|506 endless cacao": {
+    "match": true,
+    "variant_match": false,
+    "reasoning": "Same brand and product (Artist Color Pencil lip liner), but predicted omits shade while ground-truth specifies shade 506 Endless Cacao, creating a variant mismatch."
+  },
+  "make up for ever|artist color pencil lip liner| <=> colourpop|bff liquid liner felt tip eyeliner pen|grande": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different brands (Make Up For Ever vs ColourPop) and different product types (lip liner vs eyeliner pen)."
+  },
+  "make up for ever|artist color pencil lip liner| <=> florasis|luodai floral eyebrow define pencil|01 grey": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Make Up For Ever Artist Color Pencil is a lip liner, while the ground-truth is a Florasis eyebrow pencil - completely different brands and products."
+  },
+  "make up for ever|artist color pencil lip liner| <=> unleashia|shaper pomade eyebrow fixer brow gel|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Make Up For Ever lip liner vs. Unleashia brow gel from different brands."
+  },
+  "peripera|ink mood glowy tint| <=> peripera|ink mood glowy tint|33 rosy wish": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same brand and product name; predicted omits shade but ground-truth specifies it, so no conflict."
+  },
+  "peripera|ink mood glowy tint| <=> laura mercier|loose brightening setting powder|tone up rose": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Peripera lip tint vs Laura Mercier setting powder from different brands."
+  },
+  "peripera|ink mood glowy tint| <=> unleashia|shaper pomade eyebrow fixer brow gel|": {
+    "match": false,
+    "variant_match": true,
+    "reasoning": "Completely different products: Peripera lip tint vs Unleashia brow gel from different brands."
+  },
+  "peripera|ink mood glowy tint| <=> colourpop|bff liquid liner felt tip eyeliner pen|grande": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Peripera lip tint vs ColourPop eyeliner pen from different brands."
+  },
+  "nars|laguna bronzer|laguna 02 <=> nars|laguna bronzer|laguna 02": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same brand, product name, and shade (Laguna 02)."
+  },
+  "nars|laguna bronzer|laguna 02 <=> laura mercier|blush color infusion|chai": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands, product types (bronzer vs blush), and shades."
+  },
+  "nars|laguna bronzer|laguna 02 <=> rephr|eyelash curler|20r": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: NARS Laguna Bronzer vs Rephr Eyelash Curler from different brands."
+  },
+  "nars|laguna bronzer|laguna 02 <=> etude|heart cookie blusher|pink salt": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Nars Laguna Bronzer vs Etude Heart Cookie Blusher, different brands, product types, and shades."
+  },
+  "etude|heart cookie blusher|pink salt <=> etude|heart cookie blusher|pink salt": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same brand, product, and shade (only capitalization differs)."
+  },
+  "etude|heart cookie blusher|pink salt <=> laura mercier|blush color infusion|chai": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and products: Etude Heart Cookie Blusher vs Laura Mercier Blush Color Infusion."
+  },
+  "etude|heart cookie blusher|pink salt <=> laura mercier|loose brightening setting powder|tone up rose": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and products: Etude blush vs Laura Mercier setting powder."
+  },
+  "etude|heart cookie blusher|pink salt <=> kvd|shade light powder contour palette|taupe": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and products: Etude Heart Cookie Blusher vs KVD Beauty Shade + Light Powder Contour Palette."
+  },
+  "ghd|platinum styler 1 flat iron|white <=> dior|addict shine lipstick|521 diorelita": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: ghd hair straightener vs Dior lipstick."
+  },
+  "ghd|platinum styler 1 flat iron|white <=> parnell|cicamanu serum cushion foundation|21n rosy": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: ghd hair straightener vs. Parnell cushion foundation."
+  },
+  "ghd|platinum styler 1 flat iron|white <=> one size|point made waterproof liquid eyeliner|bodacious black": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: a GHD hair straightener vs. a ONE/SIZE liquid eyeliner."
+  },
+  "ghd|platinum styler 1 flat iron|white <=> laura mercier|blush color infusion|chai": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: ghd flat iron vs Laura Mercier blush."
+  },
+  "olens|fairy charm contact lenses|olive <=> olens|fairy charm|olive": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same brand (Olens), same product name (Fairy Charm contact lenses), and same shade (Olive)."
+  },
+  "olens|fairy charm contact lenses|olive <=> armani|luminous silk concealer|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: OLENS contact lenses vs Armani Beauty concealer."
+  },
+  "olens|fairy charm contact lenses|olive <=> armani|luminous silk foundation|4": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: OLENS contact lenses vs Armani Beauty foundation."
+  },
+  "olens|fairy charm contact lenses|olive <=> of joseon|relief sun cream|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: OLENS contact lenses vs Beauty of Joseon sunscreen."
+  },
+  "of joseon|relief sun cream| <=> of joseon|relief sun cream|": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand and product name."
+  },
+  "of joseon|relief sun cream| <=> bobbi brown|long wear cream eyeliner|": {
+    "match": false,
+    "variant_match": true,
+    "reasoning": "Completely different brands and products: a sunscreen vs. a cream eyeliner."
+  },
+  "of joseon|relief sun cream| <=> olens|fairy charm|olive": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Beauty of Joseon Relief Sun Cream is a sunscreen, while Olens Fairy Charm Olive is a colored contact lens."
+  },
+  "of joseon|relief sun cream| <=> kaleidos|untamed glow glossy lip glaze|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: one is a sunscreen and the other is a lip glaze from different brands."
+  },
+  "armani|luminous silk concealer|4 <=> armani|luminous silk concealer|": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same brand and product; ground truth omits shade so no conflict with predicted shade 4."
+  },
+  "armani|luminous silk concealer|4 <=> armani|luminous silk foundation|4": {
+    "match": false,
+    "variant_match": true,
+    "reasoning": "Concealer and foundation are different products, even though both are Armani Beauty Luminous Silk line in shade 4."
+  },
+  "armani|luminous silk concealer|4 <=> armani|luminous silk cheek tint|53 bold pink": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Luminous Silk Concealer and Luminous Silk Cheek Tint are completely different product types (concealer vs. cheek tint), and the shades also differ."
+  },
+  "armani|luminous silk concealer|4 <=> olens|fairy charm|olive": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Armani Beauty concealer vs. Olens contact lenses."
+  },
+  "armani|luminous cheek tint|53 bold pink <=> armani|luminous silk cheek tint|53 bold pink": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same brand, same product (Luminous Silk Cheek Tint with 'Silk' omitted in prediction), same shade 53 bold pink."
+  },
+  "armani|luminous cheek tint|53 bold pink <=> armani|luminous silk concealer|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Luminous Cheek Tint (blush) and Luminous Silk Concealer are completely different product types from Armani Beauty."
+  },
+  "armani|luminous cheek tint|53 bold pink <=> armani|luminous silk foundation|4": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Cheek Tint and Luminous Silk Foundation are completely different products, and the shades also differ."
+  },
+  "armani|luminous cheek tint|53 bold pink <=> olens|fairy charm|olive": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Armani Beauty blush vs Olens contact lenses, different brands, names, and shades."
+  },
+  "laura mercier|ultra blur translucent loose setting powder|rose <=> laura mercier|ultra blur transparent loose setting powder|rose": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same brand, same product (Translucent vs Transparent is a trivial naming variation for the same powder), same shade (rose)."
+  },
+  "laura mercier|ultra blur translucent loose setting powder|rose <=> bobbi brown|long wear cream eyeliner|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and products: Laura Mercier setting powder vs Bobbi Brown eyeliner."
+  },
+  "laura mercier|ultra blur translucent loose setting powder|rose <=> kaleidos|untamed glow glossy lip glaze|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: a setting powder vs. a lip glaze, and different brands."
+  },
+  "laura mercier|ultra blur translucent loose setting powder|rose <=> too cool for school|artclass frottage pencil|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and products: Laura Mercier setting powder vs Too Cool for School pencil."
+  },
+  "kvd|shade light contour|taupe <=> kvd|shade light contour|taupe": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand, product name, and shade."
+  },
+  "kvd|shade light contour|taupe <=> clio|kill lash superproof mascara|long curling": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and products: KVD Beauty contour palette vs Clio mascara."
+  },
+  "kvd|shade light contour|taupe <=> rephr|eyelash curler|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: KVD Beauty contour palette vs. Rephr eyelash curler."
+  },
+  "kvd|shade light contour|taupe <=> of joseon|relief sun cream|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and products: KVD Beauty contour palette vs Beauty of Joseon sunscreen."
+  },
+  "kaleidos|mono blush|pale rose <=> kaleidos|monobrush|pale rose": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same brand, same product (Mono Blush / Monobrush is the same item with minor naming variation), same shade 'pale rose'."
+  },
+  "kaleidos|mono blush|pale rose <=> kaleidos|quad palette|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Kaleidos Mono Blush and Kaleidos Quad Palette are different product types from the same brand."
+  },
+  "kaleidos|mono blush|pale rose <=> kaleidos|quad palette|twilight rush": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Mono Blush and Quad Palette are different product types from Kaleidos, with different shades."
+  },
+  "kaleidos|mono blush|pale rose <=> kaleidos|untamed glow glossy lip glaze|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Kaleidos Mono Blush and Kaleidos Untamed Glow Glossy Lip Glaze are completely different product types (blush vs lip glaze)."
+  },
+  "florasis|luodai eyebrow define pencil|chisel tip 01 gray <=> florasis|luodai eyebrow define pencil|": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same brand and product name; ground truth omits shade so no conflict."
+  },
+  "florasis|luodai eyebrow define pencil|chisel tip 01 gray <=> flortte|eyelid tape|s fine tuned": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Florasis eyebrow pencil and Flortte eyelid tape are completely different products from different brands."
+  },
+  "florasis|luodai eyebrow define pencil|chisel tip 01 gray <=> judydoll|slim liquid eyeliner|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Florasis eyebrow pencil and Judydoll liquid eyeliner are completely different products from different brands."
+  },
+  "florasis|luodai eyebrow define pencil|chisel tip 01 gray <=> judydoll|slim liquid eyeliner|02 deep brown": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different brands (Florasis vs Judydoll) and completely different products (eyebrow pencil vs liquid eyeliner)."
+  },
+  "kaleidos|quad palette|twilight rush <=> kaleidos|quad palette|": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same brand and product name; ground truth omits shade so no conflict with predicted shade 'twilight rush'."
+  },
+  "kaleidos|quad palette|twilight rush <=> kaleidos|quad palette|twilight rush": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same brand, product name, and shade (only difference is capitalization)."
+  },
+  "kaleidos|quad palette|twilight rush <=> kaleidos|monobrush|pale rose": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different product types (Quad Palette vs Monobrush) and different shades from the same brand."
+  },
+  "kaleidos|quad palette|twilight rush <=> kaleidos|untamed glow glossy lip glaze|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A quad eyeshadow palette and a lip glaze are completely different product types, despite being the same brand."
+  },
+  "bobbi brown|long wear gel eyeliner|night grey <=> bobbi brown|long wear cream eyeliner|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Bobbi Brown Long-Wear Gel Eyeliner and Long Wear Cream Eyeliner are two distinct product lines with different formulas and packaging."
+  },
+  "bobbi brown|long wear gel eyeliner|night grey <=> addiction tokyo|the gel eyeliner|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Bobbi Brown Long-Wear Gel Eyeliner and Addiction Tokyo The Gel Eyeliner are products from completely different brands."
+  },
+  "bobbi brown|long wear gel eyeliner|night grey <=> judydoll|slim liquid eyeliner|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Bobbi Brown Long-Wear Gel Eyeliner and Judydoll Slim Liquid Eyeliner are completely different products from different brands."
+  },
+  "bobbi brown|long wear gel eyeliner|night grey <=> judydoll|slim liquid eyeliner|02 deep brown": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands (Bobbi Brown vs Judydoll) and different product types/shades."
+  },
+  "addiction tokyo|the gel eyeliner|bloody berry <=> addiction tokyo|the gel eyeliner|": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same brand and product; ground truth omits shade so no conflict."
+  },
+  "addiction tokyo|the gel eyeliner|bloody berry <=> bobbi brown|long wear cream eyeliner|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "These are completely different products from different brands (Addiction Tokyo vs Bobbi Brown) with different product names."
+  },
+  "addiction tokyo|the gel eyeliner|bloody berry <=> judydoll|slim liquid eyeliner|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Addiction Tokyo Gel Eyeliner and Judydoll Slim Liquid Eyeliner are completely different products from different brands."
+  },
+  "addiction tokyo|the gel eyeliner|bloody berry <=> judydoll|slim liquid eyeliner|02 deep brown": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands (Addiction Tokyo vs Judydoll) and different products (gel eyeliner vs slim liquid eyeliner) with different shades."
+  },
+  "rephr|eyelash curler| <=> rephr|eyelash curler|": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same brand (REPHR = Rephr) and same product name, only capitalization differs."
+  },
+  "rephr|eyelash curler| <=> flortte|false eyelash|": {
+    "match": false,
+    "variant_match": true,
+    "reasoning": "REPHR Eyelash Curler and Flortte False Eyelash are completely different products from different brands."
+  },
+  "rephr|eyelash curler| <=> clio|kill lash superproof mascara|long curling": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "REPHR Eyelash Curler is a mechanical lash curler tool, completely different from Clio Kill Lash Superproof Mascara."
+  },
+  "rephr|eyelash curler| <=> flortte|eyelid tape|s fine tuned": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "REPHR Eyelash Curler and Flortte Eyelid Tape are completely different products from different brands."
+  },
+  "clio|kill lash superproof mascara|long curling <=> clio|kill lash superproof mascara|long curling": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand, product name, and shade/variant."
+  },
+  "clio|kill lash superproof mascara|long curling <=> rephr|eyelash curler|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Clio Kill Lash Superproof Mascara is a completely different product from Rephr Eyelash Curler - different brands, different product types."
+  },
+  "clio|kill lash superproof mascara|long curling <=> kvd|shade light contour|taupe": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and products: Clio mascara vs KVD Beauty contour palette."
+  },
+  "clio|kill lash superproof mascara|long curling <=> laura mercier|ultra blur transparent loose setting powder|rose": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and products: Clio mascara vs Laura Mercier setting powder."
+  },
+  "flortte|false eyelash| <=> flortte|false eyelash|": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand and product name."
+  },
+  "flortte|false eyelash| <=> flortte|eyelid tape|s fine tuned": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "False eyelashes and eyelid tape are different products even if from the same brand."
+  },
+  "flortte|false eyelash| <=> rephr|eyelash curler|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different brands (Flortte vs Rephr) and different product types (false eyelashes vs eyelash curler)."
+  },
+  "flortte|false eyelash| <=> kaleidos|quad palette|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Flortte False Eyelash and Kaleidos Quad Palette are completely different products from different brands."
+  },
+  "too cool for school|artclass frottage pencil| <=> too cool for school|artclass frottage pencil|": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand and product name."
+  },
+  "too cool for school|artclass frottage pencil| <=> florasis|luodai eyebrow define pencil|": {
+    "match": false,
+    "variant_match": true,
+    "reasoning": "These are completely different products from different brands (Too Cool for School vs Florasis)."
+  },
+  "too cool for school|artclass frottage pencil| <=> laura mercier|ultra blur transparent loose setting powder|rose": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and products: Too Cool for School pencil vs Laura Mercier setting powder."
+  },
+  "too cool for school|artclass frottage pencil| <=> addiction tokyo|the gel eyeliner|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "These are completely different products from different brands: Too Cool for School Artclass Frottage Pencil vs Addiction Tokyo The Gel Eyeliner."
+  },
+  "lilybyred|smiley lip blending stick|01 grin with me <=> lily by red|smiley lip blending stick|01 grin with me": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "LILYBYRED and Lily by Red are the same brand, same product name, and same shade."
+  },
+  "lilybyred|smiley lip blending stick|01 grin with me <=> armani|luminous silk cheek tint|53 bold pink": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and products: LILYBYRED lip product vs Armani Beauty cheek tint."
+  },
+  "lilybyred|smiley lip blending stick|01 grin with me <=> addiction tokyo|the gel eyeliner|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: LILYBYRED lip product vs Addiction Tokyo eyeliner."
+  },
+  "lilybyred|smiley lip blending stick|01 grin with me <=> kaleidos|untamed glow glossy lip glaze|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "These are completely different products from different brands - LILYBYRED Smiley Lip Blending Stick vs Kaleidos Untamed Glow Glossy Lip Glaze."
+  },
+  "judydoll|slim liquid eyeliner|02 deep brown <=> judydoll|slim liquid eyeliner|": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same brand and product name; ground truth omits shade so no conflict."
+  },
+  "judydoll|slim liquid eyeliner|02 deep brown <=> judydoll|slim liquid eyeliner|02 deep brown": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same brand, product name, and shade (02 deep brown) with only capitalization differences."
+  },
+  "judydoll|slim liquid eyeliner|02 deep brown <=> addiction tokyo|the gel eyeliner|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "JUDYDOLL Slim Liquid Eyeliner and Addiction Tokyo The Gel Eyeliner are completely different products from different brands."
+  },
+  "judydoll|slim liquid eyeliner|02 deep brown <=> lily by red|smiley lip blending stick|01 grin with me": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: a JUDYDOLL eyeliner vs a Lily by Red lip product from different brands."
+  },
+  "vichy laboratoires|matte sorbet moisturizer| <=> vichy|matte sorbet moisturizer|": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same product from Vichy (Laboratoires is just the full brand name), same product name."
+  },
+  "vichy laboratoires|matte sorbet moisturizer| <=> morphe|sweet tea lip liner|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and product types: Vichy moisturizer vs Morphe lip liner."
+  },
+  "vichy laboratoires|matte sorbet moisturizer| <=> by mario|setting powder|fair pink": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and products: Vichy moisturizer vs. Makeup by Mario setting powder."
+  },
+  "vichy laboratoires|matte sorbet moisturizer| <=> velour|wild flower eyelashes|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and products: Vichy moisturizer vs Velour eyelashes."
+  },
+  "it|hello sunshine spf|spf 50 <=> it|hello sunshine spf|": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same brand and product name; ground truth omits SPF value but predicted specifies SPF 50 which is consistent with the product."
+  },
+  "it|hello sunshine spf|spf 50 <=> nyx|lip oil|chillin like a villain": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands, product types, and shades - IT Cosmetics SPF product vs NYX Lip Oil."
+  },
+  "it|hello sunshine spf|spf 50 <=> by mario|setting powder|fair pink": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and products: IT Cosmetics SPF product vs Makeup by Mario Setting Powder."
+  },
+  "it|hello sunshine spf|spf 50 <=> huda|easy blur foundation|300": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and products: IT Cosmetics sunscreen vs Huda Beauty foundation."
+  },
+  "huda|easy blur foundation|300 <=> huda|easy blur foundation|300": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand, product name, and shade."
+  },
+  "huda|easy blur foundation|300 <=> by mario|blush veil|perfect pink": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and products: Huda Beauty foundation vs Makeup by Mario blush."
+  },
+  "huda|easy blur foundation|300 <=> patrick ta|eyeshadow duo|we need better lighting": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands, product types, and names - Huda Beauty foundation vs Patrick Ta eyeshadow duo."
+  },
+  "huda|easy blur foundation|300 <=> by mario|bronzer|light medium": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and products: Huda Beauty foundation vs Makeup by Mario bronzer."
+  },
+  "|foundation brush| <=> huda|easy blur foundation|300": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A foundation brush is a makeup tool, while Huda Beauty Easy Blur Foundation is a liquid foundation product; these are completely different items."
+  },
+  "|foundation brush| <=> by mario|blush veil|perfect pink": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A foundation brush is a completely different product from a blush (Blush Veil by Makeup by Mario)."
+  },
+  "|foundation brush| <=> by mario|bronzer|light medium": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A foundation brush and a bronzer are completely different product types, regardless of brand."
+  },
+  "|foundation brush| <=> by mario|setting powder|fair pink": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A foundation brush and a setting powder are completely different product types."
+  },
+  "by mario|bronzer|light medium <=> by mario|bronzer|light medium": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same brand, product, and shade."
+  },
+  "by mario|bronzer|light medium <=> by mario|blush veil|perfect pink": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A bronzer and a blush are different product types, and the shades also differ."
+  },
+  "by mario|bronzer|light medium <=> by mario|setting powder|fair pink": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A bronzer and a setting powder are different product types, and the shades also differ."
+  },
+  "by mario|bronzer|light medium <=> ysl|powder bronzer|02": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different brands (Makeup by Mario vs YSL) indicate these are entirely different products."
+  },
+  "|bronzer brush| <=> by mario|bronzer|light medium": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A bronzer brush (tool) is a completely different product from a bronzer (makeup product), regardless of brand."
+  },
+  "|bronzer brush| <=> ysl|powder bronzer|02": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A bronzer brush is a makeup brush tool, not a powder bronzer product; these are completely different items."
+  },
+  "|bronzer brush| <=> by mario|setting powder|fair pink": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A bronzer brush is a completely different product from a setting powder; they are not the same item."
+  },
+  "|bronzer brush| <=> milk|brown gel eyeliner|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A bronzer brush and a brown gel eyeliner are completely different product types."
+  },
+  "by mario|blush veil|perfect pink <=> by mario|blush veil|perfect pink": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand, product name, and shade."
+  },
+  "by mario|blush veil|perfect pink <=> by mario|bronzer|light medium": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Blush Veil and Bronzer are different product types from Makeup by Mario, and the shades also differ."
+  },
+  "by mario|blush veil|perfect pink <=> by mario|setting powder|fair pink": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Blush Veil and Setting Powder are different product types from Makeup by Mario, so they are not the same product."
+  },
+  "by mario|blush veil|perfect pink <=> nyx|lip oil|chillin like a villain": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands, product types, and shades."
+  },
+  "|blush brush| <=> by mario|blush veil|perfect pink": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A blush brush (tool) is a completely different product from Makeup by Mario Blush Veil (a blush cosmetic)."
+  },
+  "|blush brush| <=> huda|easy blur foundation|300": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A blush brush and a foundation are completely different products."
+  },
+  "|blush brush| <=> it|hello sunshine spf|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A blush brush and IT Cosmetics Hello Sunshine SPF are completely different products."
+  },
+  "|blush brush| <=> velour|wild flower eyelashes|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A blush brush and false eyelashes are completely different products."
+  },
+  "tower 28|concealer|ktown <=> tower 28|concealer|ktown": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand, product name, and shade."
+  },
+  "tower 28|concealer|ktown <=> ysl|powder bronzer|02": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands (Tower 28 vs YSL) and different product types (concealer vs powder bronzer)."
+  },
+  "tower 28|concealer|ktown <=> by mario|setting powder|fair pink": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands, product types, and shades - Tower 28 concealer vs Makeup by Mario setting powder."
+  },
+  "tower 28|concealer|ktown <=> milk|brown gel eyeliner|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Tower 28 concealer vs Milk Makeup Brown Gel Eyeliner."
+  },
+  "|makeup sponge| <=> by mario|setting powder|fair pink": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A makeup sponge is a completely different product from a setting powder."
+  },
+  "|makeup sponge| <=> vichy|matte sorbet moisturizer|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A makeup sponge and a Vichy Matte Sorbet Moisturizer are completely different products."
+  },
+  "|makeup sponge| <=> it|hello sunshine spf|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A makeup sponge and IT Cosmetics Hello Sunshine SPF are completely different products."
+  },
+  "|makeup sponge| <=> tower 28|concealer|ktown": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A makeup sponge is a completely different product from a Tower 28 concealer."
+  },
+  "by mario|setting powder|fair pink <=> by mario|setting powder|fair pink": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand, product name, and shade."
+  },
+  "by mario|setting powder|fair pink <=> by mario|bronzer|light medium": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A setting powder and a bronzer are different product types, and the shades also differ."
+  },
+  "by mario|setting powder|fair pink <=> by mario|blush veil|perfect pink": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Setting Powder and Blush Veil are different product types from Makeup by Mario, and the shades also differ (Fair Pink vs Perfect Pink)."
+  },
+  "by mario|setting powder|fair pink <=> ysl|powder bronzer|02": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different brands (Makeup by Mario vs YSL) and different product types (setting powder vs bronzer)."
+  },
+  "|powder puff| <=> by mario|setting powder|fair pink": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A generic 'powder puff' (applicator tool) is not the same as Makeup by Mario Setting Powder."
+  },
+  "|powder puff| <=> ysl|powder bronzer|02": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A generic powder puff (applicator tool) is not the same as YSL Powder Bronzer shade 02."
+  },
+  "|powder puff| <=> velour|wild flower eyelashes|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "A powder puff and Velour Wild Flower Eyelashes are completely different products."
+  },
+  "ysl|powder bronzer|02 <=> ysl|powder bronzer|02": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand, product name, and shade number."
+  },
+  "ysl|powder bronzer|02 <=> by mario|bronzer|light medium": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different brands (YSL vs Makeup by Mario) and different shades, so these are clearly different products."
+  },
+  "ysl|powder bronzer|02 <=> by mario|setting powder|fair pink": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands (YSL vs Makeup by Mario) and different product types (bronzer vs setting powder)."
+  },
+  "ysl|powder bronzer|02 <=> tower 28|concealer|ktown": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands (YSL vs Tower 28) and different product types (bronzer vs concealer)."
+  },
+  "charlotte tilbury|eyeshadow quad|pillow talk <=> charlotte tilbury|eyeshadow quad|pillow talk": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand, product name, and shade."
+  },
+  "charlotte tilbury|eyeshadow quad|pillow talk <=> patrick ta|eyeshadow duo|we need better lighting": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different brands (Charlotte Tilbury vs Patrick Ta), different product types (Quad vs Duo), and different shades."
+  },
+  "charlotte tilbury|eyeshadow quad|pillow talk <=> velour|wild flower eyelashes|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Charlotte Tilbury eyeshadow quad vs. Velour false eyelashes."
+  },
+  "charlotte tilbury|eyeshadow quad|pillow talk <=> by mario|setting powder|fair pink": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands, product types, and shades - Charlotte Tilbury eyeshadow quad vs Makeup by Mario setting powder."
+  },
+  "patrick ta|eyeshadow duo|we need better lighting <=> patrick ta|eyeshadow duo|we need better lighting": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand, product name, and shade."
+  },
+  "patrick ta|eyeshadow duo|we need better lighting <=> charlotte tilbury|eyeshadow quad|pillow talk": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different brands (Patrick Ta vs Charlotte Tilbury), different product formats (duo vs quad), and different shades."
+  },
+  "patrick ta|eyeshadow duo|we need better lighting <=> huda|easy blur foundation|300": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands, product types, and shades - Patrick Ta eyeshadow vs Huda Beauty foundation."
+  },
+  "patrick ta|eyeshadow duo|we need better lighting <=> velour|wild flower eyelashes|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Patrick Ta eyeshadow duo vs. Velour false eyelashes."
+  },
+  "milk|brown gel eyeliner|brown <=> milk|brown gel eyeliner|": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same brand and product name; shade 'brown' is consistent with the product name and ground truth omits shade specification."
+  },
+  "milk|brown gel eyeliner|brown <=> by mario|bronzer|light medium": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Milk Makeup gel eyeliner vs Makeup by Mario bronzer, different brands and product types."
+  },
+  "milk|brown gel eyeliner|brown <=> ysl|powder bronzer|02": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands, product types, and shades - Milk Makeup gel eyeliner vs YSL powder bronzer."
+  },
+  "milk|brown gel eyeliner|brown <=> velour|wild flower eyelashes|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Milk Makeup gel eyeliner vs. Velour false eyelashes."
+  },
+  "velour|wild flower eyelashes| <=> velour|wild flower eyelashes|": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same product - 'Velour Beauty' and 'Velour' refer to the same brand, and the product name is identical."
+  },
+  "velour|wild flower eyelashes| <=> milk|brown gel eyeliner|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Velour Beauty eyelashes vs Milk Makeup gel eyeliner."
+  },
+  "velour|wild flower eyelashes| <=> by mario|blush veil|perfect pink": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Velour Beauty eyelashes vs Makeup by Mario blush."
+  },
+  "velour|wild flower eyelashes| <=> charlotte tilbury|eyeshadow quad|pillow talk": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Velour Beauty eyelashes vs Charlotte Tilbury eyeshadow quad."
+  },
+  "morphe|sweet tea lip liner| <=> morphe|sweet tea lip liner|": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Identical brand and product name."
+  },
+  "morphe|sweet tea lip liner| <=> nyx|lip oil|chillin like a villain": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different brands (Morphe vs NYX) and completely different product types (lip liner vs lip oil)."
+  },
+  "morphe|sweet tea lip liner| <=> ysl|powder bronzer|02": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Morphe lip liner vs YSL powder bronzer from different brands and different product categories."
+  },
+  "morphe|sweet tea lip liner| <=> by mario|setting powder|fair pink": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Morphe lip liner vs Makeup by Mario setting powder."
+  },
+  "nyx|lip oil|chillin like a villain <=> nyx|lip oil|chillin like a villain": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Same brand (NYX/NYX Cosmetics), same product name (Lip Oil), and same shade (Chillin like a villain)."
+  },
+  "nyx|lip oil|chillin like a villain <=> by mario|blush veil|perfect pink": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands, product types, and shades."
+  },
+  "nyx|lip oil|chillin like a villain <=> morphe|sweet tea lip liner|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different brands (NYX vs Morphe) and different product types (lip oil vs lip liner)."
+  },
+  "nyx|lip oil|chillin like a villain <=> it|hello sunshine spf|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and products: NYX Lip Oil vs IT Cosmetics Hello Sunshine SPF."
+  },
+  "urban decay|all nighter setting spray| <=> by mario|setting powder|fair pink": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Urban Decay All Nighter Setting Spray and Makeup by Mario Setting Powder are completely different products from different brands."
+  },
+  "urban decay|all nighter setting spray| <=> huda|easy blur foundation|300": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Urban Decay All Nighter Setting Spray and Huda Beauty Easy Blur Foundation are completely different products from different brands."
+  },
+  "urban decay|all nighter setting spray| <=> vichy|matte sorbet moisturizer|": {
+    "match": false,
+    "variant_match": true,
+    "reasoning": "Completely different products: Urban Decay All Nighter Setting Spray vs Vichy Matte Sorbet Moisturizer are different brands and different product types."
+  },
+  "urban decay|all nighter setting spray| <=> morphe|sweet tea lip liner|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Urban Decay All Nighter Setting Spray vs Morphe Sweet Tea Lip Liner."
+  },
+  "arencia|fresh blue hyaluronic acid mochi cleanser| <=> arencia|fresh blue hyssop rice mochi cleanser|": {
+    "match": false,
+    "variant_match": true,
+    "reasoning": "Although both are Arencia Mochi Cleansers, 'Hyaluronic Acid' and 'Hyssop Rice' are distinct product variants with different key ingredients, making them different products."
+  },
+  "arencia|fresh blue hyaluronic acid mochi cleanser| <=> arencia|fresh green rice mochi cleanser|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "These are two different Arencia cleansers: Blue Hyaluronic Acid vs Green Rice - different formulations/variants."
+  },
+  "arencia|fresh blue hyaluronic acid mochi cleanser| <=> torriden|dive in low molecular hyaluronic acid serum|": {
+    "match": false,
+    "variant_match": true,
+    "reasoning": "Different brands (Arencia vs Torriden) and different product types (cleanser vs serum)."
+  },
+  "arencia|fresh blue hyaluronic acid mochi cleanser| <=> benefit|rose tinted lip and cheek stain|": {
+    "match": false,
+    "variant_match": true,
+    "reasoning": "Completely different brands and product types: Arencia cleanser vs Benefit Cosmetics lip & cheek stain."
+  },
+  "torriden|toner spray bottle| <=> |toner|": {
+    "match": false,
+    "variant_match": true,
+    "reasoning": "The ground-truth is a brand-unspecified generic 'toner' which cannot be confidently matched to a specific Torriden toner product."
+  },
+  "torriden|toner spray bottle| <=> torriden|dive in low molecular hyaluronic acid serum|": {
+    "match": false,
+    "variant_match": true,
+    "reasoning": "A toner (spray bottle) and a serum are different product types, even from the same brand Torriden."
+  },
+  "torriden|toner spray bottle| <=> medicube|pdrn pink collagen tonning gel toner pad|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Different brands (Torriden vs Medicube) and completely different product types (toner spray vs toner pads)."
+  },
+  "torriden|toner spray bottle| <=> benefit|rose tinted lip and cheek stain|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and product types: Torriden toner vs Benefit Cosmetics lip & cheek stain."
+  },
+  "medicube|pore 99 toner pads| <=> |toner|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "The ground-truth is just a generic 'toner' with no brand, which cannot be confidently matched to the specific Medicube PORE 99 Toner Pads product."
+  },
+  "medicube|pore 99 toner pads| <=> medicube|pdrn pink collagen tonning gel toner pad|": {
+    "match": false,
+    "variant_match": true,
+    "reasoning": "These are two different Medicube toner pad products: PORE 99 Toner Pads vs. PDRN Pink Collagen Toning Gel Toner Pad."
+  },
+  "medicube|pore 99 toner pads| <=> benefit|rose tinted lip and cheek stain|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and product types: Medicube toner pads vs Benefit Cosmetics lip & cheek stain."
+  },
+  "medicube|pore 99 toner pads| <=> arencia|fresh green rice mochi cleanser|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Medicube PORE 99 Toner Pads vs Arencia Fresh Green Rice Mochi Cleanser, different brands and product types."
+  },
+  "torriden|dive in hyaluronic acid intensive serum| <=> torriden|dive in low molecular hyaluronic acid serum|": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Both refer to Torriden's Dive-In hyaluronic acid serum; the predicted name omits 'Low Molecular' but it's the same product."
+  },
+  "torriden|dive in hyaluronic acid intensive serum| <=> medicube|pdrn pink collagen tonning gel toner pad|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products from different brands - Torriden serum vs Medicube toner pads."
+  },
+  "torriden|dive in hyaluronic acid intensive serum| <=> benefit|rose tinted lip and cheek stain|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and products: Torriden skincare serum vs Benefit Cosmetics lip & cheek stain."
+  },
+  "torriden|dive in hyaluronic acid intensive serum| <=> arencia|fresh green rice mochi cleanser|": {
+    "match": false,
+    "variant_match": true,
+    "reasoning": "Completely different products: Torriden serum vs Arencia cleanser, different brands and product types."
+  },
+  "summer fridays|eye patches| <=> summer fridays|jet lag eye patches|": {
+    "match": true,
+    "variant_match": true,
+    "reasoning": "Generic 'Eye patches' from Summer Fridays matches the specific 'Jet Lag Eye Patches' per the tolerance rule for generic-vs-specific naming."
+  },
+  "summer fridays|eye patches| <=> benefit|rose tinted lip and cheek stain|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different brands and product types: Summer Fridays eye patches vs Benefit Cosmetics lip & cheek stain."
+  },
+  "summer fridays|eye patches| <=> arencia|fresh green rice mochi cleanser|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Summer Fridays eye patches vs. Arencia Fresh Green Rice Mochi Cleanser."
+  },
+  "summer fridays|eye patches| <=> arencia|fresh blue hyssop rice mochi cleanser|": {
+    "match": false,
+    "variant_match": false,
+    "reasoning": "Completely different products: Summer Fridays eye patches vs. Arencia facial cleanser."
+  }
+}

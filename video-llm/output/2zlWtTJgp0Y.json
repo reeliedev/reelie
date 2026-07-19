@@ -1,0 +1,122 @@
+{
+  "video_id": "2zlWtTJgp0Y",
+  "source_file": "2zlWtTJgp0Y.mp4",
+  "duration_s": 60.1,
+  "num_frames": 34,
+  "num_products": 11,
+  "num_video_products": 11,
+  "num_description_products": 0,
+  "mirrored": false,
+  "model": "claude-sonnet-4-6",
+  "usage": {
+    "input_tokens": 19000,
+    "output_tokens": 1523,
+    "api_calls": 4
+  },
+  "cost_usd": {
+    "transcription": 0.0,
+    "extraction": 0.079845,
+    "total": 0.079845
+  },
+  "products": [
+    {
+      "product_name": "moisturizing lotion/sunscreen",
+      "brand": "CeraVe",
+      "variant_or_shade": null,
+      "evidence_type": "shown",
+      "timestamp_s": 2.0,
+      "transcript_quote": null,
+      "confidence": 0.75
+    },
+    {
+      "product_name": "foundation",
+      "brand": "NARS",
+      "variant_or_shade": null,
+      "evidence_type": "shown",
+      "timestamp_s": 12.6,
+      "transcript_quote": null,
+      "confidence": 0.7
+    },
+    {
+      "product_name": "beauty blender sponge",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 12.6,
+      "transcript_quote": "I like to blend it with a damp beauty blender",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "concealer",
+      "brand": "Dior",
+      "variant_or_shade": null,
+      "evidence_type": "shown",
+      "timestamp_s": 18.9,
+      "transcript_quote": null,
+      "confidence": 0.65
+    },
+    {
+      "product_name": "cream bronzer",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 26.8,
+      "transcript_quote": "Now I'm gonna use cream bronzer",
+      "confidence": 0.85
+    },
+    {
+      "product_name": "Fit Me Pressed Powder",
+      "brand": "Maybelline",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 34.6,
+      "transcript_quote": "I'm gonna go in with the Fit Me press powder first",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Hoodie Beauty Loose Powder",
+      "brand": "Hoodie Beauty",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 38.5,
+      "transcript_quote": "then I'm gonna go in with the hoodie beauty loose powder",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Blush Palette",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 44.9,
+      "transcript_quote": "Now for the best part blush",
+      "confidence": 0.7
+    },
+    {
+      "product_name": "Lip Gloss",
+      "brand": "NYX",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 52.6,
+      "transcript_quote": "I basically just use next lip products",
+      "confidence": 0.88
+    },
+    {
+      "product_name": "Lip Liner",
+      "brand": "NYX",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 52.6,
+      "transcript_quote": "I basically just use next lip products",
+      "confidence": 0.88
+    },
+    {
+      "product_name": "Setting Spray",
+      "brand": "Sephora",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 57.9,
+      "transcript_quote": "And everything off with setting spray",
+      "confidence": 0.7
+    }
+  ]
+}

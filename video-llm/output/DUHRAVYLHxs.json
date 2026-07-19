@@ -1,0 +1,29 @@
+{
+  "video_id": "DUHRAVYLHxs",
+  "source_file": "DUHRAVYLHxs.mp4",
+  "duration_s": 45.1,
+  "num_frames": 21,
+  "num_products": 1,
+  "model": "claude-sonnet-4-6",
+  "usage": {
+    "input_tokens": 8634,
+    "output_tokens": 103,
+    "api_calls": 1
+  },
+  "cost_usd": {
+    "transcription": 0.0,
+    "extraction": 0.027447,
+    "total": 0.027447
+  },
+  "products": [
+    {
+      "product_name": "Fluff & Snatch Brow Powder Pen",
+      "brand": "NYX Professional Makeup",
+      "variant_or_shade": "Cool Ash Brown",
+      "evidence_type": "both",
+      "timestamp_s": 8.6,
+      "transcript_quote": "I'm using the fluff and snatch brow powder pen and starting with the spoolie side I'm brushing my brows into place.",
+      "confidence": 0.98
+    }
+  ]
+}

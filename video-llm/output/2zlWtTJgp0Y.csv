@@ -1,0 +1,12 @@
+video_id,product_name,brand,variant_or_shade,evidence_type,source,timestamp_s,transcript_quote,confidence
+2zlWtTJgp0Y,moisturizing lotion/sunscreen,CeraVe,,shown,video,2.0,,0.75
+2zlWtTJgp0Y,foundation,NARS,,shown,video,12.6,,0.7
+2zlWtTJgp0Y,beauty blender sponge,,,both,video,12.6,I like to blend it with a damp beauty blender,0.9
+2zlWtTJgp0Y,concealer,Dior,,shown,video,18.9,,0.65
+2zlWtTJgp0Y,cream bronzer,,,both,video,26.8,Now I'm gonna use cream bronzer,0.85
+2zlWtTJgp0Y,Fit Me Pressed Powder,Maybelline,,both,video,34.6,I'm gonna go in with the Fit Me press powder first,0.9
+2zlWtTJgp0Y,Hoodie Beauty Loose Powder,Hoodie Beauty,,both,video,38.5,then I'm gonna go in with the hoodie beauty loose powder,0.9
+2zlWtTJgp0Y,Blush Palette,,,both,video,44.9,Now for the best part blush,0.7
+2zlWtTJgp0Y,Lip Gloss,NYX,,both,video,52.6,I basically just use next lip products,0.88
+2zlWtTJgp0Y,Lip Liner,NYX,,both,video,52.6,I basically just use next lip products,0.88
+2zlWtTJgp0Y,Setting Spray,Sephora,,both,video,57.9,And everything off with setting spray,0.7

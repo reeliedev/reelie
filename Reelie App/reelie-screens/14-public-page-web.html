@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jess's K-Beauty Night Routine — every product, linked | Reelie</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sun:#FFD60A;
+    --ink:#141414;
+    --grey:#9A9A9A;
+    --line:#EDEDED;
+    --soft:#F7F7F7;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    font-family:'DM Sans',-apple-system,sans-serif;
+    background:#111;
+    min-height:100vh;
+    display:flex;align-items:center;justify-content:center;
+    padding:24px;
+  }
+  .phone{
+    width:390px;height:844px;
+    background:#fff;
+    border-radius:54px;
+    border:10px solid #000;
+    box-shadow:0 30px 80px rgba(0,0,0,.5);
+    overflow:hidden;
+    position:relative;
+    display:flex;flex-direction:column;
+  }
+  .notch{
+    position:absolute;top:12px;left:50%;transform:translateX(-50%);
+    width:120px;height:34px;background:#000;border-radius:20px;z-index:30;
+  }
+  .statusbar{
+    height:56px;flex-shrink:0;
+    display:flex;align-items:flex-end;justify-content:space-between;
+    padding:0 28px 4px;
+    font-size:14px;font-weight:700;color:var(--ink);
+  }
+  /* browser chrome */
+  .browser{
+    flex-shrink:0;
+    margin:4px 20px 0;
+    background:var(--soft);border-radius:12px;
+    padding:9px 14px;
+    display:flex;align-items:center;justify-content:center;gap:6px;
+    font-size:12.5px;font-weight:500;color:var(--grey);
+  }
+  .browser b{color:var(--ink);font-weight:700}
+  .scroll{
+    flex:1;overflow-y:auto;
+    padding:16px 24px 0;
+  }
+  /* creator strip */
+  .creator{
+    display:flex;align-items:center;gap:11px;
+  }
+  .cavatar{
+    width:44px;height:44px;border-radius:50%;
+    background:linear-gradient(135deg,#E8E4DA,#D8D2C4);
+    border:2.5px solid var(--sun);flex-shrink:0;
+  }
+  .cinfo{flex:1;text-align:left}
+  .cname{font-size:14.5px;font-weight:700;color:var(--ink)}
+  .chandle{font-size:12px;color:var(--grey);margin-top:1px}
+  .allpages{
+    font-size:12.5px;font-weight:700;color:var(--ink);
+    text-decoration:none;border-bottom:1.5px solid var(--sun);
+    flex-shrink:0;
+  }
+  h1{
+    font-family:'Fraunces',serif;font-style:italic;font-weight:700;
+    font-size:28px;line-height:1.15;color:var(--ink);letter-spacing:-.5px;
+    margin-top:18px;text-align:left;
+  }
+  .pagemeta{
+    font-size:12.5px;color:var(--grey);margin-top:8px;text-align:left;
+  }
+  .video{
+    margin-top:14px;
+    height:180px;border-radius:20px;
+    background:linear-gradient(135deg,#E8E4DA,#D8D2C4);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .video .play{
+    width:44px;height:44px;border-radius:50%;
+    background:rgba(255,255,255,.92);
+    display:flex;align-items:center;justify-content:center;
+    font-size:16px;color:var(--ink);
+  }
+  .seclabel{
+    font-size:11.5px;font-weight:700;letter-spacing:1.5px;
+    color:#C9C9C9;margin:22px 2px 10px;text-align:left;
+  }
+  .step{
+    border:1.5px solid var(--line);border-radius:18px;
+    padding:13px 14px;margin-bottom:10px;
+    display:flex;align-items:center;gap:12px;
+  }
+  .stepno{
+    font-family:'Fraunces',serif;font-style:italic;font-weight:700;
+    font-size:15px;color:#C9C9C9;flex-shrink:0;width:18px;text-align:center;
+  }
+  .pthumb{
+    width:48px;height:48px;border-radius:12px;background:var(--soft);
+    flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:19px;
+  }
+  .pinfo{flex:1;min-width:0;text-align:left}
+  .pbrand{font-size:11px;font-weight:700;letter-spacing:.6px;color:var(--grey);text-transform:uppercase}
+  .pname{font-size:14px;font-weight:500;color:var(--ink);margin-top:2px;line-height:1.3}
+  .pnote{font-size:11.5px;color:var(--grey);margin-top:3px;font-style:italic}
+  .shop{
+    border:none;background:var(--sun);color:var(--ink);
+    font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;
+    padding:10px 15px;border-radius:12px;cursor:pointer;flex-shrink:0;
+    transition:transform .08s ease;
+  }
+  .shop:active{transform:scale(.97)}
+  .shop span{display:block;font-size:9.5px;font-weight:700;color:rgba(20,20,20,.55);margin-top:1px}
+  .disclosure{
+    font-size:11px;line-height:1.55;color:#C9C9C9;
+    text-align:center;margin:14px 8px 0;
+  }
+  .more{
+    margin-top:22px;
+    display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;
+  }
+  .morecard{
+    flex-shrink:0;width:150px;
+    border:1.5px solid var(--line);border-radius:16px;
+    padding:11px;text-align:left;
+  }
+  .morethumb{height:70px;border-radius:11px;background:linear-gradient(135deg,#EDE8DF,#D9D2C2);margin-bottom:8px}
+  .moretitle{font-size:12px;font-weight:700;color:var(--ink);line-height:1.3}
+  .moremeta{font-size:10.5px;color:var(--grey);margin-top:3px}
+  .footer{
+    margin:24px -24px 0;
+    background:var(--soft);
+    padding:20px 24px 26px;
+    text-align:center;
+  }
+  .fword{
+    font-family:'Fraunces',serif;font-style:italic;font-weight:700;
+    font-size:16px;color:var(--ink);
+  }
+  .fword .dot{color:var(--sun)}
+  .ftext{font-size:11.5px;color:var(--grey);margin-top:5px;line-height:1.5}
+  .ftext a{color:var(--ink);font-weight:700;text-decoration:none;border-bottom:1.5px solid var(--sun)}
+  .homebar{
+    position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
+    width:135px;height:5px;border-radius:3px;background:var(--ink);z-index:30;
+  }
+  @media(max-width:430px){
+    body{padding:0}
+    .phone{width:100vw;height:100vh;border-radius:0;border:none}
+  }
+</style>
+</head>
+<body>
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="statusbar"><span>9:41</span><span></span></div>
+
+    <div class="browser">🔒 <b>reelie.com</b>/glowbyjess/k-beauty-night</div>
+
+    <div class="scroll">
+      <div class="creator" style="margin-top:16px">
+        <div class="cavatar"></div>
+        <div class="cinfo">
+          <div class="cname">Jess Tan</div>
+          <div class="chandle">@glowbyjess · YouTube &amp; Instagram</div>
+        </div>
+        <a class="allpages" href="#">All pages</a>
+      </div>
+
+      <h1>My K-beauty night routine</h1>
+      <p class="pagemeta">5 products, in the order Jess uses them · from her video, June 2026</p>
+
+      <div class="video"><div class="play">▶</div></div>
+
+      <div class="seclabel">THE ROUTINE</div>
+
+      <div class="step">
+        <div class="stepno">1</div>
+        <div class="pthumb">🧼</div>
+        <div class="pinfo">
+          <div class="pbrand">Banila Co</div>
+          <div class="pname">Clean It Zero Cleansing Balm</div>
+          <div class="pnote">"melts everything off, even waterproof liner"</div>
+        </div>
+        <button class="shop">Shop<span>YESSTYLE</span></button>
+      </div>
+
+      <div class="step">
+        <div class="stepno">2</div>
+        <div class="pthumb">🧴</div>
+        <div class="pinfo">
+          <div class="pbrand">Anua</div>
+          <div class="pname">Heartleaf 77% Soothing Toner</div>
+          <div class="pnote">"three layers on dry days"</div>
+        </div>
+        <button class="shop">Shop<span>ULTA</span></button>
+      </div>
+
+      <div class="step">
+        <div class="stepno">3</div>
+        <div class="pthumb">💧</div>
+        <div class="pinfo">
+          <div class="pbrand">COSRX</div>
+          <div class="pname">Advanced Snail 96 Mucin Essence</div>
+        </div>
+        <button class="shop">Shop<span>YESSTYLE</span></button>
+      </div>
+
+      <div class="step">
+        <div class="stepno">4</div>
+        <div class="pthumb">🌙</div>
+        <div class="pinfo">
+          <div class="pbrand">Beauty of Joseon</div>
+          <div class="pname">Revive Eye Serum — Ginseng + Retinal</div>
+        </div>
+        <button class="shop">Shop<span>OLIVE YOUNG</span></button>
+      </div>
+
+      <div class="step">
+        <div class="stepno">5</div>
+        <div class="pthumb">💤</div>
+        <div class="pinfo">
+          <div class="pbrand">Laneige</div>
+          <div class="pname">Water Sleeping Mask</div>
+          <div class="pnote">"twice a week, not every night"</div>
+        </div>
+        <button class="shop">Shop<span>SEPHORA</span></button>
+      </div>
+
+      <p class="disclosure">Some links earn Jess a commission — it never changes what you pay.</p>
+
+      <div class="seclabel">MORE FROM JESS</div>
+      <div class="more">
+        <div class="morecard">
+          <div class="morethumb"></div>
+          <div class="moretitle">Everyday "no makeup" makeup</div>
+          <div class="moremeta">8 products</div>
+        </div>
+        <div class="morecard">
+          <div class="morethumb"></div>
+          <div class="moretitle">Summer SPF favourites</div>
+          <div class="moremeta">4 products</div>
+        </div>
+        <div class="morecard">
+          <div class="morethumb"></div>
+          <div class="moretitle">GRWM: date night</div>
+          <div class="moremeta">6 products</div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <div class="fword">Reelie<span class="dot">.</span></div>
+        <p class="ftext">This page was made automatically from Jess's video.<br>Are you a creator? <a href="#">Claim your page</a></p>
+      </div>
+    </div>
+    <div class="homebar"></div>
+  </div>
+</body>
+</html>

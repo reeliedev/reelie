@@ -69,6 +69,17 @@ def schema_graph(session: Session = Depends(get_session)):
     return JSONResponse(public_site.site_graph(_rows(session)))
 
 
+# --- legal ----------------------------------------------------------------
+@router.get("/privacy", response_class=HTMLResponse)
+def privacy():
+    return public_site.privacy_html()
+
+
+@router.get("/terms", response_class=HTMLResponse)
+def terms():
+    return public_site.terms_html()
+
+
 # --- pages ----------------------------------------------------------------
 @router.get("/", response_class=HTMLResponse)
 def directory(session: Session = Depends(get_session)):

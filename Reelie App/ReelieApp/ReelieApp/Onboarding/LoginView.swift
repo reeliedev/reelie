@@ -57,16 +57,16 @@ struct LoginView: View {
     }
 
     private var legal: some View {
-        (
-            Text("By continuing you agree to our ")
-                .foregroundStyle(Palette.fainter)
-            + Text("Terms").foregroundStyle(Palette.ink)
-            + Text(" & ").foregroundStyle(Palette.fainter)
-            + Text("Privacy Policy").foregroundStyle(Palette.ink)
-        )
-        .font(ReelieFont.ui(11.5))
-        .multilineTextAlignment(.center)
-        .lineSpacing(2)
+        // Markdown links open the public Terms/Privacy pages in Safari.
+        let base = AppConfig.productionAPIBaseURL.isEmpty ? "https://reelie.shop"
+                                                          : AppConfig.productionAPIBaseURL
+        return Text(.init(
+            "By continuing you agree to our [Terms](\(base)/terms) & [Privacy Policy](\(base)/privacy)."))
+            .font(ReelieFont.ui(11.5))
+            .foregroundStyle(Palette.fainter)
+            .tint(Palette.ink)
+            .multilineTextAlignment(.center)
+            .lineSpacing(2)
     }
 }
 

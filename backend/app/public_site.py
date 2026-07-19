@@ -536,6 +536,145 @@ def creator_html(creator: Creator, rows: list[dict]) -> str:
                        url, hero, cards)
 
 
+# --- legal pages (privacy / terms) ----------------------------------------
+_LEGAL_CSS = """
+:root{--sun:#FFD60A;--ink:#141414;--grey:#8A8A8A;--line:#EAEAEA;--cream:#FBFAF7}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--ink);background:#fff;line-height:1.65}
+a{color:inherit}
+.wrap{max-width:760px;margin:0 auto;padding:0 24px}
+.topbar{border-bottom:1px solid var(--line)}.topbar .wrap{display:flex;align-items:center;justify-content:space-between;height:64px;max-width:1080px}
+.brandmark{font-family:'Fraunces',serif;font-style:italic;font-weight:700;font-size:22px;text-decoration:none}.brandmark .dot{color:var(--sun)}
+.legal{padding:56px 0 40px}
+.legal h1{font-family:'Fraunces',serif;font-style:italic;font-weight:700;font-size:44px;letter-spacing:-1px;margin-bottom:10px}
+.updated{color:var(--grey);font-size:13.5px;margin-bottom:36px}
+.legal h2{font-family:'Fraunces',serif;font-weight:600;font-size:23px;margin:34px 0 12px}
+.legal p{margin:0 0 14px;color:#2e2e2e}
+.legal ul{margin:0 0 14px 22px;color:#2e2e2e}.legal li{margin-bottom:7px}
+.legal a{font-weight:600;border-bottom:2px solid var(--sun);text-decoration:none}
+.footer{border-top:1px solid var(--line);margin-top:20px}.footer .wrap{padding:30px 24px 46px;color:var(--grey);font-size:12.5px;max-width:1080px}
+@media(prefers-color-scheme:dark){body{background:#111;color:#f0f0f0}.legal p,.legal ul{color:#d8d8d8}.topbar,.footer{border-color:#262626}}
+"""
+
+# NOTE: starting template — review with counsel and edit before relying on it.
+LEGAL_UPDATED = "20 July 2026"
+
+
+def _legal_html(title: str, blocks: list[tuple[str, str]], canonical: str) -> str:
+    body = "".join(f"<h2>{_esc(h)}</h2>{c}" for h, c in blocks)
+    return f"""<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{_esc(title)} · {config.BRAND}</title>
+<meta name="description" content="{_esc(title)} for {config.BRAND}.">
+<link rel="canonical" href="{_esc(canonical)}">
+<meta name="robots" content="index, follow">
+{_FONTS}<style>{_LEGAL_CSS}</style></head><body>
+<header class="topbar"><div class="wrap"><a class="brandmark" href="{BASE}">{config.BRAND}<span class="dot">.</span></a>
+<a href="{BASE}" style="color:var(--grey);font-size:13.5px;font-weight:600;text-decoration:none">Browse creators →</a></div></header>
+<main class="legal"><div class="wrap"><h1>{_esc(title)}</h1>
+<div class="updated">Last updated: {LEGAL_UPDATED}</div>
+{body}</div></main>
+<footer class="footer"><div class="wrap"><a href="{BASE}/privacy">Privacy</a> · <a href="{BASE}/terms">Terms</a> · {config.BRAND} — {_esc(config.TAGLINE)}</div></footer>
+</body></html>"""
+
+
+def privacy_html() -> str:
+    email = config.SUPPORT_EMAIL
+    blocks = [
+        ("Who we are",
+         f"<p>{config.BRAND} turns beauty and skincare creators' videos into shoppable "
+         f"“routine” pages. This policy explains what we collect and why. Questions: "
+         f'<a href="mailto:{email}">{email}</a>.</p>'),
+        ("Information we collect",
+         "<ul>"
+         "<li><b>Account details</b> — your email address, and (for creators) your handle "
+         "and display name.</li>"
+         "<li><b>Connected accounts</b> — if you connect YouTube or Instagram, we store an "
+         "access token and read <b>only</b> your public video list and video content. We "
+         "<b>never</b> post, message, or change anything on your accounts.</li>"
+         "<li><b>Content you generate</b> — the routine pages, products, and prices produced "
+         "from your videos.</li>"
+         "<li><b>Usage data</b> — basic analytics such as clicks on product links, used to "
+         "measure interest and (where applicable) attribute affiliate activity.</li>"
+         "<li><b>Guest favorites</b> — if you're not signed in, favorites are stored on your "
+         "device (local storage), not on our servers.</li></ul>"),
+        ("How we use it",
+         "<ul><li>To create and display your shoppable pages.</li>"
+         "<li>To operate, secure, and improve the service.</li>"
+         "<li>To measure link performance and, where applicable, affiliate commissions.</li></ul>"
+         "<p>We do <b>not</b> sell your personal information.</p>"),
+        ("AI processing",
+         "<p>To identify products, we process your video's transcript and selected frames "
+         "using third-party AI services. This is used solely to generate your page.</p>"),
+        ("Third parties we share with",
+         "<ul>"
+         "<li><b>Google / YouTube</b> and <b>Meta / Instagram</b> — only to authenticate the "
+         "connection you initiate.</li>"
+         "<li><b>Hosting and infrastructure</b> providers that run the service.</li>"
+         "<li><b>Retailers / affiliate networks</b> — when you click a product link, standard "
+         "referral parameters may be passed.</li></ul>"),
+        ("Affiliate disclosure",
+         "<p>Some product links may be affiliate links. If you buy through them, we may earn "
+         "a commission at no extra cost to you. Prices shown are approximate and may change.</p>"),
+        ("Your choices",
+         "<ul><li><b>Disconnect</b> a social account at any time from your profile.</li>"
+         "<li><b>Delete your account</b> and associated data from the app; you can also email "
+         f'us at <a href="mailto:{email}">{email}</a>.</li></ul>'),
+        ("Data retention",
+         "<p>We keep your information while your account is active and delete it on request, "
+         "except where we must retain records to meet legal obligations.</p>"),
+        ("Children",
+         "<p>The service is not directed to children under 13 (or the minimum age in your "
+         "country), and we don't knowingly collect their data.</p>"),
+        ("Changes",
+         "<p>We may update this policy; we'll revise the date above and, for material changes, "
+         "provide notice in the app.</p>"),
+        ("Contact",
+         f'<p>Questions or requests: <a href="mailto:{email}">{email}</a>.</p>'),
+    ]
+    return _legal_html("Privacy Policy", blocks, f"{BASE}/privacy")
+
+
+def terms_html() -> str:
+    email = config.SUPPORT_EMAIL
+    blocks = [
+        ("Agreement",
+         f"<p>By using {config.BRAND} you agree to these terms. If you don't agree, please "
+         f"don't use the service.</p>"),
+        ("Accounts",
+         "<p>You're responsible for activity under your account and for keeping your login "
+         "secure. You must provide accurate information and meet the minimum age in your country.</p>"),
+        ("Creator content and rights",
+         "<p>If you connect an account or generate pages, you represent that you have the "
+         f"rights to the videos and content involved, and you grant {config.BRAND} a license to "
+         "process and display that content to operate the service. You can remove your pages "
+         "or delete your account at any time.</p>"),
+        ("Acceptable use",
+         "<p>Don't use the service to break the law, infringe others' rights, or attempt to "
+         "disrupt or reverse-engineer it.</p>"),
+        ("Products, prices, and affiliate links",
+         "<p>Product names and prices are generated automatically and are approximate — they "
+         "may be inaccurate or out of date. Purchases happen on third-party retailer sites "
+         f"under their terms. Some links may be affiliate links from which {config.BRAND} may "
+         "earn a commission.</p>"),
+        ("Third-party platforms",
+         "<p>Connecting YouTube or Instagram is also governed by those platforms' terms. We "
+         "access only what you authorize and never post on your behalf.</p>"),
+        ("Disclaimer",
+         "<p>The service is provided “as is,” without warranties of any kind. We don't "
+         "guarantee accuracy of extracted products, prices, or availability.</p>"),
+        ("Limitation of liability",
+         f"<p>To the extent permitted by law, {config.BRAND} is not liable for indirect or "
+         "consequential damages arising from your use of the service.</p>"),
+        ("Changes and termination",
+         "<p>We may update these terms or suspend the service; continued use after changes "
+         "means you accept them.</p>"),
+        ("Contact",
+         f'<p>Questions: <a href="mailto:{email}">{email}</a>.</p>'),
+    ]
+    return _legal_html("Terms of Service", blocks, f"{BASE}/terms")
+
+
 def directory_html(rows: list[dict]) -> str:
     hero = (f'<div class="eyebrow">Every product, every routine</div>'
             f'<h1>Shop your favourite<br>creators\' videos</h1>'

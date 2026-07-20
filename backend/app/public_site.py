@@ -498,34 +498,34 @@ def page_html(page: Page, creator: Creator, products: list[Product],
 
 # --- directory + creator index (same brand system, lighter layout) --------
 _LIST_CSS = """
-:root{--sun:#FFD60A;--ink:#141414;--grey:#8A8A8A;--line:#EAEAEA;--soft:#F6F5F2;--cream:#FBFAF7}
+:root{--bg:#FFE566;--sun:#FFD84D;--ink:#201B0A;--grey:#7A6F4A;--line:rgba(32,27,10,.14);--soft:#FBF7E6;--surface:#fff;--accent:#6F5DF0;--accent-deep:#5A47E0;--accent-soft:#ECE8FE}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--ink);background:#fff;line-height:1.55;-webkit-font-smoothing:antialiased}
+body{font-family:'Instrument Sans',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased;background:radial-gradient(circle at 18% 10%,#FFF3A8 0%,transparent 46%),radial-gradient(circle at 85% 92%,#FFD23E 0%,transparent 52%),var(--bg)}
 a{color:inherit;text-decoration:none}
 .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
-.eyebrow{font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--grey)}
-.topbar{border-bottom:1px solid var(--line)}.topbar .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
-.brandmark{font-family:'Fraunces',serif;font-style:italic;font-weight:700;font-size:22px}.brandmark .dot{color:var(--sun)}
-.hero{background:var(--cream);border-bottom:1px solid var(--line)}.hero .wrap{padding:64px 24px}
+.eyebrow{font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--grey)}
+.topbar{background:rgba(255,255,255,.6);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}.topbar .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
+.brandmark{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:22px;letter-spacing:-.5px}.brandmark .dot{color:var(--accent)}
+.hero .wrap{padding:60px 24px 40px}
 .creator{display:flex;align-items:center;gap:12px;margin-bottom:18px}
-.cavatar{width:52px;height:52px;border-radius:50%;border:2px solid var(--sun)}
-h1{font-family:'Fraunces',serif;font-style:italic;font-weight:700;font-size:clamp(34px,5vw,54px);line-height:1.04;letter-spacing:-1px;margin:8px 0 14px}
-.lede{font-size:18px;color:#4a4a4a;max-width:42ch}
-.search{margin-top:26px;width:100%;max-width:520px;padding:15px 18px;font:inherit;font-size:16px;border:1.5px solid var(--line);border-radius:14px;background:#fff;color:var(--ink);outline:none}
-.search:focus{border-color:var(--ink)}
+.cavatar{width:52px;height:52px;border-radius:50%;border:2px solid var(--accent)}
+h1{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(34px,5vw,52px);line-height:1.05;letter-spacing:-1.5px;margin:8px 0 14px}
+.lede{font-size:18px;color:var(--grey);max-width:42ch}
+.search{margin-top:26px;width:100%;max-width:520px;padding:15px 18px;font:inherit;font-size:16px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink);outline:none;box-shadow:0 6px 16px rgba(32,27,10,.08)}
+.search:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(111,93,240,.18)}
 .noresults{padding:20px 0 72px;color:var(--grey)}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px;padding:28px 0 72px}
-.card{display:block;border:1px solid var(--line);border-radius:18px;padding:22px 22px;transition:transform .1s ease,box-shadow .1s}
-.card:hover{transform:translateY(-2px);box-shadow:0 24px 50px -32px rgba(20,20,20,.4)}
-.card .ci{width:44px;height:44px;border-radius:12px;background:var(--soft);display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:14px}
-.card h3{font-family:'Fraunces',serif;font-weight:600;font-size:21px;line-height:1.15;margin-bottom:5px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px;padding:8px 0 72px}
+.card{display:block;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:22px 22px;box-shadow:0 6px 16px rgba(32,27,10,.06);transition:transform .15s cubic-bezier(.16,1,.3,1),box-shadow .15s}
+.card:hover{transform:translateY(-3px);box-shadow:0 16px 34px rgba(90,71,224,.18)}
+.card .ci{width:44px;height:44px;border-radius:12px;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:14px}
+.card h3{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:21px;line-height:1.15;margin-bottom:5px}
 .card .m{color:var(--grey);font-size:13.5px}
 .footer{border-top:1px solid var(--line)}.footer .wrap{padding:34px 24px 48px;color:var(--grey);font-size:12.5px}
-@media(prefers-color-scheme:dark){body{background:#111;color:#f2f2f2}.hero{background:#161616}.topbar,.card,.footer{border-color:#262626}.card .ci{background:#1e1e1e}}
 """
 
 _FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com">'
-          '<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,600;1,9..144,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">')
+          '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
+          '<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">')
 
 
 def _list_shell(title: str, desc: str, canonical: str, hero: str, cards: str,
@@ -584,22 +584,23 @@ def creator_html(creator: Creator, rows: list[dict]) -> str:
 
 # --- legal pages (privacy / terms) ----------------------------------------
 _LEGAL_CSS = """
-:root{--sun:#FFD60A;--ink:#141414;--grey:#8A8A8A;--line:#EAEAEA;--cream:#FBFAF7}
+:root{--bg:#FFE566;--ink:#201B0A;--grey:#7A6F4A;--line:rgba(32,27,10,.14);--surface:#fff;--accent:#6F5DF0;--accent-deep:#5A47E0}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--ink);background:#fff;line-height:1.65}
+body{font-family:'Instrument Sans',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--ink);line-height:1.65;background:radial-gradient(circle at 18% 10%,#FFF3A8 0%,transparent 46%),radial-gradient(circle at 85% 92%,#FFD23E 0%,transparent 52%),var(--bg)}
 a{color:inherit}
 .wrap{max-width:760px;margin:0 auto;padding:0 24px}
-.topbar{border-bottom:1px solid var(--line)}.topbar .wrap{display:flex;align-items:center;justify-content:space-between;height:64px;max-width:1080px}
-.brandmark{font-family:'Fraunces',serif;font-style:italic;font-weight:700;font-size:22px;text-decoration:none}.brandmark .dot{color:var(--sun)}
-.legal{padding:56px 0 40px}
-.legal h1{font-family:'Fraunces',serif;font-style:italic;font-weight:700;font-size:44px;letter-spacing:-1px;margin-bottom:10px}
+.topbar{background:rgba(255,255,255,.6);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);position:sticky;top:0}.topbar .wrap{display:flex;align-items:center;justify-content:space-between;height:64px;max-width:1080px}
+.brandmark{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:22px;letter-spacing:-.5px;text-decoration:none}.brandmark .dot{color:var(--accent)}
+.legal{margin:32px auto;max-width:800px;padding:0 20px}
+.legal>div{background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:48px 44px;box-shadow:0 10px 30px rgba(32,27,10,.08)}
+.legal h1{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:42px;letter-spacing:-1.5px;margin-bottom:10px}
 .updated{color:var(--grey);font-size:13.5px;margin-bottom:36px}
-.legal h2{font-family:'Fraunces',serif;font-weight:600;font-size:23px;margin:34px 0 12px}
-.legal p{margin:0 0 14px;color:#2e2e2e}
-.legal ul{margin:0 0 14px 22px;color:#2e2e2e}.legal li{margin-bottom:7px}
-.legal a{font-weight:600;border-bottom:2px solid var(--sun);text-decoration:none}
-.footer{border-top:1px solid var(--line);margin-top:20px}.footer .wrap{padding:30px 24px 46px;color:var(--grey);font-size:12.5px;max-width:1080px}
-@media(prefers-color-scheme:dark){body{background:#111;color:#f0f0f0}.legal p,.legal ul{color:#d8d8d8}.topbar,.footer{border-color:#262626}}
+.legal h2{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:22px;margin:34px 0 12px}
+.legal p{margin:0 0 14px}
+.legal ul{margin:0 0 14px 22px}.legal li{margin-bottom:7px}
+.legal a{font-weight:600;color:var(--accent-deep);border-bottom:2px solid var(--accent);text-decoration:none}
+.footer{margin-top:8px}.footer .wrap{padding:26px 24px 46px;color:var(--grey);font-size:12.5px;max-width:1080px}
+.footer a{color:var(--accent-deep);font-weight:600}
 """
 
 # NOTE: starting template — review with counsel and edit before relying on it.

@@ -9,51 +9,51 @@
   "mirrored": false,
   "model": "claude-sonnet-4-6",
   "usage": {
-    "input_tokens": 7755,
-    "output_tokens": 844,
+    "input_tokens": 7761,
+    "output_tokens": 856,
     "api_calls": 4
   },
   "cost_usd": {
     "transcription": 0.0,
-    "extraction": 0.035925,
-    "total": 0.035925
+    "extraction": 0.036123,
+    "total": 0.036123
   },
   "products": [
     {
       "product_name": "Glitterpedia Eye Palette",
       "brand": "Unleashia",
-      "variant_or_shade": "No. 5 All of Coralypso",
+      "variant_or_shade": "No. 5 All of Coralpool",
       "evidence_type": "both",
-      "timestamp_s": 3.4,
+      "timestamp_s": 3.1,
       "transcript_quote": "I'm starting with a mixture of peachy and glittery shadows from this unleashedia palette",
-      "confidence": 0.93
+      "confidence": 0.95
     },
     {
       "product_name": "Easy Glide Fit Eyeliner",
       "brand": "Unleashia",
       "variant_or_shade": "No. 2 Mood Brown",
       "evidence_type": "both",
-      "timestamp_s": 6.8,
+      "timestamp_s": 6.2,
       "transcript_quote": "I'm going to draw a brown winged liner",
-      "confidence": 0.9
+      "confidence": 0.92
     },
     {
       "product_name": "Shaper Defining Eyebrow Pencil",
       "brand": "Unleashia",
       "variant_or_shade": "No. 3 Taupe Gray",
       "evidence_type": "both",
-      "timestamp_s": 14.9,
+      "timestamp_s": 14.2,
       "transcript_quote": "I'm using a fine tip eyebrow pencil before moving on to the eyebrow gel",
-      "confidence": 0.9
+      "confidence": 0.92
     },
     {
       "product_name": "Shaper Pomade Eyebrow Fixer",
       "brand": "Unleashia",
       "variant_or_shade": "No. 1 Clear",
       "evidence_type": "both",
-      "timestamp_s": 15.9,
-      "transcript_quote": "moving on to the eyebrow gel",
-      "confidence": 0.9
+      "timestamp_s": 18.1,
+      "transcript_quote": "I'm going to finish with a peachy shadow all over my cheeks",
+      "confidence": 0.92
     },
     {
       "product_name": "false lashes",
@@ -62,7 +62,8 @@
       "evidence_type": "spoken",
       "timestamp_s": 23.6,
       "transcript_quote": "Add some lashes",
-      "confidence": 0.6
+      "confidence": 0.7
     }
-  ]
+  ],
+  "video_title": null
 }

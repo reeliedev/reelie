@@ -590,7 +590,8 @@ def process_video(path: Path, client: anthropic.Anthropic, model: str,
                   hold: bool = HOLD_FRAMES,
                   use_description: bool = True,
                   auto_mirror: bool = True,
-                  recover_brands_flag: bool = False) -> dict:  # OFF: hallucinates brands
+                  recover_brands_flag: bool = False,  # OFF: hallucinates brands
+                  title: str = "") -> dict:
     video_id = sanitize_id(path.stem)
     print(f"\n=== {video_id} ({path.name}) ===")
 
@@ -658,6 +659,7 @@ def process_video(path: Path, client: anthropic.Anthropic, model: str,
 
     result = {
         "video_id": video_id,
+        "video_title": title,
         "source_file": path.name,
         "duration_s": round(duration, 1),
         "num_frames": len(frames),

@@ -57,6 +57,7 @@ def available_videos(user: User = Depends(current_user)):
 class GenerateBody(BaseModel):
     videoId: str | None = None   # generate from an already-extracted video, OR…
     url: str | None = None       # …a video link the creator pastes (extract, then build)
+    title: str | None = None     # optional: the creator's chosen page name
 
 
 @router.post("/generate")
@@ -81,7 +82,7 @@ def start_generation(body: GenerateBody, background: BackgroundTasks,
     session.refresh(job)
 
     background.add_task(_run_generation, job.id, user.handle, user.display_name,
-                        body.videoId, url or None)
+                        body.videoId, url or None, (body.title or "").strip() or None)
     return {"jobId": job.id, "status": job.status}
 
 
@@ -112,7 +113,8 @@ def _set(job_id: str, **fields) -> None:
 
 
 def _run_generation(job_id: str, handle: str, display_name: str,
-                    video_id: str | None, url: str | None = None) -> None:
+                    video_id: str | None, url: str | None = None,
+                    title: str | None = None) -> None:
     try:
         # 1) If the creator pasted a link, extract it first (download → transcribe →
         #    keyframes → find products) into an output/<id>.json.
@@ -135,8 +137,10 @@ def _run_generation(job_id: str, handle: str, display_name: str,
         cmd = [config.PYTHON_BIN, str(config.GENERATE_PY),
                "--from-output", video_id, "--handle", handle,
                "--name", display_name or handle]
+        if title:
+            cmd += ["--title", title]
         if not config.GENERATE_CLIPS:
-            cmd.append("--no-clips")   # plain API image has no ffmpeg/source video
+            cmd.append("--no-clips")   # minimal worker without ffmpeg/source video
         if not config.GENERATE_LIVE:
             cmd.append("--mock")
         env = {**os.environ, "REELIE_API_URL": config.SELF_URL,

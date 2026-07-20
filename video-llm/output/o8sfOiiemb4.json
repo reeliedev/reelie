@@ -1,0 +1,194 @@
+{
+  "video_id": "o8sfOiiemb4",
+  "source_file": "o8sfOiiemb4.mp4",
+  "duration_s": 129.5,
+  "num_frames": 30,
+  "num_products": 19,
+  "num_video_products": 19,
+  "num_description_products": 0,
+  "mirrored": false,
+  "model": "claude-sonnet-4-6",
+  "usage": {
+    "input_tokens": 20527,
+    "output_tokens": 3535,
+    "api_calls": 4
+  },
+  "cost_usd": {
+    "transcription": 0.0,
+    "extraction": 0.114606,
+    "total": 0.114606
+  },
+  "products": [
+    {
+      "product_name": "Beta Glucan serum",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 5.0,
+      "transcript_quote": "Skin prep, I'm using this gigantic bottle of beta glucan.",
+      "confidence": 0.75
+    },
+    {
+      "product_name": "345 Cream",
+      "brand": "Dr. Althea",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 7.7,
+      "transcript_quote": "Followed by this 345 cream by Dr. Althea.",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Hydrating Sunscreen",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 9.7,
+      "transcript_quote": "I'm a hydrating sunscreen.",
+      "confidence": 0.7
+    },
+    {
+      "product_name": "Concealer palette",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 10.9,
+      "transcript_quote": "I'm gonna conceal my acne before going in with foundation.",
+      "confidence": 0.65
+    },
+    {
+      "product_name": "Setting Spray",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 21.7,
+      "transcript_quote": "we'll have to set the whole face with a setting spray.",
+      "confidence": 0.75
+    },
+    {
+      "product_name": "Hydrating Foundation",
+      "brand": "Dior",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 23.8,
+      "transcript_quote": "I'm using my favorite hydrating foundation from Dior",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Glow Drop",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 26.1,
+      "transcript_quote": "and mix in a glow drop.",
+      "confidence": 0.7
+    },
+    {
+      "product_name": "Brightening Concealer",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 31.8,
+      "transcript_quote": "For the brightening concealer,",
+      "confidence": 0.7
+    },
+    {
+      "product_name": "Mesh Powder",
+      "brand": "Hera",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 40.1,
+      "transcript_quote": "I'm using the Hera Mesh Powder.",
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Cream Bronzer",
+      "brand": "Makeup by Mario",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 49.0,
+      "transcript_quote": "We're gonna use some cream bronzer for a makeup by Mario",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Boy Brow",
+      "brand": "Glossier",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 63.9,
+      "transcript_quote": "setting everything in place with the boy brow from Glossier.",
+      "confidence": 0.95
+    },
+    {
+      "product_name": "The Iconic Black eyeliner",
+      "brand": "Hera",
+      "variant_or_shade": null,
+      "evidence_type": "both",
+      "timestamp_s": 67.5,
+      "transcript_quote": "sneaking in a brown timeline for the upper lash line",
+      "confidence": 0.8
+    },
+    {
+      "product_name": "Blush",
+      "brand": "Red Chamber",
+      "variant_or_shade": "Tonguey",
+      "evidence_type": "spoken",
+      "timestamp_s": 76.5,
+      "transcript_quote": "This one is from Red Chamber, a Chinese brand in the shade Tonguey.",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Blush",
+      "brand": "Rhode",
+      "variant_or_shade": "Toasted Teddy",
+      "evidence_type": "both",
+      "timestamp_s": 82.1,
+      "transcript_quote": "Road in the shade Toasted Teddy.",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Soft Pinch Liquid Blush",
+      "brand": "Rare Beauty",
+      "variant_or_shade": "Love",
+      "evidence_type": "spoken",
+      "timestamp_s": 94.9,
+      "transcript_quote": "so you can use either love by Rare Beauty",
+      "confidence": 0.9
+    },
+    {
+      "product_name": "Peptide Lip Treatment",
+      "brand": "Rhode",
+      "variant_or_shade": "Candy Apple",
+      "evidence_type": "both",
+      "timestamp_s": 96.8,
+      "transcript_quote": "or Candy Apple by Road.",
+      "confidence": 0.85
+    },
+    {
+      "product_name": "Highlighter",
+      "brand": "Westman Atelier",
+      "variant_or_shade": "Nectar",
+      "evidence_type": "spoken",
+      "timestamp_s": 109.8,
+      "transcript_quote": "Westman Atelier in the shade nectar.",
+      "confidence": 0.95
+    },
+    {
+      "product_name": "Glitter",
+      "brand": "Lancome",
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 114.4,
+      "transcript_quote": "at Glitter from Lancome for the inner corner of my eye.",
+      "confidence": 0.85
+    },
+    {
+      "product_name": "Lip Liner",
+      "brand": "Mac",
+      "variant_or_shade": "Open",
+      "evidence_type": "spoken",
+      "timestamp_s": 117.1,
+      "transcript_quote": "For lip liner, I'm using Open Mac.",
+      "confidence": 0.8
+    }
+  ]
+}

@@ -112,10 +112,11 @@ LANDING_DIR = Path(__file__).resolve().parent / "landing"
 # the LLM (needs ANTHROPIC_API_KEY on the generator's environment).
 GENERATE_LIVE = os.environ.get("GENERATE_LIVE") == "1"
 
-# Cut per-step video clips during generation (needs ffmpeg + the source video —
-# the worker, not the plain API image). When on, clips are copied to MEDIA_ROOT
-# and their URLs synced to the DB.
-GENERATE_CLIPS = os.environ.get("GENERATE_CLIPS") == "1"
+# Cut per-step video clips during generation. On by default: the URL flow
+# downloads the source and the generator bundles ffmpeg (via static-ffmpeg), and
+# clip-cutting skips gracefully when no source is present. Set GENERATE_CLIPS=0
+# to disable (e.g. a minimal worker without the media deps).
+GENERATE_CLIPS = os.environ.get("GENERATE_CLIPS", "1") == "1"
 
 # --------------------------------------------------------------------------
 # Social OAuth (Pillar 2): connect a creator's YouTube / Instagram so we can

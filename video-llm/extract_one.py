@@ -44,7 +44,9 @@ OUTPUT = HERE / "output"
 MODEL = "claude-sonnet-4-6"
 
 
-def _download(url: str) -> Path:
+def _download(url: str) -> tuple[Path, str]:
+    """Download the video; return (path, title). The title is the platform's own
+    video title, used as the page's default name."""
     import yt_dlp
     VIDEOS.mkdir(parents=True, exist_ok=True)
     opts = {
@@ -59,7 +61,7 @@ def _download(url: str) -> Path:
         path = Path(ydl.prepare_filename(info))
         if path.suffix != ".mp4":
             path = path.with_suffix(".mp4")
-        return path
+        return path, (info.get("title") or "").strip()
 
 
 def main() -> int:
@@ -73,8 +75,12 @@ def main() -> int:
         print("ERROR: ANTHROPIC_API_KEY not set", file=sys.stderr)
         return 4
 
+    title = ""
     try:
-        src = _download(arg) if arg.startswith("http") else Path(arg)
+        if arg.startswith("http"):
+            src, title = _download(arg)
+        else:
+            src = Path(arg)
     except Exception as e:
         print(f"ERROR: download failed: {e}", file=sys.stderr)
         return 5
@@ -85,7 +91,7 @@ def main() -> int:
     client = anthropic.Anthropic(api_key=key)
     result = pipeline.process_video(
         src, client, MODEL, cache_dir=CACHE, out_dir=OUTPUT,
-        use_api=False, whisper_size="base")
+        use_api=False, whisper_size="base", title=title)
     print(f"VIDEO_ID:{result['video_id']}")
     return 0
 

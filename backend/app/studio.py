@@ -140,8 +140,10 @@ function viewBecomeCreator(){
 async function viewDashboard(){
   app.innerHTML = '<h1>Your pages</h1><p class="sub">Generate a page from a video link, then edit or manage it.</p>'+
    '<div class="card"><h2>New page from a link</h2>'+
-   '<div class="row"><input id="url" placeholder="YouTube, TikTok, or a video URL" style="flex:1;min-width:220px">'+
-   '<button class="btn" id="gen">Make page</button></div>'+
+   '<input id="url" placeholder="YouTube, TikTok, or a video URL">'+
+   '<div style="height:10px"></div>'+
+   '<input id="ptitle" placeholder="Page name (optional — defaults to the video title)">'+
+   '<div style="height:12px"></div><button class="btn" id="gen">Make page</button>'+
    '<div class="muted" id="genstatus" style="margin-top:10px"></div></div>'+
    '<div class="card" id="pages"><p class="muted">Loading your pages…</p></div>';
   document.getElementById('gen').onclick = doGenerate;
@@ -201,10 +203,11 @@ async function del(slug){ if(!confirm('Delete this page? This cannot be undone.'
 
 async function doGenerate(){
   var url = document.getElementById('url').value.trim(), st=document.getElementById('genstatus'), btn=document.getElementById('gen');
+  var title = document.getElementById('ptitle').value.trim();
   if(!url){ st.textContent='Paste a video link first.'; return; }
   btn.disabled=true; st.innerHTML='<span class="spin"></span> Starting…';
   try {
-    var r = await api('POST','/me/generate',{url:url}); var job=r.jobId;
+    var r = await api('POST','/me/generate',{url:url, title:title||undefined}); var job=r.jobId;
     for(var i=0;i<200;i++){
       await new Promise(function(res){setTimeout(res,3000);});
       var s = await api('GET','/me/generate/'+job);

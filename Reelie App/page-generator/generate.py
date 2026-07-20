@@ -30,6 +30,15 @@ from pathlib import Path
 # make sibling modules importable when run from anywhere
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+# Ensure clip-cutting has ffmpeg/ffprobe on PATH (pip-bundled; no Homebrew needed).
+try:
+    import os as _os
+    from static_ffmpeg import run as _sf
+    _os.environ["PATH"] = (_os.path.dirname(_sf.get_or_fetch_platform_executables_else_raise()[0])
+                           + _os.pathsep + _os.environ.get("PATH", ""))
+except Exception:
+    pass
+
 import config
 import clips
 import extractor
@@ -62,6 +71,8 @@ def main(argv=None) -> int:
     ap.add_argument("--video-url", default="", help="public URL of the source video")
     ap.add_argument("--custom-slug", default=None,
                     help="creator's custom link (overrides the generated slug)")
+    ap.add_argument("--title", default=None,
+                    help="page title (overrides the auto/video title)")
     ap.add_argument("--mock", action="store_true",
                     help="offline: heuristic title + stub prices, no API calls")
     ap.add_argument("--no-clips", action="store_true",
@@ -98,8 +109,13 @@ def main(argv=None) -> int:
         client=client, mock=args.mock,
         display_name=args.name, platforms=args.platforms, video_url=args.video_url,
     )
+    if args.title:
+        page.title = args.title.strip()[:80]
     if args.custom_slug:
         page.custom_slug = page_builder.slugify(args.custom_slug)
+    elif args.title:
+        # keep the URL in sync with the creator's chosen name
+        page.custom_slug = page_builder.slugify(args.title)
     print(f"· page: “{page.title}”  →  {page.url}")
 
     # 4. per-step video clips (before render, so the page can embed them) -----

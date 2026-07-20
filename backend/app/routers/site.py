@@ -14,7 +14,7 @@ from fastapi import APIRouter, Depends, HTTPException, Response
 from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
 from sqlmodel import Session, select
 
-from app import config, public_site
+from app import config, public_site, reco, studio
 from app.db import get_session
 from app.models import Creator, Page, Product
 
@@ -69,6 +69,12 @@ def schema_graph(session: Session = Depends(get_session)):
     return JSONResponse(public_site.site_graph(_rows(session)))
 
 
+# --- creator studio (authenticated client-side; JS calls the API) ---------
+@router.get("/studio", response_class=HTMLResponse)
+def creator_studio():
+    return studio.studio_html()
+
+
 # --- legal ----------------------------------------------------------------
 @router.get("/privacy", response_class=HTMLResponse)
 def privacy():
@@ -109,4 +115,5 @@ def routine_page(handle: str, slug: str, session: Session = Depends(get_session)
                                                        avatar_gradient=config.DEFAULT_AVATAR_GRADIENT)
     products = session.exec(select(Product).where(Product.page_id == page.id)
                             .order_by(Product.position)).all()
-    return public_site.page_html(page, creator, products)
+    similar, also = reco.page_reco(session, handle, products)
+    return public_site.page_html(page, creator, products, similar=similar, also=also)

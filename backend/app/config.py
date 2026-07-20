@@ -68,7 +68,8 @@ AI_CRAWLERS = ["GPTBot", "OAI-SearchBot", "ChatGPT-User", "ClaudeBot", "Claude-W
 RESERVED_HANDLES = {"me", "auth", "creators", "routines", "recommendations", "ingest",
                     "r", "earnings", "pages", "payouts", "connect", "health", "api",
                     "robots.txt", "llms.txt", "sitemap.xml", "schema-graph.json",
-                    "favicon.ico", "static", "assets", "admin", "about", "terms", "privacy"}
+                    "favicon.ico", "static", "assets", "admin", "about", "terms", "privacy",
+                    "studio", "media", "login", "signin", "signup", "dashboard"}
 
 # Where to import seed pages from (the web generator's registry), if present.
 REPO_ROOT = HERE.parent

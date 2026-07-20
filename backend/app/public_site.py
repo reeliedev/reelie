@@ -344,7 +344,23 @@ def _totals(products: list[Product]) -> dict:
     }
 
 
-def _product_block(page: Page, p: Product) -> str:
+def _avatar(gradient: list) -> str:
+    g0 = gradient[0] if gradient else "#E8E4DA"
+    g1 = gradient[1] if len(gradient) > 1 else "#D8D2C4"
+    return f'<span class="who-av" style="background:linear-gradient(135deg,{g0},{g1})"></span>'
+
+
+def _also_used(others: list[dict]) -> str:
+    """Small 'also used by' strip of other creators using this exact product."""
+    if not others:
+        return ""
+    chips = "".join(
+        f'<a class="who" href="{BASE}/{_esc(c["handle"])}" title="{_esc(c["name"])}">'
+        f'{_avatar(c["avatar_gradient"])}</a>' for c in others)
+    return f'<div class="s-also"><span class="s-also-label">Also used by</span>{chips}</div>'
+
+
+def _product_block(page: Page, p: Product, also: list[dict] | None = None) -> str:
     brand = f'<div class="s-brand">{_esc(p.brand)}</div>' if p.brand else ""
     variant = f' <span class="s-variant">{_esc(p.variant)}</span>' if p.variant else ""
     narration = p.guide or (f'"{p.note}"' if p.note else None)
@@ -365,7 +381,21 @@ def _product_block(page: Page, p: Product) -> str:
               {price_html}
               <a class="shop" href="{_esc(shop_url(page.handle, page.slug, p.position))}" rel="sponsored nofollow" target="_blank">Shop at {retailer} <span aria-hidden="true">→</span></a>
             </div>
+            {_also_used(also or [])}
           </div>"""
+
+
+def _similar_module(similar: list[dict]) -> str:
+    if not similar:
+        return ""
+    cards = "".join(
+        f'<a class="sim-card" href="{BASE}/{_esc(c["handle"])}">{_avatar(c["avatar_gradient"])}'
+        f'<span class="sim-name">{_esc(c["name"])}</span>'
+        f'<span class="sim-reason">{_esc(c["reason"])}</span></a>' for c in similar)
+    return (f'<section class="similar"><div class="wrap">'
+            f'<div class="eyebrow">You might also like</div>'
+            f'<h2>Creators with a similar shelf</h2>'
+            f'<div class="sim-row">{cards}</div></div></section>')
 
 
 def _group_by_clip(products: list[Product]) -> list[list[Product]]:
@@ -384,10 +414,11 @@ def _group_by_clip(products: list[Product]) -> list[list[Product]]:
     return groups
 
 
-def _steps_html(page: Page, products: list[Product]) -> str:
+def _steps_html(page: Page, products: list[Product], also: dict[int, list] | None = None) -> str:
     """One editorial step per video moment (clip), listing every product in that
     moment. When a product has a clip URL the big video renders (with tap-to-
     unmute, driven by the template's JS); otherwise the emoji fallback shows."""
+    also = also or {}
     rows = []
     for gi, group in enumerate(_group_by_clip(products), 1):
         lead = group[0]
@@ -405,7 +436,7 @@ def _steps_html(page: Page, products: list[Product]) -> str:
         side = "media-left" if gi % 2 else "media-right"
         when = f' · {_esc(lead.timestamp)}' if lead.timestamp and lead.timestamp != "0:00" else ""
         multi = " has-multi" if len(group) > 1 else ""
-        products_html = "\n".join(_product_block(page, p) for p in group)
+        products_html = "\n".join(_product_block(page, p, also.get(p.position)) for p in group)
         rows.append(f"""      <article class="step {side}">
         <div class="s-media">{media}</div>
         <div class="s-content">
@@ -431,7 +462,8 @@ def _faq_html(page: Page, creator: Creator, products: list[Product]) -> str:
             f'<div class="faq-list">{items}</div></div></section>')
 
 
-def page_html(page: Page, creator: Creator, products: list[Product]) -> str:
+def page_html(page: Page, creator: Creator, products: list[Product],
+              similar: list[dict] | None = None, also: dict[int, list] | None = None) -> str:
     url = page_url(page.handle, page.slug)
     grad = creator.avatar_gradient or config.DEFAULT_AVATAR_GRADIENT
     grad0, grad1 = grad[0], grad[1] if len(grad) > 1 else grad[0]
@@ -448,9 +480,9 @@ def page_html(page: Page, creator: Creator, products: list[Product]) -> str:
         "META": _esc(page.meta), "INTRO": _esc(page.intro), "DISCLOSURE": _esc(page.disclosure),
         "GRAD0": grad0, "GRAD1": grad1,
         "JSONLD": json.dumps(page_graph(page, creator, products), indent=2, ensure_ascii=False),
-        "STEPS": _steps_html(page, products),
+        "STEPS": _steps_html(page, products, also),
         "FAQ": _faq_html(page, creator, products),
-        "SIMILAR_MODULE": "",
+        "SIMILAR_MODULE": _similar_module(similar or []),
         "SAVE_KEY": _esc(f"{page.handle}/{page.slug}"),
         "PRODUCT_COUNT": str(t["count"]), "TOTAL_DISPLAY": t["total_display"] or "—",
         "TOTAL_APPROX": _approx(t["any_estimated"]), "RANGE_DISPLAY": t["range_display"],
@@ -479,7 +511,10 @@ a{color:inherit;text-decoration:none}
 .cavatar{width:52px;height:52px;border-radius:50%;border:2px solid var(--sun)}
 h1{font-family:'Fraunces',serif;font-style:italic;font-weight:700;font-size:clamp(34px,5vw,54px);line-height:1.04;letter-spacing:-1px;margin:8px 0 14px}
 .lede{font-size:18px;color:#4a4a4a;max-width:42ch}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px;padding:44px 0 72px}
+.search{margin-top:26px;width:100%;max-width:520px;padding:15px 18px;font:inherit;font-size:16px;border:1.5px solid var(--line);border-radius:14px;background:#fff;color:var(--ink);outline:none}
+.search:focus{border-color:var(--ink)}
+.noresults{padding:20px 0 72px;color:var(--grey)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px;padding:28px 0 72px}
 .card{display:block;border:1px solid var(--line);border-radius:18px;padding:22px 22px;transition:transform .1s ease,box-shadow .1s}
 .card:hover{transform:translateY(-2px);box-shadow:0 24px 50px -32px rgba(20,20,20,.4)}
 .card .ci{width:44px;height:44px;border-radius:12px;background:var(--soft);display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:14px}
@@ -493,10 +528,12 @@ _FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com">'
           '<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,600;1,9..144,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">')
 
 
-def _list_shell(title: str, desc: str, canonical: str, hero: str, cards: str, jsonld: dict | None = None) -> str:
+def _list_shell(title: str, desc: str, canonical: str, hero: str, cards: str,
+                jsonld: dict | None = None, script: str = "") -> str:
     ld = (f'<script type="application/ld+json">{json.dumps(jsonld, ensure_ascii=False)}</script>'
           if jsonld else "")
-    grid = f'<section class="wrap"><div class="grid">{cards}</div></section>' if cards else \
+    grid = f'<section class="wrap"><div class="grid" id="grid">{cards}</div>' \
+           f'<p class="noresults" id="noresults" hidden>No matches.</p></section>' if cards else \
            '<section class="wrap"><p style="padding:44px 0;color:#8A8A8A">No pages yet.</p></section>'
     return f"""<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -511,13 +548,22 @@ def _list_shell(title: str, desc: str, canonical: str, hero: str, cards: str, js
 <section class="hero"><div class="wrap">{hero}</div></section>
 {grid}
 <footer class="footer"><div class="wrap">{config.BRAND} — {_esc(config.TAGLINE)}</div></footer>
-</body></html>"""
+{script}</body></html>"""
+
+
+def _search_text(r: dict) -> str:
+    """Everything a shopper might type: title, creator, brands, product names."""
+    parts = [r["title"], r["creator_name"], f"@{r['handle']}"]
+    for p in r.get("products", []):
+        parts += [p.get("brand", ""), p.get("name", ""), p.get("retailer", "")]
+    return _esc(" ".join(parts).lower())
 
 
 def _card(r: dict, show_creator: bool = True) -> str:
     sub = f'{_esc(r["creator_name"])} · {r["num_products"]} products' if show_creator \
           else f'{r["num_products"]} products'
-    return (f'<a class="card" href="{_esc(r["url"])}"><div class="ci">🛍️</div>'
+    return (f'<a class="card" href="{_esc(r["url"])}" data-search="{_search_text(r)}">'
+            f'<div class="ci">🛍️</div>'
             f'<h3>{_esc(r["title"])}</h3><div class="m">{sub}</div></a>')
 
 
@@ -675,10 +721,30 @@ def terms_html() -> str:
     return _legal_html("Terms of Service", blocks, f"{BASE}/terms")
 
 
+_SEARCH_JS = """<script>
+(function(){
+  var q=document.getElementById('q'), cards=[].slice.call(document.querySelectorAll('#grid .card')),
+      none=document.getElementById('noresults');
+  if(!q) return;
+  function apply(){
+    var t=q.value.trim().toLowerCase(), shown=0;
+    cards.forEach(function(c){
+      var hit=!t||c.getAttribute('data-search').indexOf(t)!==-1;
+      c.style.display=hit?'':'none'; if(hit) shown++;
+    });
+    if(none) none.hidden=shown>0;
+  }
+  q.addEventListener('input', apply);
+})();
+</script>"""
+
+
 def directory_html(rows: list[dict]) -> str:
     hero = (f'<div class="eyebrow">Every product, every routine</div>'
             f'<h1>Shop your favourite<br>creators\' videos</h1>'
-            f'<p class="lede">{_esc(config.TAGLINE)}</p>')
+            f'<p class="lede">{_esc(config.TAGLINE)}</p>'
+            f'<input id="q" class="search" type="search" autocomplete="off" '
+            f'placeholder="Search creators, routines, or products…" aria-label="Search">')
     cards = "".join(_card(r) for r in rows)
     return _list_shell(f"{config.BRAND} — {config.TAGLINE}", config.TAGLINE, BASE, hero, cards,
-                       site_graph(rows))
+                       site_graph(rows), script=_SEARCH_JS)

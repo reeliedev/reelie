@@ -17,6 +17,7 @@ from sqlmodel import Session, select
 from app import config, landing_page, public_site, reco, studio
 from app.db import get_session
 from app.models import Creator, Page, Product
+from app.routers.likes import like_counts
 
 router = APIRouter(tags=["public-site"])
 
@@ -108,6 +109,7 @@ def discover(session: Session = Depends(get_session)):
     creators = {c.handle: c for c in session.exec(select(Creator)).all()}
     pages = session.exec(select(Page).where(Page.archived == False)).all()  # noqa: E712
     pages.sort(key=lambda p: p.created_at, reverse=True)   # newest first
+    counts = like_counts(session)
     items = []
     for page in pages:
         prods = session.exec(select(Product).where(Product.page_id == page.id)
@@ -126,6 +128,8 @@ def discover(session: Session = Depends(get_session)):
                         "platforms": c.platforms if c else []},
             "page_url": public_site.page_url(page.handle, page.slug),
             "page_title": page.title,
+            "handle": page.handle, "slug": page.slug,
+            "likes": counts.get(f"{page.handle}/{page.slug}", 0),
             "total_display": total,
             "products": [
                 {"brand": p.brand, "name": p.name, "emoji": p.emoji,

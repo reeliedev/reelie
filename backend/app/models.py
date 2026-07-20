@@ -134,6 +134,17 @@ class Payout(SQLModel, table=True):
     created_at: datetime = Field(default_factory=_now)
 
 
+class PageLike(SQLModel, table=True):
+    """A guest 'like' on a routine, from the Discover feed. Deduped per browser
+    via a client-generated id kept in localStorage — no account needed."""
+    __table_args__ = (UniqueConstraint("handle", "slug", "client_id", name="uq_like"),)
+    id: str = Field(default_factory=_uuid, primary_key=True)
+    handle: str = Field(index=True)
+    slug: str = Field(index=True)
+    client_id: str = ""
+    created_at: datetime = Field(default_factory=_now)
+
+
 class SocialConnection(SQLModel, table=True):
     """A creator's linked platform account (YouTube / Instagram), established via
     OAuth. Stores the tokens we use to list their videos. One row per (user,

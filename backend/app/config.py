@@ -70,7 +70,7 @@ RESERVED_HANDLES = {"me", "auth", "creators", "routines", "recommendations", "in
                     "robots.txt", "llms.txt", "sitemap.xml", "schema-graph.json",
                     "favicon.ico", "static", "assets", "admin", "about", "terms", "privacy",
                     "studio", "media", "login", "signin", "signup", "dashboard",
-                    "discover", "browse", "styles.css", "main.js", "try", "home"}
+                    "discover", "browse", "styles.css", "main.js", "try", "home", "likes"}
 
 # Where to import seed pages from (the web generator's registry), if present.
 REPO_ROOT = HERE.parent

@@ -808,6 +808,17 @@ a{color:inherit;text-decoration:none}
 .tapsound{position:absolute;inset:0;z-index:4;cursor:pointer}
 .snd{position:absolute;top:14px;right:14px;z-index:6;width:38px;height:38px;border:none;border-radius:50%;background:rgba(0,0,0,.4);color:#fff;font-size:15px;cursor:pointer;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
 .snd .on{display:none}.stage.is-on .snd .on{display:inline}.stage.is-on .snd .off{display:none}
+/* like action rail */
+.rail{position:absolute;right:12px;bottom:20px;z-index:6;display:flex;flex-direction:column;align-items:center;gap:5px}
+.likebtn{width:50px;height:50px;border:none;border-radius:50%;background:rgba(0,0,0,.35);color:#fff;font-size:24px;line-height:1;cursor:pointer;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:transform .12s ease,background .12s ease}
+.likebtn:hover{transform:scale(1.08)}
+.likebtn:active{transform:scale(.9)}
+.likebtn .heart{opacity:.92;transition:color .12s ease}
+.likebtn.liked{background:rgba(255,255,255,.16)}
+.likebtn.liked .heart{color:#FF3B6B}
+.likebtn.pop{animation:pop .3s ease}
+@keyframes pop{0%{transform:scale(1)}45%{transform:scale(1.35)}100%{transform:scale(1)}}
+.likect{color:#fff;font-size:13px;font-weight:700;text-shadow:0 1px 6px rgba(0,0,0,.5)}
 /* the side panel to shop + open the page */
 .panel{width:min(400px,42vw);max-height:min(78vh,720px);display:flex;flex-direction:column;background:#fff;border:1px solid var(--line);border-radius:26px;box-shadow:0 24px 60px -34px rgba(32,27,10,.4);overflow:hidden}
 .p-head{padding:22px 22px 16px;border-bottom:1px solid var(--line)}
@@ -858,9 +869,16 @@ def _reel(item: dict, first: bool) -> str:
             f'<div class="pn">{_esc(p["name"])}</div>{price}</div>'
             f'<a class="shop" href="{_esc(p["shop_url"])}" rel="sponsored nofollow" target="_blank">Shop</a></div>')
     plats = " · ".join(c.get("platforms") or []) or "Creator"
+    like_key = f"{item['handle']}/{item['slug']}"
     return f"""<section class="reel"><div class="stage">
 {media}<div class="tapsound"></div>
 <button class="snd" type="button" aria-label="Sound"><span class="off">🔇</span><span class="on">🔊</span></button>
+<div class="rail">
+  <button class="likebtn" type="button" data-key="{_esc(like_key)}"
+          data-handle="{_esc(item['handle'])}" data-slug="{_esc(item['slug'])}" aria-label="Like">
+    <span class="heart">♥</span></button>
+  <span class="likect" data-key="{_esc(like_key)}">{item.get('likes', 0)}</span>
+</div>
 </div>
 <aside class="panel">
   <div class="p-head">
@@ -913,6 +931,36 @@ def discover_feed_html(items: list[dict]) -> str:
   }} else {{ if(vids[0])vids[0].play().catch(function(){{}}); }}
   var feed=document.getElementById('feed');
   feed.addEventListener('scroll', function(){{ if(hint)hint.style.display='none'; }}, {{once:true}});
+
+  // --- guest likes (no account) ---
+  function cid(){{
+    var k='reelie.cid', v=localStorage.getItem(k);
+    if(!v){{ v=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():('c'+Date.now()+Math.round(Math.random()*1e6)); localStorage.setItem(k,v); }}
+    return v;
+  }}
+  function likedSet(){{ try{{return JSON.parse(localStorage.getItem('reelie.likes')||'[]');}}catch(e){{return [];}} }}
+  function saveLikes(a){{ localStorage.setItem('reelie.likes', JSON.stringify(a)); }}
+  var liked=likedSet();
+  // reflect stored liked-state on load
+  document.querySelectorAll('.likebtn').forEach(function(b){{
+    if(liked.indexOf(b.getAttribute('data-key'))!==-1) b.classList.add('liked');
+  }});
+  document.querySelectorAll('.likebtn').forEach(function(b){{
+    b.addEventListener('click', function(e){{
+      e.preventDefault();
+      var key=b.getAttribute('data-key'), now=!b.classList.contains('liked');
+      b.classList.toggle('liked', now); b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop');
+      liked=likedSet(); var i=liked.indexOf(key);
+      if(now && i===-1) liked.push(key); else if(!now && i!==-1) liked.splice(i,1);
+      saveLikes(liked);
+      var ctEl=document.querySelector('.likect[data-key="'+key.replace(/"/g,'')+'"]');
+      if(ctEl) ctEl.textContent=Math.max(0,(parseInt(ctEl.textContent,10)||0)+(now?1:-1)); // optimistic
+      fetch('/likes/toggle',{{method:'POST',headers:{{'Content-Type':'application/json'}},
+        body:JSON.stringify({{handle:b.getAttribute('data-handle'),slug:b.getAttribute('data-slug'),clientId:cid(),liked:now}})}})
+        .then(function(r){{return r.json();}}).then(function(d){{ if(ctEl&&typeof d.count==='number') ctEl.textContent=d.count; }})
+        .catch(function(){{}});
+    }});
+  }});
 }})();
 </script>
 </body></html>"""

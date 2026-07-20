@@ -72,15 +72,15 @@ struct AuthResult: Decodable { let token: String; let user: UserDTO }
 struct APIClient {
     let baseURL: URL
 
-    private func get<T: Decodable>(_ path: String, as type: T.Type, token: String? = nil) async throws -> T {
+    func get<T: Decodable>(_ path: String, as type: T.Type, token: String? = nil) async throws -> T {
         var req = URLRequest(url: baseURL.appendingPathComponent(path))
         if let token { req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization") }
         let (data, _) = try await URLSession.shared.data(for: req)
         return try JSONDecoder().decode(T.self, from: data)
     }
 
-    private func post<T: Decodable>(_ path: String, body: [String: Any], as type: T.Type,
-                                    token: String? = nil) async throws -> T {
+    func post<T: Decodable>(_ path: String, body: [String: Any], as type: T.Type,
+                            token: String? = nil) async throws -> T {
         var req = URLRequest(url: baseURL.appendingPathComponent(path))
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")

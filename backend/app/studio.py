@@ -183,10 +183,12 @@ function viewApply(){
 
 function viewPending(){
   app.innerHTML =
-   '<h1>Application received ✨</h1>'+
-   '<div class="card" style="max-width:480px">'+
-   '<p style="font-size:16px">Thanks, <b>@'+esc(me.handle)+'</b> — your application is <b>under review</b>.</p>'+
-   '<p class="muted" style="margin-top:10px">We\'re a closed beta right now. We check every creator by hand, then email you at <b>'+esc(me.email||'')+'</b> when you\'re approved. Once you\'re in, you\'ll be able to turn your videos into shoppable pages here.</p>'+
+   '<h1>Application received — under review</h1>'+
+   '<div class="card" style="max-width:520px">'+
+   '<p style="font-size:16px">Thanks, <b>@'+esc(me.handle)+'</b> ✨</p>'+
+   '<p style="font-size:16px;margin-top:12px"><b>Please check your Instagram DMs.</b> We\'ll notify you via email'+
+   (me.email?' at <b>'+esc(me.email)+'</b>':'')+
+   ' when we\'ve sent you a DM on Instagram to complete the verification process.</p>'+
    '<div style="height:16px"></div><button class="btn ghost sm" onclick="render()">Refresh status</button></div>';
 }
 

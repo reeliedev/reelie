@@ -61,6 +61,13 @@ if SUPABASE_URL:
 JWT_SECRET = os.environ.get("JWT_SECRET") or ("dev-only-secret-do-not-use-in-prod" if not IS_PROD else "")
 if IS_PROD and not JWT_SECRET:
     raise RuntimeError("JWT_SECRET must be set when REELIE_ENV=prod")
+
+# Internal service token: gates the /ingest write (the generator/worker → API) so
+# it's not an open endpoint. The API passes it to the generator subprocess; only
+# holders of this secret can publish pages.
+INGEST_TOKEN = os.environ.get("INGEST_TOKEN") or ("dev-ingest-token" if not IS_PROD else "")
+if IS_PROD and not INGEST_TOKEN:
+    raise RuntimeError("INGEST_TOKEN must be set when REELIE_ENV=prod")
 JWT_ALGORITHM = "HS256"
 JWT_TTL_SECONDS = 60 * 60 * 24 * 30                 # 30 days
 

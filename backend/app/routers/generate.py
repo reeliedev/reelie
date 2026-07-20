@@ -144,7 +144,8 @@ def _run_generation(job_id: str, handle: str, display_name: str,
         if not config.GENERATE_LIVE:
             cmd.append("--mock")
         env = {**os.environ, "REELIE_API_URL": config.SELF_URL,
-               "REELIE_MEDIA_ROOT": str(config.MEDIA_ROOT)}
+               "REELIE_MEDIA_ROOT": str(config.MEDIA_ROOT),
+               "REELIE_INGEST_TOKEN": config.INGEST_TOKEN}
         result = subprocess.run(cmd, cwd=str(config.PAGE_GENERATOR_DIR), env=env,
                                 capture_output=True, text=True, timeout=300)
         if result.returncode != 0:

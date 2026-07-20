@@ -83,7 +83,11 @@ def sync_page(page: Page) -> str | None:
         return None
     url = base.rstrip("/") + "/ingest/page"
     data = json.dumps(_payload(page)).encode()
-    req = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json"})
+    headers = {"Content-Type": "application/json"}
+    tok = os.environ.get("REELIE_INGEST_TOKEN")
+    if tok:
+        headers["X-Ingest-Token"] = tok
+    req = urllib.request.Request(url, data=data, headers=headers)
     try:
         with urllib.request.urlopen(req, timeout=5) as resp:
             json.load(resp)

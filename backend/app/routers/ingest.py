@@ -6,7 +6,7 @@ for local dev; would be a creator-authenticated write in production.
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel
 from sqlmodel import Session, delete, select
 
@@ -16,6 +16,12 @@ from app.models import Creator, Page, Product
 from app.serialize import normalize_product
 
 router = APIRouter(prefix="/ingest", tags=["ingest"])
+
+
+def require_ingest_token(x_ingest_token: str = Header(default="")) -> None:
+    """Only the generator/worker (which holds INGEST_TOKEN) may publish pages."""
+    if not config.INGEST_TOKEN or x_ingest_token != config.INGEST_TOKEN:
+        raise HTTPException(status_code=401, detail="Unauthorized")
 
 
 class IngestProduct(BaseModel):
@@ -57,7 +63,7 @@ class IngestPage(BaseModel):
     products: list[IngestProduct] = []
 
 
-@router.post("/page")
+@router.post("/page", dependencies=[Depends(require_ingest_token)])
 def ingest_page(body: IngestPage, session: Session = Depends(get_session)):
     # upsert creator
     creator = session.get(Creator, body.handle)

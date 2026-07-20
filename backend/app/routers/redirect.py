@@ -17,9 +17,11 @@ from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 from sqlmodel import Session, select
 
+from app import config
 from app.db import get_session
 from app.integrations import affiliate
 from app.models import Click, Page, Product, Sale
+from app.routers.ingest import require_ingest_token
 
 router = APIRouter(prefix="/r", tags=["redirect"])
 
@@ -63,7 +65,10 @@ class Postback(BaseModel):
     clickId: str | None = None
 
 
-@router.post("/postback")
+# Conversion callback. Protected by the internal token for now (records earnings,
+# so it must not be open). When a real affiliate network is wired, replace this
+# with the network's signature verification.
+@router.post("/postback", dependencies=[Depends(require_ingest_token)])
 def postback(body: Postback, session: Session = Depends(get_session)):
     page, product = _product_at(session, body.handle, body.slug, body.position)
     rate = product.rate or 8
@@ -87,6 +92,8 @@ class Simulate(BaseModel):
 @router.post("/simulate")
 def simulate(body: Simulate, session: Session = Depends(get_session)):
     """Dev-only: generate believable click + conversion traffic for a creator."""
+    if config.IS_PROD:
+        raise HTTPException(404)   # never expose fabricated traffic in production
     products = session.exec(
         select(Product, Page).join(Page, Product.page_id == Page.id)
         .where(Page.handle == body.handle)).all()

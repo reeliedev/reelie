@@ -64,7 +64,7 @@ def load_extraction(source: str) -> Extraction:
         transcript_text=_read_transcript(video_id),
         description=_read_description(video_id),
         duration_s=data.get("duration_s", 0.0),
-        title=data.get("video_title", ""),
+        title=(data.get("video_title") or ""),   # tolerate explicit null
         source_file=data.get("source_file", ""),
     )
 

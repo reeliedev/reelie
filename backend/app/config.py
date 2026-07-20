@@ -69,7 +69,8 @@ RESERVED_HANDLES = {"me", "auth", "creators", "routines", "recommendations", "in
                     "r", "earnings", "pages", "payouts", "connect", "health", "api",
                     "robots.txt", "llms.txt", "sitemap.xml", "schema-graph.json",
                     "favicon.ico", "static", "assets", "admin", "about", "terms", "privacy",
-                    "studio", "media", "login", "signin", "signup", "dashboard"}
+                    "studio", "media", "login", "signin", "signup", "dashboard",
+                    "discover", "browse", "styles.css", "main.js", "try", "home"}
 
 # Where to import seed pages from (the web generator's registry), if present.
 REPO_ROOT = HERE.parent
@@ -102,6 +103,10 @@ SELF_URL = os.environ.get("REELIE_SELF_URL", "http://127.0.0.1:8010")
 # object storage (Cloudflare R2 / S3 + CDN) — swap MEDIA_ROOT/base then.
 MEDIA_ROOT = Path(os.environ.get("REELIE_MEDIA_ROOT", str(HERE / "media")))
 MEDIA_ROOT.mkdir(parents=True, exist_ok=True)
+
+# The marketing landing page (served as the site home at /). Bundled into the
+# image so it ships with the API.
+LANDING_DIR = Path(__file__).resolve().parent / "landing"
 
 # Mock keeps generation $0 (stub prices, no API key). Set GENERATE_LIVE=1 to use
 # the LLM (needs ANTHROPIC_API_KEY on the generator's environment).

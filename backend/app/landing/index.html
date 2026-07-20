@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Retrieva — Your routines, shoppable automatically</title>
+  <meta name="description" content="You post like normal. Retrieva turns every skincare and makeup routine into a shoppable page — automatically. One tap to approve. Free forever.">
+  <meta property="og:title" content="Retrieva — Your routines, shoppable automatically">
+  <meta property="og:description" content="AI turns your IG Reels, TikToks and YouTube videos into shoppable routine pages. Zero manual linking. One tap to approve.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Retrieva">
+  <meta name="theme-color" content="#FFE566">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Retrieva",
+    "description": "Retrieva automatically turns creators' videos into shoppable routine pages on the open web.",
+    "email": "hello@retrieva.com"
+  }
+  </script>
+  <!-- reelie:schema:start -->
+<script id="reelie-schema" type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://reelie.shop#org",
+      "name": "Reelie",
+      "url": "https://reelie.shop",
+      "description": "Every product in your favourite creators' videos — found, priced and linked, automatically.",
+      "email": "hello@reelie.shop"
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://reelie.shop#website",
+      "url": "https://reelie.shop",
+      "name": "Reelie",
+      "publisher": {
+        "@id": "https://reelie.shop#org"
+      }
+    },
+    {
+      "@type": "CollectionPage",
+      "@id": "https://reelie.shop#creator-pages",
+      "name": "Reelie creator pages",
+      "isPartOf": {
+        "@id": "https://reelie.shop#website"
+      },
+      "mainEntity": {
+        "@type": "ItemList",
+        "numberOfItems": 10,
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "url": "https://reelie.shop/beautybynina/my-everyday-routine",
+            "name": "My everyday routine — Nina Cole"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "url": "https://reelie.shop/demoauthcreator/my-everyday-routine",
+            "name": "My everyday routine — Demo.Creator"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "url": "https://reelie.shop/everydayamira/my-everyday-routine",
+            "name": "My everyday routine — Amira Hassan"
+          },
+          {
+            "@type": "ListItem",
+            "position": 4,
+            "url": "https://reelie.shop/glowbyjess/my-everyday-routine",
+            "name": "My everyday routine — Jess Tan"
+          },
+          {
+            "@type": "ListItem",
+            "position": 5,
+            "url": "https://reelie.shop/kaicreates/my-everyday-routine",
+            "name": "My everyday routine — Kai Ng"
+          },
+          {
+            "@type": "ListItem",
+            "position": 6,
+            "url": "https://reelie.shop/kbeautykay/my-everyday-routine",
+            "name": "My everyday routine — Kay Kim"
+          },
+          {
+            "@type": "ListItem",
+            "position": 7,
+            "url": "https://reelie.shop/linktester/my-everyday-routine",
+            "name": "My everyday routine — Link Tester"
+          },
+          {
+            "@type": "ListItem",
+            "position": 8,
+            "url": "https://reelie.shop/mayarivers/my-everyday-routine",
+            "name": "My everyday routine — Maya Rivers"
+          },
+          {
+            "@type": "ListItem",
+            "position": 9,
+            "url": "https://reelie.shop/newcreatordemo/my-everyday-routine",
+            "name": "My everyday routine — Demo Newbie"
+          },
+          {
+            "@type": "ListItem",
+            "position": 10,
+            "url": "https://reelie.shop/thefacefiles/my-everyday-routine",
+            "name": "My everyday routine — Priya Shah"
+          }
+        ]
+      }
+    }
+  ]
+}
+</script>
+<!-- reelie:schema:end -->
+</head>
+<body>
+
+  <header class="nav">
+    <a class="wordmark" href="#top">Retrieva</a>
+    <div class="nav-links">
+      <a class="nav-try" href="/">Browse creators</a>
+      <a class="nav-try" href="/try">Try it out!</a>
+      <a class="btn btn-primary btn-small" href="#hero-email" id="nav-cta">Get Early Access ✦</a>
+    </div>
+  </header>
+
+  <main class="hero" id="top">
+
+    <!-- scattered tag pills -->
+    <div class="hero-pills" aria-hidden="true">
+      <span class="pill p-1">✨ skincare routine</span>
+      <span class="pill p-2 pill-accent">auto-tagged</span>
+      <span class="pill p-3">GRWM</span>
+      <span class="pill p-4 pill-accent">zero linking</span>
+    </div>
+
+    <!-- LEFT: pitch + signup -->
+    <div class="col col-left">
+      <p class="eyebrow">Now inviting pilot creators</p>
+      <h1>Your Routines, Shoppable <span class="accent-word">Automatically.</span></h1>
+      <p class="hero-sub">Post like you always do. Retrieva finds every product in your video and builds your shoppable page — you earn commission every time someone shops it.</p>
+
+      <form class="signup" id="hero-form" novalidate>
+        <label class="sr-only" for="hero-email">Email</label>
+        <input id="hero-email" name="email" type="email" placeholder="you@email.com" autocomplete="email" required>
+        <label class="sr-only" for="hero-handle">Instagram or TikTok handle</label>
+        <input id="hero-handle" name="handle" type="text" placeholder="@yourhandle" autocomplete="off">
+        <button class="btn btn-primary" type="submit">Join the pilot</button>
+      </form>
+      <p class="form-note">No card · Limited spots</p>
+      <p class="hero-try-line">Curious how it works? <a class="hero-try" href="/try">Try it on any YouTube video →</a></p>
+    </div>
+
+    <!-- CENTER: story-telling phone -->
+    <div class="col col-phone" aria-hidden="true">
+      <div class="phone">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+
+          <!-- Scene 1 · push notification -->
+          <div class="scene scene-notify" data-scene="0">
+            <div class="lock-time">
+              <span class="lt-clock">9:41</span>
+              <span class="lt-date">Tuesday, July 14</span>
+            </div>
+            <div class="notif">
+              <div class="notif-head">
+                <span class="notif-icon">R</span>
+                <span class="notif-app">Retrieva</span>
+                <span class="notif-when">now</span>
+              </div>
+              <p class="notif-title">New video detected 🎬</p>
+              <p class="notif-body">Super excited to see your new video! Want to analyze &amp; publish?</p>
+              <div class="notif-actions">
+                <span class="notif-btn nb-primary">✨ Analyze</span>
+                <span class="notif-btn">Later</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Scene 2 · analyzing -->
+          <div class="scene scene-analyze" data-scene="1">
+            <div class="rp-status">
+              <span class="rp-dot"></span>
+              <span>Analyzing your reel…</span>
+              <span class="rp-pct" id="rp-pct">12%</span>
+            </div>
+            <div class="rp-video">
+              <span class="rp-grid"></span>
+              <span class="rp-scan"></span>
+              <span class="detect dt-1"><i></i>Low pH Cleanser · COSRX</span>
+              <span class="detect dt-2"><i></i>Niacinamide 10% · The Ordinary</span>
+              <span class="detect dt-3"><i></i>Sleeping Mask · Laneige</span>
+              <span class="rp-timebar"><b></b></span>
+            </div>
+            <p class="rp-building">Products found so far</p>
+            <div class="rp-cards">
+              <div class="rp-card c-1">
+                <span class="rp-thumb t-1"></span>
+                <span class="rp-lines"><i class="l-name">Low pH Cleanser</i><i class="l-brand">COSRX</i></span>
+                <span class="rp-check">✓</span>
+              </div>
+              <div class="rp-card c-2">
+                <span class="rp-thumb t-2"></span>
+                <span class="rp-lines"><i class="l-name">Niacinamide 10%</i><i class="l-brand">The Ordinary</i></span>
+                <span class="rp-check">✓</span>
+              </div>
+              <div class="rp-card c-3">
+                <span class="rp-thumb t-3"></span>
+                <span class="rp-lines"><i class="l-name">Water Sleeping Mask</i><i class="l-brand">Laneige</i></span>
+                <span class="rp-check">✓</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Scene 3 · review & add -->
+          <div class="scene scene-review" data-scene="2">
+            <p class="scene-title">Anything missing?</p>
+            <p class="scene-sub">Edit products or use your own links</p>
+            <div class="rp-cards">
+              <div class="rp-card">
+                <span class="rp-thumb t-1"></span>
+                <span class="rp-lines"><i class="l-name">Low pH Cleanser</i><i class="l-brand">COSRX</i></span>
+                <span class="rp-edit">✎</span>
+              </div>
+              <div class="rp-card">
+                <span class="rp-thumb t-2"></span>
+                <span class="rp-lines"><i class="l-name">Niacinamide 10%</i><i class="l-brand">The Ordinary</i></span>
+                <span class="rp-edit">✎</span>
+              </div>
+              <div class="rp-card">
+                <span class="rp-thumb t-3"></span>
+                <span class="rp-lines"><i class="l-name">Water Sleeping Mask</i><i class="l-brand">Laneige</i></span>
+                <span class="rp-edit">✎</span>
+              </div>
+              <div class="rp-add a-1">＋ Add a missed product</div>
+              <div class="rp-add a-2">🔗 Use your own affiliate link</div>
+            </div>
+            <div class="rp-approve">Looks good — publish →</div>
+          </div>
+
+          <!-- Scene 4 · published & earning -->
+          <div class="scene scene-published" data-scene="3">
+            <div class="pub-check">✓</div>
+            <p class="pub-title">Published! 🎉</p>
+            <p class="pub-sub">Your page is live — and earning</p>
+            <div class="pub-url">retrieva.me/maya/night-routine</div>
+            <div class="sale s-1">
+              <span class="sale-ico">🛍</span>
+              <span class="sale-lines"><i class="l-name">Niacinamide 10% sold</i><i class="l-brand">via your page</i></span>
+              <b class="sale-amt">+$1.85</b>
+            </div>
+            <div class="sale s-2">
+              <span class="sale-ico">🛍</span>
+              <span class="sale-lines"><i class="l-name">Sleeping Mask sold</i><i class="l-brand">via ChatGPT referral</i></span>
+              <b class="sale-amt">+$2.40</b>
+            </div>
+            <div class="pub-total">
+              <span>Your earnings this week</span>
+              <b id="earn-total">$0.00</b>
+            </div>
+          </div>
+
+          <!-- scene progress dots -->
+          <div class="scene-dots">
+            <span class="sd sd-0 active"></span>
+            <span class="sd sd-1"></span>
+            <span class="sd sd-2"></span>
+            <span class="sd sd-3"></span>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="float-chip chip-1">🔍 Every post tracked</div>
+      <div class="float-chip chip-2 chip-accent">💸 Earn on every sale</div>
+    </div>
+
+    <!-- RIGHT: flow synced to phone -->
+    <div class="col col-right">
+      <ul class="flow-list" id="flow-list">
+        <li class="active"><span class="flow-ico">🎬</span><div><b>POST</b><small>film like you always do</small></div></li>
+        <li><span class="flow-ico">🔍</span><div><b>SCAN</b><small>AI finds every product</small></div></li>
+        <li><span class="flow-ico">👍</span><div><b>APPROVE</b><small>add links, one tap</small></div></li>
+        <li><span class="flow-ico">💸</span><div><b>EARN</b><small>commission on every sale</small></div></li>
+      </ul>
+
+      <div class="countdown">
+        <p class="countdown-label">⏳ Pilot opens in</p>
+        <div class="countdown-grid" id="countdown">
+          <div class="cd-cell"><span class="cd-num" id="cd-days">--</span><span class="cd-unit">days</span></div>
+          <span class="cd-sep">:</span>
+          <div class="cd-cell"><span class="cd-num" id="cd-hours">--</span><span class="cd-unit">hours</span></div>
+          <span class="cd-sep">:</span>
+          <div class="cd-cell"><span class="cd-num" id="cd-mins">--</span><span class="cd-unit">minutes</span></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="main.js"></script>
+</body>
+</html>

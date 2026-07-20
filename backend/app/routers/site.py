@@ -11,10 +11,10 @@ they can never shadow an API path.
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, Response
-from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTextResponse
 from sqlmodel import Session, select
 
-from app import config, public_site, reco, studio
+from app import config, landing_page, public_site, reco, studio
 from app.db import get_session
 from app.models import Creator, Page, Product
 
@@ -86,9 +86,49 @@ def terms():
     return public_site.terms_html()
 
 
-# --- pages ----------------------------------------------------------------
+# --- home (marketing landing) + its assets --------------------------------
 @router.get("/", response_class=HTMLResponse)
-def directory(session: Session = Depends(get_session)):
+def home():
+    return landing_page.home_html()
+
+
+@router.get("/styles.css")
+def landing_css():
+    return FileResponse(config.LANDING_DIR / "styles.css", media_type="text/css")
+
+
+@router.get("/main.js")
+def landing_js():
+    return FileResponse(config.LANDING_DIR / "main.js", media_type="application/javascript")
+
+
+# --- discover: featured creators + their posts ----------------------------
+@router.get("/discover", response_class=HTMLResponse)
+def discover(session: Session = Depends(get_session)):
+    rows = _rows(session)
+    creators = {c.handle: c for c in session.exec(select(Creator)).all()}
+    by: dict[str, list] = {}
+    for r in rows:
+        by.setdefault(r["handle"], []).append(r)
+    sections = []
+    for handle, posts in by.items():
+        c = creators.get(handle)
+        sections.append({
+            "creator": {
+                "handle": handle,
+                "display_name": c.display_name if c else handle,
+                "avatar_gradient": (c.avatar_gradient if c else None) or config.DEFAULT_AVATAR_GRADIENT,
+                "platforms": c.platforms if c else [],
+            },
+            "posts": posts,
+        })
+    sections.sort(key=lambda s: (-len(s["posts"]), s["creator"]["display_name"]))
+    return public_site.discover_html(sections)
+
+
+# --- full routine directory (kept for completeness) -----------------------
+@router.get("/browse", response_class=HTMLResponse)
+def browse(session: Session = Depends(get_session)):
     return public_site.directory_html(_rows(session))
 
 

@@ -521,6 +521,15 @@ h1{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(34px,5
 .card h3{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:21px;line-height:1.15;margin-bottom:5px}
 .card .m{color:var(--grey);font-size:13.5px}
 .footer{border-top:1px solid var(--line)}.footer .wrap{padding:34px 24px 48px;color:var(--grey);font-size:12.5px}
+/* discover: featured creators + their posts */
+.cblock{padding:30px 0;border-top:1px solid var(--line)}
+.cblock:first-of-type{border-top:none}
+.cb-head{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+.cb-av{width:56px;height:56px;border-radius:50%;border:2px solid var(--accent);flex-shrink:0}
+.cb-name{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:20px;line-height:1.1}
+.cb-meta{color:var(--grey);font-size:13px}
+.cb-view{margin-left:auto;font-weight:600;font-size:13.5px;color:var(--accent-deep);border-bottom:2px solid var(--accent);white-space:nowrap}
+.cb-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
 """
 
 _FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com">'
@@ -749,3 +758,72 @@ def directory_html(rows: list[dict]) -> str:
     cards = "".join(_card(r) for r in rows)
     return _list_shell(f"{config.BRAND} — {config.TAGLINE}", config.TAGLINE, BASE, hero, cards,
                        site_graph(rows), script=_SEARCH_JS)
+
+
+_DISCOVER_JS = """<script>
+(function(){
+  var q=document.getElementById('q');
+  if(!q) return;
+  var blocks=[].slice.call(document.querySelectorAll('.cblock'));
+  function apply(){
+    var t=q.value.trim().toLowerCase(), any=false;
+    blocks.forEach(function(b){
+      var cards=[].slice.call(b.querySelectorAll('.card')), shown=0;
+      cards.forEach(function(c){
+        var hit=!t||c.getAttribute('data-search').indexOf(t)!==-1;
+        c.style.display=hit?'':'none'; if(hit) shown++;
+      });
+      // also match on creator name/handle in the header
+      var head=(b.getAttribute('data-creator')||'');
+      var headHit=!t||head.indexOf(t)!==-1;
+      if(headHit) cards.forEach(function(c){c.style.display='';});
+      var visible=headHit||shown>0;
+      b.style.display=visible?'':'none'; if(visible) any=true;
+    });
+    var none=document.getElementById('noresults'); if(none) none.hidden=any;
+  }
+  q.addEventListener('input', apply);
+})();
+</script>"""
+
+
+def discover_html(sections: list[dict]) -> str:
+    """Featured creators, each with their featured posts. `sections` =
+    [{creator: {handle, display_name, avatar_gradient, platforms}, posts: [row]}]."""
+    hero = ('<div class="eyebrow">Discover</div>'
+            '<h1>Featured creators</h1>'
+            '<p class="lede">Browse creators and shop every product from their videos.</p>'
+            '<input id="q" class="search" type="search" autocomplete="off" '
+            'placeholder="Search creators, routines, or products…" aria-label="Search">')
+    blocks = []
+    for s in sections:
+        c = s["creator"]
+        plats = " · ".join(c.get("platforms") or []) or "Creator"
+        head = (f'<div class="cb-head">{_avatar(c["avatar_gradient"])}'
+                f'<div><div class="cb-name">{_esc(c["display_name"])}</div>'
+                f'<div class="cb-meta">@{_esc(c["handle"])} · {_esc(plats)}</div></div>'
+                f'<a class="cb-view" href="{BASE}/{_esc(c["handle"])}">View profile →</a></div>')
+        cards = "".join(_card(r, show_creator=False) for r in s["posts"])
+        search_key = _esc((c["display_name"] + " @" + c["handle"] + " " + plats).lower())
+        blocks.append(f'<section class="cblock" data-creator="{search_key}">{head}'
+                      f'<div class="cb-row">{cards}</div></section>')
+    body = "".join(blocks) or '<p class="muted" style="padding:30px 0;color:#7A6F4A">No creators yet.</p>'
+    # reuse the list shell chrome, but our own body layout
+    return _list_shell_custom("Discover creators · " + config.BRAND,
+                              "Browse featured creators and shop every product from their videos.",
+                              f"{BASE}/discover", hero, body, _DISCOVER_JS)
+
+
+def _list_shell_custom(title: str, desc: str, canonical: str, hero: str, body: str, script: str) -> str:
+    return f"""<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{_esc(title)}</title><meta name="description" content="{_esc(desc)}">
+<link rel="canonical" href="{_esc(canonical)}">
+<meta name="robots" content="index, follow, max-image-preview:large">
+{_FONTS}<style>{_LIST_CSS}</style></head><body>
+<header class="topbar"><div class="wrap"><a class="brandmark" href="{BASE}">{config.BRAND}<span class="dot">.</span></a>
+<a class="eyebrow" href="{BASE}">← Home</a></div></header>
+<section class="hero"><div class="wrap">{hero}</div></section>
+<section class="wrap"><p class="noresults" id="noresults" hidden>No matches.</p>{body}</section>
+<footer class="footer"><div class="wrap">{config.BRAND} — {_esc(config.TAGLINE)}</div></footer>
+{script}</body></html>"""

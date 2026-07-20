@@ -53,6 +53,11 @@ textarea{resize:vertical;min-height:64px}
 .btn{display:inline-flex;align-items:center;gap:7px;border:none;cursor:pointer;font:inherit;font-weight:700;font-size:14.5px;padding:12px 20px;border-radius:999px;background:var(--accent);color:#fff;box-shadow:0 8px 20px rgba(90,71,224,.35)}
 .btn:disabled{opacity:.5;cursor:default}
 .btn.ink{background:var(--ink);color:#fff}.btn.ghost{background:#fff;border:1.5px solid var(--line);color:var(--ink);font-weight:600}
+.btn.oauth{width:100%;justify-content:center;margin-bottom:10px}
+.btn.apple{background:#111;color:#fff;box-shadow:none}
+.btn.google{background:#fff;color:var(--ink);border:1.5px solid var(--line);box-shadow:none}
+.hr{display:flex;align-items:center;text-align:center;color:var(--faint);font-size:12px;font-weight:600;margin:14px 0}
+.hr::before,.hr::after{content:"";flex:1;height:1px;background:var(--line)}.hr span{padding:0 12px}
 .btn.sm{padding:9px 15px;font-size:13px;border-radius:999px}
 .btn.danger{color:var(--red);background:#fff;border:1.5px solid var(--line)}
 .row{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
@@ -94,7 +99,20 @@ async function api(method, path, body){
   return data;
 }
 function setSession(t, u){ tok=t; me=u; localStorage.setItem('reelie.token',t); localStorage.setItem('reelie.user',JSON.stringify(u)); }
-function signOut(){ tok=''; me=null; localStorage.removeItem('reelie.token'); localStorage.removeItem('reelie.user'); render(); }
+async function signOut(){ if(sb){ try{ await sb.auth.signOut(); }catch(e){} } tok=''; me=null; localStorage.removeItem('reelie.token'); localStorage.removeItem('reelie.user'); render(); }
+
+// Auth provider: 'supabase' (Apple/Google/magic-link) when configured, else the
+// local dev email login. The backend tells us which via /auth/config.
+var AUTHCFG=null, sb=null;
+async function authConfig(){ if(!AUTHCFG){ try{ AUTHCFG=await (await fetch('/auth/config')).json(); }catch(e){ AUTHCFG={provider:'dev'}; } } return AUTHCFG; }
+function loadScript(src){ return new Promise(function(res,rej){ var s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s); }); }
+async function supa(){
+  if(sb) return sb;
+  if(!window.supabase) await loadScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2');
+  sb = window.supabase.createClient(AUTHCFG.supabaseUrl, AUTHCFG.supabaseAnonKey);
+  sb.auth.onAuthStateChange(function(_e, s){ tok = (s && s.access_token) || ''; if(tok) localStorage.setItem('reelie.token', tok); });
+  return sb;
+}
 
 function header(){
   if(me && tok){ who.innerHTML = '<span class="muted">'+esc(me.handle?('@'+me.handle):me.email)+'</span> <button class="btn ghost sm" onclick="signOut()">Sign out</button>'; }
@@ -118,6 +136,29 @@ async function doLogin(){
   err.classList.add('hide');
   try { var r = await api('POST','/auth/dev-login',{email:email}); setSession(r.token, r.user); render(); }
   catch(e){ err.textContent=e.message; err.classList.remove('hide'); }
+}
+
+async function viewSupabaseLogin(){
+  app.innerHTML =
+   '<h1>Creator Studio</h1><p class="sub">Sign in to turn your videos into shoppable, AI-discoverable pages.</p>'+
+   '<div class="card" style="max-width:420px">'+
+   '<button class="btn oauth apple" id="apple"> Sign in with Apple</button>'+
+   '<button class="btn oauth google" id="google"> Continue with Google</button>'+
+   '<div class="hr"><span>or</span></div>'+
+   '<label>Email</label><input id="email" type="email" placeholder="you@example.com" autocomplete="email">'+
+   '<div style="height:12px"></div><button class="btn oauth" id="mlink">Send magic link</button>'+
+   '<div class="muted" id="msg" style="margin-top:12px"></div></div>';
+  var c = await supa();
+  document.getElementById('apple').onclick = function(){ c.auth.signInWithOAuth({provider:'apple', options:{redirectTo:location.href}}); };
+  document.getElementById('google').onclick = function(){ c.auth.signInWithOAuth({provider:'google', options:{redirectTo:location.href}}); };
+  document.getElementById('mlink').onclick = async function(){
+    var email=document.getElementById('email').value.trim(), msg=document.getElementById('msg');
+    if(email.indexOf('@')<1){ msg.textContent='Enter a valid email.'; return; }
+    msg.textContent='Sending…';
+    var r = await c.auth.signInWithOtp({email:email, options:{emailRedirectTo:location.href}});
+    msg.textContent = r.error ? r.error.message : 'Check your email for a magic link ✨';
+  };
+  document.getElementById('email').addEventListener('keydown', function(e){ if(e.key==='Enter') document.getElementById('mlink').click(); });
 }
 
 function viewBecomeCreator(){
@@ -219,8 +260,15 @@ async function doGenerate(){
 }
 
 async function render(){
+  await authConfig();
   header();
-  if(!tok){ viewLogin(); return; }
+  if(AUTHCFG.provider==='supabase'){
+    var c = await supa();
+    var sess = (await c.auth.getSession()).data.session;   // picks up OAuth/magic-link redirect too
+    tok = sess ? sess.access_token : '';
+    if(tok) localStorage.setItem('reelie.token', tok);
+  }
+  if(!tok){ (AUTHCFG.provider==='supabase' ? viewSupabaseLogin() : viewLogin()); return; }
   // refresh identity so role is current
   try { me = await api('GET','/me'); localStorage.setItem('reelie.user', JSON.stringify(me)); }
   catch(e){ signOut(); return; }

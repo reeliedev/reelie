@@ -39,12 +39,25 @@ _origins = os.environ.get(
 ALLOWED_ORIGINS = [o.strip() for o in _origins.split(",") if o.strip()]
 
 # Auth provider: 'dev' (local JWT) or 'oidc' (verify a real provider's RS256 token
-# via JWKS — works for Clerk / Auth0 / Sign in with Apple by pointing these at the
-# provider's discovery values).
+# via JWKS — works for Supabase / Clerk / Auth0 / Sign in with Apple by pointing
+# these at the provider's discovery values).
 AUTH_PROVIDER = os.environ.get("AUTH_PROVIDER", "dev")
 OIDC_JWKS_URL = os.environ.get("OIDC_JWKS_URL", "")     # e.g. https://<clerk>/.well-known/jwks.json
 OIDC_ISSUER = os.environ.get("OIDC_ISSUER", "")         # e.g. https://appleid.apple.com
 OIDC_AUDIENCE = os.environ.get("OIDC_AUDIENCE", "")     # your client/app id (Apple) or Clerk aud
+
+# Supabase Auth (recommended for public): brokers Apple + Google + email
+# magic-link, headless (our own login UI). Set these two and everything else is
+# derived — the provider flips to OIDC and verifies Supabase tokens via its JWKS.
+# The anon key is a PUBLIC client key (safe to expose to the browser).
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "").rstrip("/")
+SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "")
+if SUPABASE_URL:
+    AUTH_PROVIDER = "oidc"
+    OIDC_JWKS_URL = OIDC_JWKS_URL or f"{SUPABASE_URL}/auth/v1/.well-known/jwks.json"
+    OIDC_ISSUER = OIDC_ISSUER or f"{SUPABASE_URL}/auth/v1"
+    OIDC_AUDIENCE = OIDC_AUDIENCE or "authenticated"
+
 JWT_SECRET = os.environ.get("JWT_SECRET") or ("dev-only-secret-do-not-use-in-prod" if not IS_PROD else "")
 if IS_PROD and not JWT_SECRET:
     raise RuntimeError("JWT_SECRET must be set when REELIE_ENV=prod")

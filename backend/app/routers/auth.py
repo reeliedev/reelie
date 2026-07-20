@@ -16,6 +16,16 @@ from app.serialize import user_dict
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
+@router.get("/config")
+def auth_config():
+    """What the login UI should render. 'supabase' → Apple/Google/magic-link via
+    the public anon key; 'dev' → the local email login (no real auth)."""
+    if config.SUPABASE_URL and config.SUPABASE_ANON_KEY:
+        return {"provider": "supabase", "supabaseUrl": config.SUPABASE_URL,
+                "supabaseAnonKey": config.SUPABASE_ANON_KEY}
+    return {"provider": "dev"}
+
+
 class DevLogin(BaseModel):
     email: str
     displayName: str | None = None

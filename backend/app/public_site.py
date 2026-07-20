@@ -788,84 +788,105 @@ _DISCOVER_JS = """<script>
 
 
 _FEED_CSS = """
-:root{--accent:#6F5DF0;--accent-deep:#5A47E0;--sun:#FFD84D;--ink:#201B0A}
+:root{--bg:#FFE566;--sun:#FFD84D;--ink:#201B0A;--grey:#7A6F4A;--line:rgba(32,27,10,.14);--soft:#FBF7E6;--accent:#6F5DF0;--accent-deep:#5A47E0;--accent-soft:#ECE8FE}
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%;background:#000;font-family:'Instrument Sans',-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+html,body{height:100%;color:var(--ink);font-family:'Instrument Sans',-apple-system,sans-serif;-webkit-font-smoothing:antialiased;
+  background:radial-gradient(circle at 18% 10%,#FFF3A8 0%,transparent 46%),radial-gradient(circle at 85% 92%,#FFD23E 0%,transparent 52%),var(--bg)}
 a{color:inherit;text-decoration:none}
+.topnav{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:16px 26px;
+  background:rgba(255,255,255,.55);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.topnav .bm{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:21px}.topnav .bm .d{color:var(--accent)}
+.topnav .hm{font-size:13px;font-weight:600;color:var(--accent-deep)}
 .feed{height:100dvh;overflow-y:scroll;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .feed::-webkit-scrollbar{display:none}
-.reel{height:100dvh;scroll-snap-align:start;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
-.stage{position:relative;width:100%;height:100%;max-width:min(100vw,460px);margin:0 auto;background:#0c0c0c}
-.reel video,.reel .poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.reel .poster{display:flex;align-items:center;justify-content:center;font-size:120px;background:linear-gradient(135deg,#2a2a2a,#111)}
-.shade{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.78) 0%,rgba(0,0,0,.15) 38%,transparent 60%);pointer-events:none}
-.topnav{position:absolute;top:0;left:0;right:0;z-index:6;display:flex;align-items:center;justify-content:space-between;padding:16px 18px;
-  background:linear-gradient(to bottom,rgba(0,0,0,.5),transparent)}
-.topnav a{color:#fff}.topnav .bm{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:20px}.topnav .bm .d{color:var(--sun)}
-.topnav .hm{font-size:13px;font-weight:600;opacity:.9}
+.reel{min-height:100dvh;scroll-snap-align:center;display:flex;align-items:center;justify-content:center;gap:40px;padding:88px 32px 40px}
+/* the phone-shaped video, centered like the landing mockup */
+.stage{position:relative;height:min(78vh,720px);aspect-ratio:9/16;flex-shrink:0;background:#0c0c0c;border-radius:34px;overflow:hidden;
+  box-shadow:0 40px 90px -30px rgba(32,27,10,.5),0 0 0 6px #fff,0 0 0 8px var(--line)}
+.stage video,.stage .poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.stage .poster{display:flex;align-items:center;justify-content:center;font-size:120px;background:linear-gradient(135deg,#2a2a2a,#111)}
 .tapsound{position:absolute;inset:0;z-index:4;cursor:pointer}
-.snd{position:absolute;top:64px;right:16px;z-index:6;width:40px;height:40px;border:none;border-radius:50%;background:rgba(0,0,0,.4);color:#fff;font-size:16px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.snd{position:absolute;top:14px;right:14px;z-index:6;width:38px;height:38px;border:none;border-radius:50%;background:rgba(0,0,0,.4);color:#fff;font-size:15px;cursor:pointer;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
 .snd .on{display:none}.stage.is-on .snd .on{display:inline}.stage.is-on .snd .off{display:none}
-.overlay{position:absolute;left:0;right:0;bottom:0;z-index:6;padding:20px 18px 30px;color:#fff}
-.who{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-.who .av{width:38px;height:38px;border-radius:50%;border:2px solid #fff;flex-shrink:0}
-.who .nm{font-weight:700;font-size:15px}.who .hd{font-size:12.5px;opacity:.82}
-.who .vp{margin-left:auto;font-size:12px;font-weight:700;border:1px solid rgba(255,255,255,.5);padding:6px 12px;border-radius:999px}
-.cap{font-size:14px;line-height:1.45;margin-bottom:14px;max-width:90%;text-shadow:0 1px 8px rgba(0,0,0,.4)}
-.buy{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);
-  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-radius:16px;padding:12px 14px}
-.buy .bi{width:42px;height:42px;border-radius:10px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
-.buy .bd{flex:1;min-width:0}
-.buy .bb{font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;opacity:.8}
-.buy .bn{font-weight:600;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.buy .bp{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15px;margin-top:1px}
-.buy .shop{background:var(--accent);color:#fff;font-weight:700;font-size:13.5px;padding:11px 16px;border-radius:999px;white-space:nowrap;box-shadow:0 6px 16px rgba(90,71,224,.4)}
-.hint{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);z-index:6;color:rgba(255,255,255,.65);font-size:12px;animation:bob 1.8s ease-in-out infinite}
+/* the side panel to shop + open the page */
+.panel{width:min(400px,42vw);max-height:min(78vh,720px);display:flex;flex-direction:column;background:#fff;border:1px solid var(--line);border-radius:26px;box-shadow:0 24px 60px -34px rgba(32,27,10,.4);overflow:hidden}
+.p-head{padding:22px 22px 16px;border-bottom:1px solid var(--line)}
+.who{display:flex;align-items:center;gap:11px;margin-bottom:14px}
+.who .av{width:44px;height:44px;border-radius:50%;border:2px solid var(--accent);flex-shrink:0}
+.who .nm{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:16px;line-height:1.1}
+.who .hd{font-size:12.5px;color:var(--grey)}
+.who .vp{margin-left:auto;font-size:12px;font-weight:700;color:var(--accent-deep);border:1px solid var(--line);padding:7px 13px;border-radius:999px}
+.p-title{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:22px;line-height:1.15;letter-spacing:-.4px}
+.p-sub{color:var(--grey);font-size:13px;margin-top:5px}
+.p-list{flex:1;overflow-y:auto;padding:8px 22px}
+.p-item{display:flex;align-items:center;gap:12px;padding:13px 0;border-top:1px solid var(--line)}
+.p-item:first-child{border-top:none}
+.p-item .pi{width:44px;height:44px;border-radius:11px;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.p-item .pd{flex:1;min-width:0}
+.p-item .pb{font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--grey)}
+.p-item .pn{font-weight:600;font-size:14px;line-height:1.25}
+.p-item .pp{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;margin-top:1px}
+.p-item .shop{background:var(--ink);color:#fff;font-weight:600;font-size:12.5px;padding:9px 14px;border-radius:999px;white-space:nowrap}
+.p-foot{padding:16px 22px 20px;border-top:1px solid var(--line)}
+.p-cta{display:block;text-align:center;background:var(--accent);color:#fff;font-weight:700;font-size:15px;padding:14px;border-radius:999px;box-shadow:0 8px 20px rgba(90,71,224,.35)}
+.hint{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:10;color:var(--grey);font-size:12.5px;font-weight:600;animation:bob 1.8s ease-in-out infinite}
 @keyframes bob{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-5px)}}
-.empty{color:#fff;text-align:center;padding:40px}
+.empty{padding:120px 40px;text-align:center;color:var(--grey)}
+@media(max-width:820px){
+  .reel{flex-direction:column;gap:18px;padding:80px 16px 30px}
+  .stage{height:min(62vh,520px)}
+  .panel{width:min(440px,94vw);max-height:none}
+  .p-list{max-height:34vh}
+}
 """
 
 
 def _reel(item: dict, first: bool) -> str:
-    c = item["creator"]; p = item["product"]
+    c = item["creator"]
     poster = f' poster="{_esc(item["clip_poster"])}"' if item.get("clip_poster") else ""
     if item.get("clip_url"):
         media = (f'<video src="{_esc(item["clip_url"])}"{poster} muted loop playsinline '
                  f'preload="{"auto" if first else "none"}"></video>')
     else:
         media = f'<div class="poster">{item.get("emoji", "🛍️")}</div>'
-    price = ""
-    if p.get("price_display"):
-        price = f'<div class="bp">{_esc(p["price_display"])}</div>'
-    cap = _esc(item.get("caption") or item["page_title"])
+    rows = []
+    for p in item["products"]:
+        price = f'<div class="pp">{_esc(p["price_display"])}</div>' if p.get("price_display") else ""
+        rows.append(
+            f'<div class="p-item"><div class="pi">{p.get("emoji") or "🛍️"}</div>'
+            f'<div class="pd"><div class="pb">{_esc(p.get("brand") or "Featured")}</div>'
+            f'<div class="pn">{_esc(p["name"])}</div>{price}</div>'
+            f'<a class="shop" href="{_esc(p["shop_url"])}" rel="sponsored nofollow" target="_blank">Shop</a></div>')
+    plats = " · ".join(c.get("platforms") or []) or "Creator"
     return f"""<section class="reel"><div class="stage">
-{media}<div class="shade"></div>
-<div class="tapsound"></div>
+{media}<div class="tapsound"></div>
 <button class="snd" type="button" aria-label="Sound"><span class="off">🔇</span><span class="on">🔊</span></button>
-<div class="overlay">
-  <div class="who"><span class="av" style="background:linear-gradient(135deg,{c['g0']},{c['g1']})"></span>
-    <div><div class="nm">{_esc(c['name'])}</div><div class="hd">@{_esc(c['handle'])}</div></div>
-    <a class="vp" href="{BASE}/{_esc(c['handle'])}">Profile</a></div>
-  <a class="cap" href="{_esc(item['page_url'])}">{cap}</a>
-  <div class="buy"><div class="bi">{item.get('emoji','🛍️')}</div>
-    <div class="bd"><div class="bb">{_esc(p.get('brand') or 'Featured')}</div>
-      <div class="bn">{_esc(p['name'])}</div>{price}</div>
-    <a class="shop" href="{_esc(p['shop_url'])}" rel="sponsored nofollow" target="_blank">Shop</a></div>
-</div></div></section>"""
+</div>
+<aside class="panel">
+  <div class="p-head">
+    <div class="who"><span class="av" style="background:linear-gradient(135deg,{c['g0']},{c['g1']})"></span>
+      <div><div class="nm">{_esc(c['name'])}</div><div class="hd">@{_esc(c['handle'])} · {_esc(plats)}</div></div>
+      <a class="vp" href="{BASE}/{_esc(c['handle'])}">Profile</a></div>
+    <div class="p-title">{_esc(item['page_title'])}</div>
+    <div class="p-sub">{len(item['products'])} products{(' · ' + item['total_display']) if item.get('total_display') else ''}</div>
+  </div>
+  <div class="p-list">{''.join(rows)}</div>
+  <div class="p-foot"><a class="p-cta" href="{_esc(item['page_url'])}">See the full routine →</a></div>
+</aside></section>"""
 
 
 def discover_feed_html(items: list[dict]) -> str:
     reels = "".join(_reel(it, i == 0) for i, it in enumerate(items)) or \
             '<section class="reel"><div class="empty">No clips yet — check back soon.</div></section>'
-    hint = '<div class="hint" id="hint">swipe up ↑</div>' if items else ""
+    hint = '<div class="hint" id="hint">scroll for more ↓</div>' if len(items) > 1 else ""
     return f"""<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Discover · {config.BRAND}</title>
 <meta name="description" content="Scroll creators' videos and shop every product.">
-<meta name="theme-color" content="#000000">
+<meta name="theme-color" content="#FFE566">
 {_FONTS}<style>{_FEED_CSS}</style></head><body>
 <div class="topnav"><a class="bm" href="{BASE}">{config.BRAND}<span class="d">.</span></a>
-<a class="hm" href="{BASE}">Home</a></div>
+<a class="hm" href="{BASE}">← Home</a></div>
 <div class="feed" id="feed">{reels}{hint}</div>
 <script>
 (function(){{
@@ -887,7 +908,7 @@ def discover_feed_html(items: list[dict]) -> str:
         var v=e.target.querySelector('video'); if(!v)return;
         if(e.isIntersecting){{v.play().catch(function(){{}});}} else {{v.pause();mute(v);}}
       }});
-    }},{{threshold:0.6}});
+    }},{{threshold:0.5}});
     document.querySelectorAll('.reel').forEach(function(r){{io.observe(r);}});
   }} else {{ if(vids[0])vids[0].play().catch(function(){{}}); }}
   var feed=document.getElementById('feed');

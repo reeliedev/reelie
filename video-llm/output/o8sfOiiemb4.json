@@ -1,31 +1,32 @@
 {
   "video_id": "o8sfOiiemb4",
+  "video_title": "Zendaya makeup tutorial",
   "source_file": "o8sfOiiemb4.mp4",
   "duration_s": 129.5,
   "num_frames": 30,
-  "num_products": 19,
-  "num_video_products": 19,
+  "num_products": 20,
+  "num_video_products": 20,
   "num_description_products": 0,
   "mirrored": false,
   "model": "claude-sonnet-4-6",
   "usage": {
-    "input_tokens": 20527,
-    "output_tokens": 3535,
+    "input_tokens": 20433,
+    "output_tokens": 3536,
     "api_calls": 4
   },
   "cost_usd": {
     "transcription": 0.0,
-    "extraction": 0.114606,
-    "total": 0.114606
+    "extraction": 0.114339,
+    "total": 0.114339
   },
   "products": [
     {
-      "product_name": "Beta Glucan serum",
+      "product_name": "Beta Glucan Moisture Serum",
       "brand": null,
       "variant_or_shade": null,
       "evidence_type": "both",
       "timestamp_s": 5.0,
-      "transcript_quote": "Skin prep, I'm using this gigantic bottle of beta glucan.",
+      "transcript_quote": "I'm using this gigantic bottle of beta glucan.",
       "confidence": 0.75
     },
     {
@@ -44,7 +45,7 @@
       "evidence_type": "spoken",
       "timestamp_s": 9.7,
       "transcript_quote": "I'm a hydrating sunscreen.",
-      "confidence": 0.7
+      "confidence": 0.65
     },
     {
       "product_name": "Concealer palette",
@@ -53,7 +54,16 @@
       "evidence_type": "both",
       "timestamp_s": 10.9,
       "transcript_quote": "I'm gonna conceal my acne before going in with foundation.",
-      "confidence": 0.65
+      "confidence": 0.6
+    },
+    {
+      "product_name": "Color Correcting Palette",
+      "brand": null,
+      "variant_or_shade": null,
+      "evidence_type": "spoken",
+      "timestamp_s": 15.5,
+      "transcript_quote": "I love that this palette has all the color that you need before and after.",
+      "confidence": 0.6
     },
     {
       "product_name": "Setting Spray",
@@ -62,7 +72,7 @@
       "evidence_type": "spoken",
       "timestamp_s": 21.7,
       "transcript_quote": "we'll have to set the whole face with a setting spray.",
-      "confidence": 0.75
+      "confidence": 0.7
     },
     {
       "product_name": "Hydrating Foundation",
@@ -89,7 +99,7 @@
       "evidence_type": "both",
       "timestamp_s": 31.8,
       "transcript_quote": "For the brightening concealer,",
-      "confidence": 0.7
+      "confidence": 0.65
     },
     {
       "product_name": "Mesh Powder",
@@ -119,13 +129,13 @@
       "confidence": 0.95
     },
     {
-      "product_name": "The Iconic Black eyeliner",
+      "product_name": "The Iconic Black Eyeliner",
       "brand": "Hera",
       "variant_or_shade": null,
       "evidence_type": "both",
       "timestamp_s": 67.5,
       "transcript_quote": "sneaking in a brown timeline for the upper lash line",
-      "confidence": 0.8
+      "confidence": 0.82
     },
     {
       "product_name": "Blush",
@@ -134,7 +144,7 @@
       "evidence_type": "spoken",
       "timestamp_s": 76.5,
       "transcript_quote": "This one is from Red Chamber, a Chinese brand in the shade Tonguey.",
-      "confidence": 0.9
+      "confidence": 0.88
     },
     {
       "product_name": "Blush",
@@ -155,13 +165,13 @@
       "confidence": 0.9
     },
     {
-      "product_name": "Peptide Lip Treatment",
+      "product_name": "Pocket Blush",
       "brand": "Rhode",
       "variant_or_shade": "Candy Apple",
       "evidence_type": "both",
       "timestamp_s": 96.8,
       "transcript_quote": "or Candy Apple by Road.",
-      "confidence": 0.85
+      "confidence": 0.9
     },
     {
       "product_name": "Highlighter",
@@ -179,16 +189,16 @@
       "evidence_type": "spoken",
       "timestamp_s": 114.4,
       "transcript_quote": "at Glitter from Lancome for the inner corner of my eye.",
-      "confidence": 0.85
+      "confidence": 0.88
     },
     {
       "product_name": "Lip Liner",
-      "brand": "Mac",
+      "brand": "MAC",
       "variant_or_shade": "Open",
       "evidence_type": "spoken",
       "timestamp_s": 117.1,
       "transcript_quote": "For lip liner, I'm using Open Mac.",
-      "confidence": 0.8
+      "confidence": 0.82
     }
   ]
 }

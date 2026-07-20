@@ -40,20 +40,20 @@ body{font-family:'Instrument Sans',-apple-system,sans-serif;color:var(--ink);lin
 a{color:inherit}
 .bar{background:rgba(255,255,255,.7);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
 .bar .in{max-width:820px;margin:0 auto;padding:0 22px;height:60px;display:flex;align-items:center;justify-content:space-between}
-.brand{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:21px;text-decoration:none}.brand .d{color:var(--sun)}
+.brand{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:21px;letter-spacing:-.5px;text-decoration:none}.brand .d{color:var(--accent)}
 .wrap{max-width:820px;margin:0 auto;padding:34px 22px 80px}
-.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px;margin-bottom:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:22px;margin-bottom:16px;box-shadow:0 6px 16px rgba(32,27,10,.06)}
 h1{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:34px;letter-spacing:-.5px;margin-bottom:8px}
 h2{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:20px;margin-bottom:14px}
 .sub{color:var(--grey);margin-bottom:22px}
 label{display:block;font-size:12.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--grey);margin:14px 0 6px}
-input,textarea{width:100%;font:inherit;font-size:15px;padding:12px 14px;border:1.5px solid var(--line);border-radius:11px;background:#fff;color:var(--ink);outline:none}
-input:focus,textarea:focus{border-color:var(--ink)}
+input,textarea{width:100%;font:inherit;font-size:15px;padding:13px 15px;border:1px solid var(--line);border-radius:13px;background:var(--surface);color:var(--ink);outline:none}
+input:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(111,93,240,.16)}
 textarea{resize:vertical;min-height:64px}
-.btn{display:inline-flex;align-items:center;gap:7px;border:none;cursor:pointer;font:inherit;font-weight:700;font-size:14.5px;padding:12px 20px;border-radius:12px;background:var(--accent);color:#fff;box-shadow:0 6px 16px rgba(90,71,224,.3)}
+.btn{display:inline-flex;align-items:center;gap:7px;border:none;cursor:pointer;font:inherit;font-weight:700;font-size:14.5px;padding:12px 20px;border-radius:999px;background:var(--accent);color:#fff;box-shadow:0 8px 20px rgba(90,71,224,.35)}
 .btn:disabled{opacity:.5;cursor:default}
 .btn.ink{background:var(--ink);color:#fff}.btn.ghost{background:#fff;border:1.5px solid var(--line);color:var(--ink);font-weight:600}
-.btn.sm{padding:8px 13px;font-size:13px;border-radius:9px}
+.btn.sm{padding:9px 15px;font-size:13px;border-radius:999px}
 .btn.danger{color:var(--red);background:#fff;border:1.5px solid var(--line)}
 .row{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
 .muted{color:var(--grey);font-size:13.5px}
@@ -70,7 +70,6 @@ textarea{resize:vertical;min-height:64px}
 .hide{display:none}
 .spin{display:inline-block;width:15px;height:15px;border:2px solid var(--line);border-top-color:var(--ink);border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px}
 @keyframes sp{to{transform:rotate(360deg)}}
-@media(prefers-color-scheme:dark){body{background:#0e0e0e;color:#f0f0f0}.bar,.card{background:#161616;border-color:#262626}input,textarea,.btn.ghost{background:#111;border-color:#2c2c2c;color:#f0f0f0}.pill,.prod{border-color:#2c2c2c}}
 </style></head>
 <body>
 <div class="bar"><div class="in"><a class="brand" href="{{BASE}}">{{BRAND}}<span class="d">.</span></a>

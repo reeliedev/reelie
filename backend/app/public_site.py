@@ -787,31 +787,114 @@ _DISCOVER_JS = """<script>
 </script>"""
 
 
-def discover_html(sections: list[dict]) -> str:
-    """Featured creators, each with their featured posts. `sections` =
-    [{creator: {handle, display_name, avatar_gradient, platforms}, posts: [row]}]."""
-    hero = ('<div class="eyebrow">Discover</div>'
-            '<h1>Featured creators</h1>'
-            '<p class="lede">Browse creators and shop every product from their videos.</p>'
-            '<input id="q" class="search" type="search" autocomplete="off" '
-            'placeholder="Search creators, routines, or products…" aria-label="Search">')
-    blocks = []
-    for s in sections:
-        c = s["creator"]
-        plats = " · ".join(c.get("platforms") or []) or "Creator"
-        head = (f'<div class="cb-head">{_avatar(c["avatar_gradient"])}'
-                f'<div><div class="cb-name">{_esc(c["display_name"])}</div>'
-                f'<div class="cb-meta">@{_esc(c["handle"])} · {_esc(plats)}</div></div>'
-                f'<a class="cb-view" href="{BASE}/{_esc(c["handle"])}">View profile →</a></div>')
-        cards = "".join(_card(r, show_creator=False) for r in s["posts"])
-        search_key = _esc((c["display_name"] + " @" + c["handle"] + " " + plats).lower())
-        blocks.append(f'<section class="cblock" data-creator="{search_key}">{head}'
-                      f'<div class="cb-row">{cards}</div></section>')
-    body = "".join(blocks) or '<p class="muted" style="padding:30px 0;color:#7A6F4A">No creators yet.</p>'
-    # reuse the list shell chrome, but our own body layout
-    return _list_shell_custom("Discover creators · " + config.BRAND,
-                              "Browse featured creators and shop every product from their videos.",
-                              f"{BASE}/discover", hero, body, _DISCOVER_JS)
+_FEED_CSS = """
+:root{--accent:#6F5DF0;--accent-deep:#5A47E0;--sun:#FFD84D;--ink:#201B0A}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;background:#000;font-family:'Instrument Sans',-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.feed{height:100dvh;overflow-y:scroll;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.feed::-webkit-scrollbar{display:none}
+.reel{height:100dvh;scroll-snap-align:start;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.stage{position:relative;width:100%;height:100%;max-width:min(100vw,460px);margin:0 auto;background:#0c0c0c}
+.reel video,.reel .poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.reel .poster{display:flex;align-items:center;justify-content:center;font-size:120px;background:linear-gradient(135deg,#2a2a2a,#111)}
+.shade{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.78) 0%,rgba(0,0,0,.15) 38%,transparent 60%);pointer-events:none}
+.topnav{position:absolute;top:0;left:0;right:0;z-index:6;display:flex;align-items:center;justify-content:space-between;padding:16px 18px;
+  background:linear-gradient(to bottom,rgba(0,0,0,.5),transparent)}
+.topnav a{color:#fff}.topnav .bm{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:20px}.topnav .bm .d{color:var(--sun)}
+.topnav .hm{font-size:13px;font-weight:600;opacity:.9}
+.tapsound{position:absolute;inset:0;z-index:4;cursor:pointer}
+.snd{position:absolute;top:64px;right:16px;z-index:6;width:40px;height:40px;border:none;border-radius:50%;background:rgba(0,0,0,.4);color:#fff;font-size:16px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.snd .on{display:none}.stage.is-on .snd .on{display:inline}.stage.is-on .snd .off{display:none}
+.overlay{position:absolute;left:0;right:0;bottom:0;z-index:6;padding:20px 18px 30px;color:#fff}
+.who{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.who .av{width:38px;height:38px;border-radius:50%;border:2px solid #fff;flex-shrink:0}
+.who .nm{font-weight:700;font-size:15px}.who .hd{font-size:12.5px;opacity:.82}
+.who .vp{margin-left:auto;font-size:12px;font-weight:700;border:1px solid rgba(255,255,255,.5);padding:6px 12px;border-radius:999px}
+.cap{font-size:14px;line-height:1.45;margin-bottom:14px;max-width:90%;text-shadow:0 1px 8px rgba(0,0,0,.4)}
+.buy{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-radius:16px;padding:12px 14px}
+.buy .bi{width:42px;height:42px;border-radius:10px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.buy .bd{flex:1;min-width:0}
+.buy .bb{font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;opacity:.8}
+.buy .bn{font-weight:600;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.buy .bp{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15px;margin-top:1px}
+.buy .shop{background:var(--accent);color:#fff;font-weight:700;font-size:13.5px;padding:11px 16px;border-radius:999px;white-space:nowrap;box-shadow:0 6px 16px rgba(90,71,224,.4)}
+.hint{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);z-index:6;color:rgba(255,255,255,.65);font-size:12px;animation:bob 1.8s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-5px)}}
+.empty{color:#fff;text-align:center;padding:40px}
+"""
+
+
+def _reel(item: dict, first: bool) -> str:
+    c = item["creator"]; p = item["product"]
+    poster = f' poster="{_esc(item["clip_poster"])}"' if item.get("clip_poster") else ""
+    if item.get("clip_url"):
+        media = (f'<video src="{_esc(item["clip_url"])}"{poster} muted loop playsinline '
+                 f'preload="{"auto" if first else "none"}"></video>')
+    else:
+        media = f'<div class="poster">{item.get("emoji", "🛍️")}</div>'
+    price = ""
+    if p.get("price_display"):
+        price = f'<div class="bp">{_esc(p["price_display"])}</div>'
+    cap = _esc(item.get("caption") or item["page_title"])
+    return f"""<section class="reel"><div class="stage">
+{media}<div class="shade"></div>
+<div class="tapsound"></div>
+<button class="snd" type="button" aria-label="Sound"><span class="off">🔇</span><span class="on">🔊</span></button>
+<div class="overlay">
+  <div class="who"><span class="av" style="background:linear-gradient(135deg,{c['g0']},{c['g1']})"></span>
+    <div><div class="nm">{_esc(c['name'])}</div><div class="hd">@{_esc(c['handle'])}</div></div>
+    <a class="vp" href="{BASE}/{_esc(c['handle'])}">Profile</a></div>
+  <a class="cap" href="{_esc(item['page_url'])}">{cap}</a>
+  <div class="buy"><div class="bi">{item.get('emoji','🛍️')}</div>
+    <div class="bd"><div class="bb">{_esc(p.get('brand') or 'Featured')}</div>
+      <div class="bn">{_esc(p['name'])}</div>{price}</div>
+    <a class="shop" href="{_esc(p['shop_url'])}" rel="sponsored nofollow" target="_blank">Shop</a></div>
+</div></div></section>"""
+
+
+def discover_feed_html(items: list[dict]) -> str:
+    reels = "".join(_reel(it, i == 0) for i, it in enumerate(items)) or \
+            '<section class="reel"><div class="empty">No clips yet — check back soon.</div></section>'
+    hint = '<div class="hint" id="hint">swipe up ↑</div>' if items else ""
+    return f"""<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Discover · {config.BRAND}</title>
+<meta name="description" content="Scroll creators' videos and shop every product.">
+<meta name="theme-color" content="#000000">
+{_FONTS}<style>{_FEED_CSS}</style></head><body>
+<div class="topnav"><a class="bm" href="{BASE}">{config.BRAND}<span class="d">.</span></a>
+<a class="hm" href="{BASE}">Home</a></div>
+<div class="feed" id="feed">{reels}{hint}</div>
+<script>
+(function(){{
+  var vids=[].slice.call(document.querySelectorAll('.reel video'));
+  function stageOf(v){{return v.closest('.stage');}}
+  function mute(v){{v.muted=true;var s=stageOf(v);if(s)s.classList.remove('is-on');}}
+  function unmute(v){{vids.forEach(function(o){{if(o!==v)mute(o);}});v.muted=false;v.play().catch(function(){{}});var s=stageOf(v);if(s)s.classList.add('is-on');}}
+  document.querySelectorAll('.tapsound, .snd').forEach(function(el){{
+    el.addEventListener('click', function(e){{
+      e.preventDefault();
+      var v=el.closest('.stage').querySelector('video'); if(!v)return;
+      if(v.muted)unmute(v); else mute(v);
+    }});
+  }});
+  var hint=document.getElementById('hint');
+  if('IntersectionObserver' in window){{
+    var io=new IntersectionObserver(function(es){{
+      es.forEach(function(e){{
+        var v=e.target.querySelector('video'); if(!v)return;
+        if(e.isIntersecting){{v.play().catch(function(){{}});}} else {{v.pause();mute(v);}}
+      }});
+    }},{{threshold:0.6}});
+    document.querySelectorAll('.reel').forEach(function(r){{io.observe(r);}});
+  }} else {{ if(vids[0])vids[0].play().catch(function(){{}}); }}
+  var feed=document.getElementById('feed');
+  feed.addEventListener('scroll', function(){{ if(hint)hint.style.display='none'; }}, {{once:true}});
+}})();
+</script>
+</body></html>"""
 
 
 def _list_shell_custom(title: str, desc: str, canonical: str, hero: str, body: str, script: str) -> str:

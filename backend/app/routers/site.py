@@ -102,28 +102,37 @@ def landing_js():
     return FileResponse(config.LANDING_DIR / "main.js", media_type="application/javascript")
 
 
-# --- discover: featured creators + their posts ----------------------------
+# --- discover: vertical Reels/Shorts feed of creator clips ----------------
 @router.get("/discover", response_class=HTMLResponse)
 def discover(session: Session = Depends(get_session)):
-    rows = _rows(session)
     creators = {c.handle: c for c in session.exec(select(Creator)).all()}
-    by: dict[str, list] = {}
-    for r in rows:
-        by.setdefault(r["handle"], []).append(r)
-    sections = []
-    for handle, posts in by.items():
-        c = creators.get(handle)
-        sections.append({
-            "creator": {
-                "handle": handle,
-                "display_name": c.display_name if c else handle,
-                "avatar_gradient": (c.avatar_gradient if c else None) or config.DEFAULT_AVATAR_GRADIENT,
-                "platforms": c.platforms if c else [],
-            },
-            "posts": posts,
-        })
-    sections.sort(key=lambda s: (-len(s["posts"]), s["creator"]["display_name"]))
-    return public_site.discover_html(sections)
+    pages = session.exec(select(Page).where(Page.archived == False)).all()  # noqa: E712
+    pages.sort(key=lambda p: p.created_at, reverse=True)   # newest first
+    items = []
+    for page in pages:
+        c = creators.get(page.handle)
+        grad = (c.avatar_gradient if c else None) or config.DEFAULT_AVATAR_GRADIENT
+        cinfo = {"handle": page.handle, "name": c.display_name if c else page.handle,
+                 "g0": grad[0], "g1": grad[1] if len(grad) > 1 else grad[0]}
+        prods = session.exec(select(Product).where(Product.page_id == page.id)
+                             .order_by(Product.position)).all()
+        for p in prods:
+            if not p.clip_url:
+                continue    # feed is video-first — only products with a clip
+            items.append({
+                "clip_url": p.clip_url, "clip_poster": p.clip_poster, "emoji": p.emoji,
+                "creator": cinfo,
+                "caption": (p.guide or p.note or page.title),
+                "page_url": public_site.page_url(page.handle, page.slug),
+                "page_title": page.title,
+                "product": {
+                    "brand": p.brand, "name": p.name,
+                    "price_display": p.price_display or (public_site._money(p.price_amount, p.currency)
+                                                         if p.price_amount is not None else ""),
+                    "shop_url": public_site.shop_url(page.handle, page.slug, p.position),
+                },
+            })
+    return public_site.discover_feed_html(items)
 
 
 # --- full routine directory (kept for completeness) -----------------------

@@ -23,20 +23,26 @@ from sqlmodel import Session, select
 from app import config
 from app.auth import current_user
 from app.db import engine, get_session
-from app.models import GenerationJob, User
+from app.models import Creator, GenerationJob, User
 
 router = APIRouter(prefix="/me", tags=["generate"])
 
 
-def _require_creator(user: User) -> None:
+def _require_creator(user: User, session: Session) -> None:
+    """Closed beta: must be an approved creator to see videos or generate."""
     if user.role not in ("creator", "both") or not user.handle:
         raise HTTPException(403, "Become a creator first.")
+    creator = session.get(Creator, user.handle)
+    if not creator or creator.status != "approved":
+        raise HTTPException(403, "Your creator application is under review — "
+                                 "you'll be able to publish once it's approved.")
 
 
 @router.get("/videos")
-def available_videos(user: User = Depends(current_user)):
+def available_videos(user: User = Depends(current_user),
+                     session: Session = Depends(get_session)):
     """Videos the creator can generate a page from (already-extracted sources)."""
-    _require_creator(user)
+    _require_creator(user, session)
     out = config.VIDEO_LLM_OUTPUT
     videos = []
     if out.exists():
@@ -64,7 +70,7 @@ class GenerateBody(BaseModel):
 def start_generation(body: GenerateBody, background: BackgroundTasks,
                      user: User = Depends(current_user),
                      session: Session = Depends(get_session)):
-    _require_creator(user)
+    _require_creator(user, session)
     url = (body.url or "").strip()
     if url:
         if not url.startswith("http"):

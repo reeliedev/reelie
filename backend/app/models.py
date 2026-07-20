@@ -37,6 +37,12 @@ class Creator(SQLModel, table=True):
     avatar_gradient: list = Field(default_factory=list, sa_column=Column(JSON))
     platforms: list = Field(default_factory=list, sa_column=Column(JSON))
     bio: str = ""
+    # Closed beta: creators apply and can't publish until approved.
+    status: str = Field(default="pending", index=True)     # pending | approved | rejected
+    instagram: str = ""                                    # submitted IG handle
+    youtube: str = ""                                      # submitted YouTube handle
+    applied_at: datetime = Field(default_factory=_now)
+    reviewed_at: datetime | None = None
 
 
 class Page(SQLModel, table=True):

@@ -68,6 +68,12 @@ if IS_PROD and not JWT_SECRET:
 INGEST_TOKEN = os.environ.get("INGEST_TOKEN") or ("dev-ingest-token" if not IS_PROD else "")
 if IS_PROD and not INGEST_TOKEN:
     raise RuntimeError("INGEST_TOKEN must be set when REELIE_ENV=prod")
+
+# Admin token: gates the closed-beta review console (/admin) — approve/reject
+# creator applications. Keep it secret; anyone with it can approve creators.
+ADMIN_TOKEN = os.environ.get("ADMIN_TOKEN") or ("dev-admin-token" if not IS_PROD else "")
+if IS_PROD and not ADMIN_TOKEN:
+    raise RuntimeError("ADMIN_TOKEN must be set when REELIE_ENV=prod")
 JWT_ALGORITHM = "HS256"
 JWT_TTL_SECONDS = 60 * 60 * 24 * 30                 # 30 days
 

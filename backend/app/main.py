@@ -8,8 +8,8 @@ from fastapi.staticfiles import StaticFiles
 
 from app import config
 from app.db import init_db
-from app.routers import (auth, catalog, connections, earnings, generate, ingest,
-                         likes, me, pages, payouts, recommend, redirect, site)
+from app.routers import (admin, auth, catalog, connections, earnings, generate,
+                         ingest, likes, me, pages, payouts, recommend, redirect, site)
 from app.seed import seed_if_empty
 
 app = FastAPI(title="Reelie API", version="0.1.0")
@@ -32,6 +32,7 @@ app.include_router(pages.router)
 app.include_router(payouts.router)
 app.include_router(connections.router)
 app.include_router(likes.router)
+app.include_router(admin.router)
 
 # Per-step video clips (local hosting; object storage in prod).
 app.mount("/media", StaticFiles(directory=str(config.MEDIA_ROOT)), name="media")

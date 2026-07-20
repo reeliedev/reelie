@@ -17,8 +17,8 @@ router = APIRouter(prefix="/me", tags=["me"])
 
 
 @router.get("")
-def me(user: User = Depends(current_user)):
-    return user_dict(user)
+def me(user: User = Depends(current_user), session: Session = Depends(get_session)):
+    return user_dict(user, session)
 
 
 @router.delete("")
@@ -47,16 +47,22 @@ class BecomeCreator(BaseModel):
     handle: str
     displayName: str | None = None
     platforms: list[str] | None = None
+    instagram: str | None = None       # closed beta: submitted for review
+    youtube: str | None = None
 
 
 @router.post("/become-creator")
 def become_creator(body: BecomeCreator, user: User = Depends(current_user),
                    session: Session = Depends(get_session)):
+    """Closed-beta application. Creates the creator in 'pending' — they can sign in
+    and see their account, but can't publish until an admin approves them."""
     handle = body.handle.strip().lower().lstrip("@")
     if not handle:
         raise HTTPException(400, "A handle is required.")
     if handle in config.RESERVED_HANDLES or "/" in handle:
         raise HTTPException(409, "That handle isn't available.")
+    ig = (body.instagram or "").strip().lstrip("@")
+    yt = (body.youtube or "").strip().lstrip("@")
     existing = session.get(Creator, handle)
     if existing is None:
         session.add(Creator(
@@ -64,9 +70,17 @@ def become_creator(body: BecomeCreator, user: User = Depends(current_user),
             display_name=body.displayName or user.display_name,
             avatar_gradient=user.avatar_gradient or config.DEFAULT_AVATAR_GRADIENT,
             platforms=body.platforms or [],
+            status="pending", instagram=ig, youtube=yt,
         ))
     elif user.handle != handle:
         raise HTTPException(409, "That handle is taken.")
+    else:
+        # re-submitting their own application (e.g. adding handles)
+        if ig:
+            existing.instagram = ig
+        if yt:
+            existing.youtube = yt
+        session.add(existing)
     user.handle = handle
     user.role = "both"
     if body.displayName:
@@ -74,7 +88,7 @@ def become_creator(body: BecomeCreator, user: User = Depends(current_user),
     session.add(user)
     session.commit()
     session.refresh(user)
-    return user_dict(user)
+    return user_dict(user, session)
 
 
 # --- favorites -------------------------------------------------------------

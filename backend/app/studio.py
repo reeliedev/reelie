@@ -161,20 +161,33 @@ async function viewSupabaseLogin(){
   document.getElementById('email').addEventListener('keydown', function(e){ if(e.key==='Enter') document.getElementById('mlink').click(); });
 }
 
-function viewBecomeCreator(){
+function viewApply(){
   app.innerHTML =
-   '<h1>Claim your page</h1><p class="sub">Pick a handle — it\'s the link you\'ll share in your videos.</p>'+
-   '<div class="card" style="max-width:440px">'+
-   '<label>Handle</label><input id="handle" placeholder="yourname" autocomplete="off">'+
-   '<div style="height:14px"></div><button class="btn" id="go">Claim &amp; continue</button>'+
+   '<h1>Apply to the beta</h1><p class="sub">Reelie is invite-only while we onboard creators. Tell us where you post — we\'ll review and email you when you\'re in.</p>'+
+   '<div class="card" style="max-width:460px">'+
+   '<label>Your Reelie handle</label><input id="handle" placeholder="yourname" autocomplete="off">'+
+   '<label>Instagram handle</label><input id="ig" placeholder="@yourinsta" autocomplete="off">'+
+   '<label>YouTube handle</label><input id="yt" placeholder="@yourchannel" autocomplete="off">'+
+   '<div style="height:16px"></div><button class="btn" id="go">Submit application</button>'+
    '<div class="err hide" id="err"></div></div>';
   document.getElementById('go').onclick = async function(){
     var h=document.getElementById('handle').value.trim().toLowerCase().replace(/^@/,''), err=document.getElementById('err');
+    var ig=document.getElementById('ig').value.trim().replace(/^@/,''), yt=document.getElementById('yt').value.trim().replace(/^@/,'');
     if(h.length<3){ err.textContent='Pick a handle (3+ characters).'; err.classList.remove('hide'); return; }
+    if(!ig && !yt){ err.textContent='Add at least one Instagram or YouTube handle.'; err.classList.remove('hide'); return; }
     err.classList.add('hide');
-    try { var u = await api('POST','/me/become-creator',{handle:h, displayName: me.displayName||h, platforms:[]}); setSession(tok,u); render(); }
+    try { var u = await api('POST','/me/become-creator',{handle:h, displayName: me.displayName||h, platforms:[], instagram:ig, youtube:yt}); setSession(tok,u); render(); }
     catch(e){ err.textContent=e.message; err.classList.remove('hide'); }
   };
+}
+
+function viewPending(){
+  app.innerHTML =
+   '<h1>Application received ✨</h1>'+
+   '<div class="card" style="max-width:480px">'+
+   '<p style="font-size:16px">Thanks, <b>@'+esc(me.handle)+'</b> — your application is <b>under review</b>.</p>'+
+   '<p class="muted" style="margin-top:10px">We\'re a closed beta right now. We check every creator by hand, then email you at <b>'+esc(me.email||'')+'</b> when you\'re approved. Once you\'re in, you\'ll be able to turn your videos into shoppable pages here.</p>'+
+   '<div style="height:16px"></div><button class="btn ghost sm" onclick="render()">Refresh status</button></div>';
 }
 
 async function viewDashboard(){
@@ -273,9 +286,12 @@ async function render(){
   try { me = await api('GET','/me'); localStorage.setItem('reelie.user', JSON.stringify(me)); }
   catch(e){ signOut(); return; }
   header();
-  var isCreator = me.role==='creator' || me.role==='both';
-  if(isCreator && me.handle) viewDashboard(); else viewBecomeCreator();
+  var isCreator = (me.role==='creator' || me.role==='both') && me.handle;
+  if(!isCreator){ viewApply(); }
+  else if(me.approved){ viewDashboard(); }
+  else { viewPending(); }
 }
+window.render = render;
 render();
 </script>
 </body></html>"""

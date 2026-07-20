@@ -50,4 +50,4 @@ def dev_login(body: DevLogin, session: Session = Depends(get_session)):
         session.commit()
         session.refresh(user)
     token = provider.issue_token(user.id)
-    return {"token": token, "user": user_dict(user)}
+    return {"token": token, "user": user_dict(user, session)}

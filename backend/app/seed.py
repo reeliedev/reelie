@@ -79,7 +79,8 @@ def seed_if_empty() -> bool:
             return False  # already seeded
 
         for handle, name, grad, platforms in _CREATORS:
-            s.add(Creator(handle=handle, display_name=name, avatar_gradient=grad, platforms=platforms))
+            s.add(Creator(handle=handle, display_name=name, avatar_gradient=grad,
+                          platforms=platforms, status="approved"))
 
         for handle, title, emoji, slug, products in _ROUTINES:
             page = Page(handle=handle, slug=slug, title=title, emoji=emoji,

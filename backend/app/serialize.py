@@ -8,7 +8,12 @@ from __future__ import annotations
 from app.models import Creator, Page, Product, User
 
 
-def user_dict(u: User) -> dict:
+def user_dict(u: User, session=None) -> dict:
+    # Closed beta: expose the creator's review status so the UI can gate posting.
+    status = None
+    if u.handle and session is not None:
+        c = session.get(Creator, u.handle)
+        status = c.status if c else None
     return {
         "id": u.id,
         "email": u.email,
@@ -17,6 +22,8 @@ def user_dict(u: User) -> dict:
         "avatarGradient": u.avatar_gradient or [],
         "role": u.role,
         "isCreator": u.role in ("creator", "both"),
+        "creatorStatus": status,          # pending | approved | rejected | null
+        "approved": status == "approved",
     }
 
 

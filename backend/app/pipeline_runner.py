@@ -13,6 +13,7 @@ import json
 import os
 import re
 import subprocess
+import time
 
 from sqlmodel import Session
 
@@ -57,14 +58,24 @@ def _load_preview(video_id: str) -> tuple[list[dict], float]:
     return items, float(d.get("duration_s") or 0)
 
 
+def _log_timings(label: str, elapsed: float, stdout: str) -> None:
+    """Surface the pipeline's per-stage ⏱ lines (captured, else discarded) so the
+    real time breakdown shows up in the worker log."""
+    stages = [ln.strip() for ln in stdout.splitlines() if "⏱" in ln]
+    print(f"[worker] {label} took {elapsed:.1f}s" + ("" if not stages else
+          "\n    " + "\n    ".join(stages)), flush=True)
+
+
 def _extract(job_id: str, source_arg: str) -> str:
     """Run extract_one on a URL or a local file path → returns the video_id."""
+    t0 = time.time()
     ex = subprocess.run([config.PYTHON_BIN, str(config.EXTRACT_ONE), source_arg],
                         cwd=str(config.VIDEO_LLM_DIR),
                         capture_output=True, text=True, timeout=1800)
     if ex.returncode != 0:
         # Keep enough of the tail to include the extractor's root_cause line.
         raise RuntimeError("Couldn't process that video. " + (ex.stderr or ex.stdout)[-1200:])
+    _log_timings("extract", time.time() - t0, ex.stdout)
     m = re.search(r"VIDEO_ID:(\S+)", ex.stdout)
     if not m:
         raise RuntimeError("Extraction produced no video.")
@@ -91,10 +102,12 @@ def _build(job_id: str, handle: str, display_name: str, video_id: str, title: st
            "STORAGE_SECRET_ACCESS_KEY": config.STORAGE_SECRET_ACCESS_KEY,
            "STORAGE_PUBLIC_URL": config.STORAGE_PUBLIC_URL,
            "STORAGE_REGION": config.STORAGE_REGION}
+    t0 = time.time()
     result = subprocess.run(cmd, cwd=str(config.PAGE_GENERATOR_DIR), env=env,
                             capture_output=True, text=True, timeout=600)
     if result.returncode != 0:
         raise RuntimeError((result.stderr or result.stdout)[-600:])
+    _log_timings("build", time.time() - t0, result.stdout)
     m = re.search(rf"{re.escape(handle)}/([a-z0-9\-]+)", result.stdout)
     _set(job_id, status="done", phase="done", stage="Draft ready to review",
          page_slug=m.group(1) if m else None)

@@ -115,8 +115,11 @@ def download_youtube(url: str, videos_dir: Path) -> Path:
 def _get_whisper(size: str):
     global _WHISPER_MODEL
     if _WHISPER_MODEL is None:
+        import os
         from faster_whisper import WhisperModel
-        _WHISPER_MODEL = WhisperModel(size, device="auto", compute_type="int8")
+        # Use all available cores — the CT2 backend defaults conservatively.
+        _WHISPER_MODEL = WhisperModel(size, device="auto", compute_type="int8",
+                                      cpu_threads=os.cpu_count() or 4)
     return _WHISPER_MODEL
 
 
@@ -598,28 +601,38 @@ def process_video(path: Path, client: anthropic.Anthropic, model: str,
     duration = ffprobe_duration(path)
     print(f"  duration: {duration:.0f}s")
 
-    print("  transcribing..." + ("  (whisper API)" if use_api else "  (local faster-whisper)"))
-    tx = transcribe(path, video_id, cache_dir, use_api, whisper_size)
+    # Transcription (CPU) and keyframe extraction (ffmpeg) are independent — run
+    # them concurrently so wall-clock is the slower of the two, not the sum.
+    import time as _time
+    from concurrent.futures import ThreadPoolExecutor as _TPE
+    _t0 = _time.time()
+    print("  transcribing + keyframes (parallel)...")
+    with _TPE(max_workers=2) as _ex:
+        _ftx = _ex.submit(transcribe, path, video_id, cache_dir, use_api, whisper_size)
+        _ffr = _ex.submit(load_or_extract_frames, path, video_id, cache_dir,
+                          scene_threshold, floor_interval, hold)
+        tx = _ftx.result()
+        frames = _ffr.result()
     transcript_text = format_transcript(tx["segments"])
-
-    print(f"  extracting keyframes... (scene≥{scene_threshold}, floor {floor_interval}s"
-          + (", +held-product frames" if hold else "") + ")")
-    frames = load_or_extract_frames(path, video_id, cache_dir,
-                                    scene_threshold, floor_interval, hold)
     n_hold = sum(1 for f in frames if f.get("kind") == "hold")
-    print(f"  frames: {len(frames)}" + (f"  ({n_hold} held-product)" if hold else ""))
+    print(f"  ⏱ transcript+frames: {_time.time()-_t0:.1f}s · {len(frames)} frames"
+          + (f" ({n_hold} held-product)" if hold else ""))
 
     # Un-mirror selfie-camera videos so reversed packaging text is legible.
     mirror = {"mirrored": False, "usage": {"input_tokens": 0, "output_tokens": 0, "api_calls": 0}}
     if auto_mirror and frames:
+        _t = _time.time()
         mirror = detect_mirror(client, model, frames, cache_dir, video_id)
+        print(f"  ⏱ mirror-detect (Claude): {_time.time()-_t:.1f}s")
         if mirror["mirrored"]:
             frames = flip_frames(frames, cache_dir, video_id)
             print(f"  ⤿ mirrored video detected — un-mirroring frames "
                   f"({mirror.get('reason','')[:70]})")
 
     print("  calling Claude..." + ("  (+ reconciliation pass)" if reconcile else ""))
+    _t = _time.time()
     products, usage = extract_products(client, model, transcript_text, frames, reconcile)
+    print(f"  ⏱ extract-products (Claude{'x2' if reconcile else ''}): {_time.time()-_t:.1f}s")
     for k in usage:
         usage[k] += mirror["usage"][k]
 
@@ -639,7 +652,9 @@ def process_video(path: Path, client: anthropic.Anthropic, model: str,
     if use_description:
         desc_text = get_description(video_id, cache_dir)
         if desc_text.strip():
+            _t = _time.time()
             desc_products, d_usage = parse_description(client, model, desc_text)
+            print(f"  ⏱ parse-description (Claude): {_time.time()-_t:.1f}s")
             n_desc = len(desc_products)
             for k in usage:
                 usage[k] += d_usage[k]

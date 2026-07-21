@@ -110,7 +110,14 @@ async function supa(){
   if(sb) return sb;
   if(!window.supabase) await loadScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2');
   sb = window.supabase.createClient(AUTHCFG.supabaseUrl, AUTHCFG.supabaseAnonKey);
-  sb.auth.onAuthStateChange(function(_e, s){ tok = (s && s.access_token) || ''; if(tok) localStorage.setItem('reelie.token', tok); });
+  sb.auth.onAuthStateChange(function(evt, s){
+    var t = (s && s.access_token) || '';
+    if(t){
+      // Session arrived (incl. after a magic-link / OAuth redirect is processed) —
+      // if it's new, store it and re-render so we leave the login screen.
+      if(t !== tok){ tok = t; localStorage.setItem('reelie.token', t); render(); }
+    } else if(evt === 'SIGNED_OUT'){ tok = ''; }
+  });
   return sb;
 }
 

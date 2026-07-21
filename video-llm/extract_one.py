@@ -88,7 +88,10 @@ def main() -> int:
         print(f"ERROR: video not found: {src}", file=sys.stderr)
         return 6
 
-    client = anthropic.Anthropic(api_key=key)
+    # Background worker: ride out transient network blips instead of failing the
+    # whole job. Retries connection/5xx errors with backoff; generous per-request
+    # timeout for the large multimodal (frames) request.
+    client = anthropic.Anthropic(api_key=key, max_retries=6, timeout=180.0)
     result = pipeline.process_video(
         src, client, MODEL, cache_dir=CACHE, out_dir=OUTPUT,
         use_api=False, whisper_size="base", title=title)

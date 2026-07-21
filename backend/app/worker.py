@@ -56,6 +56,18 @@ def main() -> None:
     _db = os.environ.get("DATABASE_URL", "")
     _host = _db.split("@")[-1].split("/")[0] if "@" in _db else ("sqlite (LOCAL — will not see API jobs!)" if not _db else _db[:20])
     print(f"[worker] db → {_host}", flush=True)
+    # One-time egress probe: can we reach the Anthropic API over HTTPS? (A 401 here
+    # is success — it proves connect+TLS work; the extraction supplies the real key.)
+    import urllib.request
+    import urllib.error
+    print(f"[worker] anthropic_api_key={'set' if os.environ.get('ANTHROPIC_API_KEY','').strip() else 'MISSING/EMPTY'}", flush=True)
+    try:
+        urllib.request.urlopen("https://api.anthropic.com/v1/messages", timeout=15)
+        print("[worker] anthropic reachable: 200", flush=True)
+    except urllib.error.HTTPError as e:
+        print(f"[worker] anthropic reachable: HTTP {e.code} (connect+TLS OK)", flush=True)
+    except Exception as e:  # noqa: BLE001
+        print(f"[worker] anthropic UNREACHABLE: {type(e).__name__}: {e}", flush=True)
     while True:
         try:
             job_id = claim_next()

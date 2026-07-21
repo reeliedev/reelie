@@ -3,7 +3,7 @@
 from logging.config import fileConfig
 
 from alembic import context
-from sqlalchemy import engine_from_config, pool
+from sqlalchemy import create_engine, pool
 from sqlmodel import SQLModel
 
 from app import config as app_config
@@ -13,8 +13,9 @@ config = context.config
 if config.config_file_name:
     fileConfig(config.config_file_name)
 
-# Always take the URL from the app config (env-driven), not alembic.ini.
-config.set_main_option("sqlalchemy.url", app_config.DATABASE_URL)
+# Build engines straight from the app's DATABASE_URL (env-driven). We deliberately
+# do NOT route it through alembic.ini's configparser, whose %-interpolation would
+# choke on percent-encoded passwords (e.g. %21 for '!').
 target_metadata = SQLModel.metadata
 
 
@@ -26,9 +27,7 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
-    connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
-        prefix="sqlalchemy.", poolclass=pool.NullPool)
+    connectable = create_engine(app_config.DATABASE_URL, poolclass=pool.NullPool)
     with connectable.connect() as connection:
         context.configure(connection=connection, target_metadata=target_metadata)
         with context.begin_transaction():

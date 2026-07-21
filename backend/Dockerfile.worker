@@ -20,6 +20,12 @@ COPY video-llm/requirements.txt video-llm/requirements.txt
 RUN pip install --no-cache-dir -r backend/requirements.txt -r video-llm/requirements.txt \
     && pip install --no-cache-dir "anthropic>=0.39" boto3
 
+# Pre-fetch the Whisper model (~140MB) + static-ffmpeg binaries at BUILD time so
+# the first extraction doesn't pay a cold-start download (cut minutes off run 1).
+# Own layer: only re-runs when requirements change, not on app-code changes.
+RUN python -c "from faster_whisper import WhisperModel; WhisperModel('base', device='cpu', compute_type='int8')" \
+ && python -c "from static_ffmpeg import run; run.get_or_fetch_platform_executables_else_raise()"
+
 # Code (video-llm/videos, caches, venvs are gitignored so never copied).
 COPY backend/app backend/app
 COPY backend/migrations backend/migrations

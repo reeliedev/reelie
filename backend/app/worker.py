@@ -64,6 +64,15 @@ def main() -> None:
         print("[worker] WARNING: ANTHROPIC_API_KEY is MISSING/EMPTY", flush=True)
     elif _raw != _raw.strip():
         print("[worker] NOTE: ANTHROPIC_API_KEY had surrounding whitespace/newline (stripped at use)", flush=True)
+    # Recover orphans: a single worker runs, so any job still 'running' at startup
+    # was abandoned by a previous worker that died mid-job (e.g. a redeploy). Reset
+    # them to 'queued' so they get reprocessed instead of hanging at "Fetching…".
+    with Session(engine) as s:
+        n = s.execute(text("UPDATE generationjob SET status='queued', "
+                           "stage='Restarting…' WHERE status='running'")).rowcount
+        s.commit()
+        if n:
+            print(f"[worker] re-queued {n} orphaned running job(s)", flush=True)
     while True:
         try:
             job_id = claim_next()

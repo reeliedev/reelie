@@ -1,38 +1,47 @@
-# Render blueprint — one-click deploy of the API + managed Postgres.
-# (Any host works; this is the least-config option.) Push the repo, then in
-# Render: New → Blueprint → point at this file. Set the two sync:false secrets.
+# Render blueprint — deploys the Reelie API + public site (one Docker service).
+# Database is Supabase Postgres (set DATABASE_URL below), so there's no Render DB
+# to pay for. Push the repo, then Render → New → Blueprint → point at this file
+# and fill the sync:false secrets when prompted.
 services:
   - type: web
     name: reelie-api
     runtime: docker
+    plan: starter                    # $7/mo, stays warm (free tier sleeps — bad for crawlers)
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
     healthCheckPath: /health
     envVars:
       - key: REELIE_ENV
         value: prod
+
+      # --- Database: Supabase Postgres ---
+      # Paste your Supabase "Session mode" pooler URI (Supabase → Project Settings
+      # → Database → Connection string). Our config rewrites it to psycopg3.
       - key: DATABASE_URL
-        fromDatabase:
-          name: reelie-db
-          property: connectionString
+        sync: false
+
+      # --- Auth: Supabase (Apple / Google / email magic-link) ---
+      - key: SUPABASE_URL
+        sync: false                  # https://<project-ref>.supabase.co
+      - key: SUPABASE_ANON_KEY
+        sync: false                  # the public anon key (safe in the browser)
+
+      # --- Secrets (Render generates strong values) ---
       - key: JWT_SECRET
-        generateValue: true          # Render generates a strong secret
+        generateValue: true          # signs OAuth state; still needed with Supabase auth
+      - key: INGEST_TOKEN
+        generateValue: true          # gates the internal /ingest write
+      - key: ADMIN_TOKEN
+        generateValue: true          # gates the /admin beta review console — copy it from Render
+
+      # --- Public origin (reelie.io) ---
       - key: ALLOWED_ORIGINS
-        sync: false                  # set to your web origins, e.g. https://reelie.io
-      # Public site + SEO: the custom domain the crawlable pages live at. This
-      # service serves BOTH the API (known route prefixes) and the public site
-      # (root + /{handle}/{slug}) — point reelie.io at it in Render → Settings →
-      # Custom Domains, then set these three to the live https origin.
+        value: https://reelie.io,https://www.reelie.io
       - key: PUBLIC_BASE_URL
         value: https://reelie.io
       - key: REELIE_SELF_URL
-        value: https://reelie.io   # /r redirects + generator postback target
+        value: https://reelie.io     # /r redirects + generator postback target
       - key: OAUTH_REDIRECT_BASE
-        value: https://reelie.io   # OAuth callback base (must match Google/Meta app config)
+        value: https://reelie.io     # OAuth callback base (must match provider config)
       - key: WEB_CONCURRENCY
         value: "2"
-
-databases:
-  - name: reelie-db
-    databaseName: reelie
-    plan: free                       # upgrade when you outgrow it

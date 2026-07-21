@@ -289,6 +289,11 @@ async function doGenerate(){
   btn.disabled=false;
 }
 
+function showFatal(msg){
+  app.innerHTML = '<h1>Almost there</h1><div class="card" style="max-width:500px">'+
+    '<p class="err">'+esc(msg)+'</p><div style="height:12px"></div>'+
+    '<button class="btn ghost sm" onclick="signOut()">Sign out &amp; retry</button></div>';
+}
 async function render(){
   await authConfig();
   header();
@@ -299,9 +304,13 @@ async function render(){
     if(tok) localStorage.setItem('reelie.token', tok);
   }
   if(!tok){ (AUTHCFG.provider==='supabase' ? viewSupabaseLogin() : viewLogin()); return; }
-  // refresh identity so role is current
-  try { me = await api('GET','/me'); localStorage.setItem('reelie.user', JSON.stringify(me)); }
-  catch(e){ signOut(); return; }
+  // Verify with the backend explicitly so a rejection is VISIBLE (not a silent bounce).
+  var r;
+  try { r = await fetch(BASE+'/me', {headers:{'Authorization':'Bearer '+tok}}); }
+  catch(e){ showFatal('Network error reaching the server: '+e.message); return; }
+  if(r.status===401){ showFatal('Signed in with Supabase, but the server rejected the session (401 from /me). This is the backend token verification.'); return; }
+  if(!r.ok){ showFatal('Server returned '+r.status+' from /me.'); return; }
+  me = await r.json(); localStorage.setItem('reelie.user', JSON.stringify(me));
   header();
   var isCreator = (me.role==='creator' || me.role==='both') && me.handle;
   if(!isCreator){ viewApply(); }

@@ -81,6 +81,40 @@ textarea{resize:vertical;min-height:64px}
 .tab.on{border-color:var(--ink);color:var(--ink);background:var(--wash,#faf7ef)}
 .tab .hint{font-weight:500;font-size:11px;color:var(--accent-deep);margin-left:5px}
 input[type=file]{padding:9px 12px}
+/* live analysis view */
+.az{max-width:860px;margin:0 auto;padding-top:6px}
+.az-head{text-align:center;margin-bottom:24px}
+.az-dotwrap{height:16px}
+.az-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--accent);animation:azpulse 1.4s infinite}
+@keyframes azpulse{0%{box-shadow:0 0 0 0 rgba(111,93,240,.45)}70%{box-shadow:0 0 0 11px rgba(111,93,240,0)}100%{box-shadow:0 0 0 0 rgba(111,93,240,0)}}
+.az-head h1{font-size:26px}
+.az-sub{color:var(--grey);font-size:14.5px;min-height:20px;transition:opacity .3s}
+.az-body{display:grid;grid-template-columns:1.05fr .95fr;gap:22px;align-items:start}
+@media(max-width:720px){.az-body{grid-template-columns:1fr}}
+.az-stage{position:relative;border-radius:18px;overflow:hidden;background:#0c0a05;aspect-ratio:9/16;max-height:min(58vh,560px);margin:0 auto;width:100%;box-shadow:0 10px 30px rgba(32,27,10,.14)}
+.az-vid{width:100%;height:100%;object-fit:cover;display:block}
+.az-ph{display:flex;align-items:center;justify-content:center;font-size:66px;background:linear-gradient(135deg,#2a2740,#171528)}
+.az-scan{position:absolute;left:0;right:0;top:0;height:32%;pointer-events:none;
+  background:linear-gradient(180deg,rgba(124,108,255,0),rgba(124,108,255,.12) 68%,rgba(150,135,255,.5));
+  border-bottom:2px solid rgba(176,162,255,.95);animation:azscan 2.6s cubic-bezier(.55,0,.45,1) infinite}
+@keyframes azscan{0%{transform:translateY(-38%)}50%{transform:translateY(210%)}100%{transform:translateY(-38%)}}
+.az-grid{position:absolute;inset:0;pointer-events:none;opacity:.14;
+  background-image:linear-gradient(rgba(176,162,255,.6) 1px,transparent 1px),linear-gradient(90deg,rgba(176,162,255,.6) 1px,transparent 1px);
+  background-size:34px 34px}
+.az-stage.ping{animation:azping .55s}
+@keyframes azping{0%{box-shadow:inset 0 0 0 0 rgba(176,162,255,0),0 10px 30px rgba(32,27,10,.14)}
+  30%{box-shadow:inset 0 0 0 4px rgba(176,162,255,.95),0 10px 30px rgba(32,27,10,.14)}
+  100%{box-shadow:inset 0 0 0 0 rgba(176,162,255,0),0 10px 30px rgba(32,27,10,.14)}}
+.az-count{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;color:var(--ink);margin-bottom:14px}
+.az-list{display:flex;flex-direction:column;gap:9px;max-height:56vh;overflow:auto}
+.az-item{display:flex;gap:11px;align-items:center;padding:11px 13px;border:1.5px solid var(--line);border-radius:13px;background:#fff;
+  opacity:0;transform:translateY(9px) scale(.96);transition:all .5s cubic-bezier(.2,.85,.25,1)}
+.az-item.in{opacity:1;transform:none;border-color:#d9d2f7;box-shadow:0 5px 16px rgba(111,93,240,.12)}
+.az-em{font-size:18px}
+.az-nm{font-weight:600;font-size:14px;color:var(--ink);line-height:1.25}
+.az-var{color:var(--grey);font-weight:500;font-size:12.5px}
+.az-ts{font-size:11.5px;color:var(--accent-deep);font-weight:600;margin-top:2px;text-transform:capitalize}
+.az-foot{text-align:center;margin-top:28px}
 </style></head>
 <body>
 <div class="bar"><div class="in"><a class="brand" href="{{BASE}}">{{BRAND}}<span class="d">.</span></a>
@@ -331,42 +365,127 @@ async function archive(slug, live){ await api('POST','/me/pages/'+slug+'/'+(live
 async function del(slug){ if(!confirm('Delete this page? This cannot be undone.')) return; await api('DELETE','/me/pages/'+slug); loadPages(); }
 
 async function doGenerate(){
-  var st=document.getElementById('genstatus'), btn=document.getElementById('gen');
+  var st=document.getElementById('genstatus');
   var title = document.getElementById('ptitle').value.trim();
-  var body = { title: title||undefined };
+  var body = { title: title||undefined }, localVideoURL = null;
   if(GENTAB==='upload'){
     var f = document.getElementById('file').files[0];
     if(!f){ st.textContent='Choose a video file first.'; return; }
-    btn.disabled=true; st.innerHTML='<span class="spin"></span> Uploading…';
+    localVideoURL = URL.createObjectURL(f);
+    startAnalyzer(localVideoURL); setAzLabel('Uploading your video…');
     try {
       var pre = await api('POST','/me/uploads/presign',{filename:f.name, contentType:f.type||'video/mp4'});
       var put = await fetch(pre.uploadUrl, {method:'PUT', headers:{'Content-Type':f.type||'video/mp4'}, body:f});
       if(!put.ok){ throw new Error('Upload failed ('+put.status+')'); }
       body.uploadKey = pre.key;
-    } catch(e){ st.innerHTML='<span class="err">'+esc(e.message)+'</span>'; btn.disabled=false; return; }
-    st.innerHTML='<span class="spin"></span> Starting…';
+    } catch(e){ azError(e.message); return; }
   } else {
     var url = document.getElementById('url').value.trim();
     if(!url){ st.textContent='Paste a video link first.'; return; }
-    body.url = url;
-    btn.disabled=true; st.innerHTML='<span class="spin"></span> Starting…';
+    body.url = url; startAnalyzer(null);
   }
+  setAzLabel('Starting…');
   try {
-    var r = await api('POST','/me/generate',body); var job=r.jobId;
-    if(r.status==='received'){
-      st.innerHTML='<span style="color:var(--accent-deep);font-weight:600">✓ Got it! Your page is being built — we\'ll email you when it\'s live.</span>';
-      resetGenInputs(); btn.disabled=false; return;
-    }
-    for(var i=0;i<200;i++){
-      await new Promise(function(res){setTimeout(res,3000);});
-      var s = await api('GET','/me/generate/'+job);
-      st.innerHTML = '<span class="spin"></span> '+esc(s.stage||s.status);
-      if(s.status==='done'){ st.innerHTML='<span style="color:var(--accent-deep);font-weight:600">✓ Draft ready — review it below, then <b>Approve &amp; Publish</b>.</span>'; resetGenInputs(); loadPages(); break; }
-      if(s.status==='error'){ st.innerHTML='<span class="err">'+esc(s.error||'Failed')+'</span>'; break; }
-    }
-  } catch(e){ st.innerHTML='<span class="err">'+esc(e.message)+'</span>'; }
-  btn.disabled=false;
+    var r = await api('POST','/me/generate',body);
+    if(r.status==='received'){ azDone(null, true); return; }
+    await pollAnalyze(r.jobId);
+  } catch(e){ azError(e.message); }
 }
+
+// --- live analysis view ----------------------------------------------------
+var AZ = { revealed: 0 };
+function fmtT(t){ t=Math.max(0,Math.round(t||0)); return Math.floor(t/60)+':'+('0'+(t%60)).slice(-2); }
+
+function startAnalyzer(videoURL){
+  AZ = { revealed: 0 };
+  app.innerHTML =
+   '<div class="az">'+
+     '<div class="az-head"><div class="az-dotwrap"><span class="az-dot"></span></div>'+
+       '<h1 id="az-label" style="margin:6px 0 2px">Analyzing your video</h1>'+
+       '<div class="az-sub" id="az-sub">Watching every second to find the products…</div></div>'+
+     '<div class="az-body">'+
+       '<div class="az-stage" id="az-stage">'+
+         (videoURL ? '<video id="az-vid" class="az-vid" muted playsinline loop autoplay src="'+videoURL+'"></video>'
+                   : '<div class="az-vid az-ph">🎬</div>')+
+         '<div class="az-scan"></div><div class="az-grid"></div>'+
+       '</div>'+
+       '<div class="az-panel">'+
+         '<div class="az-count" id="az-count"><span class="spin"></span> Looking for products…</div>'+
+         '<div class="az-list" id="az-list"></div>'+
+       '</div>'+
+     '</div>'+
+     '<div class="az-foot" id="az-foot"></div>'+
+   '</div>';
+  var v=document.getElementById('az-vid'); if(v&&v.play){ v.play().catch(function(){}); }
+}
+function setAzLabel(t){ var e=document.getElementById('az-label'); if(e) e.textContent=t; }
+function setAzSub(t){ var e=document.getElementById('az-sub'); if(e) e.textContent=t||''; }
+function pingStage(){ var s=document.getElementById('az-stage'); if(!s)return; s.classList.remove('ping'); void s.offsetWidth; s.classList.add('ping'); }
+
+function revealNext(preview){
+  if(AZ.revealed >= preview.length) return false;
+  var p = preview[AZ.revealed++];
+  var v=document.getElementById('az-vid');
+  if(v && p.t){ try{ v.currentTime = p.t; }catch(e){} }
+  pingStage();
+  var list=document.getElementById('az-list');
+  if(list){
+    var label=((p.brand||'')+' '+(p.name||'')).trim() || 'Product';
+    var card=document.createElement('div'); card.className='az-item';
+    card.innerHTML='<div class="az-em">🔎</div><div class="az-tx"><div class="az-nm">'+esc(label)+
+      (p.variant?' <span class="az-var">'+esc(p.variant)+'</span>':'')+'</div>'+
+      '<div class="az-ts">found at '+fmtT(p.t)+'</div></div>';
+    list.insertBefore(card, list.firstChild);
+    requestAnimationFrame(function(){ card.classList.add('in'); });
+  }
+  var c=document.getElementById('az-count'); if(c) c.textContent = AZ.revealed+' product'+(AZ.revealed!==1?'s':'')+' found';
+  return true;
+}
+
+async function pollAnalyze(job){
+  var preview=[], revealTimer=null, ambient=null, ai=0, lastPhase='';
+  var AMBIENT=['Listening to the audio…','Scanning the footage…','Reading on-screen text…','Matching products…'];
+  function stop(){ if(revealTimer){clearInterval(revealTimer);revealTimer=null;} if(ambient){clearInterval(ambient);ambient=null;} }
+  for(var i=0;i<400;i++){
+    await new Promise(function(res){setTimeout(res,2500);});
+    var s; try { s = await api('GET','/me/generate/'+job); } catch(e){ continue; }
+    if(s.phase==='analyzing' && lastPhase!=='analyzing'){
+      setAzLabel('Analyzing your video');
+      if(!ambient) ambient=setInterval(function(){ setAzSub(AMBIENT[ai++ % AMBIENT.length]); }, 2100);
+    }
+    if(!preview.length && s.preview && s.preview.length){
+      preview = s.preview;
+      if(ambient){ clearInterval(ambient); ambient=null; } setAzSub('Products detected in the video ✨');
+      if(!revealTimer) revealTimer=setInterval(function(){ if(!revealNext(preview)){ clearInterval(revealTimer); revealTimer=null; } }, 800);
+    }
+    if(s.phase==='building') setAzLabel('Pricing & building your page');
+    lastPhase = s.phase || lastPhase;
+    if(s.status==='done'){ stop(); while(revealNext(preview)){} azDone(s.pageSlug, false); return; }
+    if(s.status==='error'){ stop(); azError(s.error||'Something went wrong'); return; }
+  }
+}
+
+function azDone(slug, received){
+  var v=document.getElementById('az-vid'); if(v){ try{ v.currentTime=0; v.play(); }catch(e){} }
+  var sc=document.querySelector('.az-scan'); if(sc) sc.style.display='none';
+  setAzLabel(received?'Got it — we\'re building your page':'✓ Draft ready to review');
+  setAzSub(received?'We\'ll email you when it\'s live.':'Check it over, edit anything, then approve to go live.');
+  var c=document.getElementById('az-count'); if(c && AZ.revealed) c.textContent = AZ.revealed+' product'+(AZ.revealed!==1?'s':'')+' found';
+  var foot=document.getElementById('az-foot');
+  if(foot){
+    foot.innerHTML = received
+      ? '<button class="btn" onclick="viewDashboard()">Back to your pages</button>'
+      : '<button class="btn" onclick="viewDashboard()">Review &amp; publish →</button>'+
+        (slug?' <a class="btn ghost" href="{{BASE}}/'+esc(me.handle)+'/'+esc(slug)+'" target="_blank">Preview draft</a>':'');
+  }
+}
+function azError(msg){
+  var sc=document.querySelector('.az-scan'); if(sc) sc.style.display='none';
+  setAzLabel('That didn\'t work'); setAzSub('');
+  var foot=document.getElementById('az-foot');
+  if(foot) foot.innerHTML='<div class="err" style="margin-bottom:14px">'+esc(msg)+'</div><button class="btn ghost" onclick="viewDashboard()">← Back &amp; try again</button>';
+}
+window.viewDashboard = viewDashboard;
 
 function showFatal(msg){
   app.innerHTML = '<h1>Almost there</h1><div class="card" style="max-width:500px">'+

@@ -129,6 +129,9 @@ class GenerationJob(SQLModel, table=True):
     title: str = ""                                        # creator's chosen page name (optional)
     status: str = Field(default="queued", index=True)      # queued|running|done|error|received
     stage: str = "Queued"                                  # human-readable progress label
+    phase: str = ""                                        # machine phase for the UI animation
+    preview: str = ""                                      # JSON of products found (revealed live)
+    duration_s: float = 0                                  # source length (for the scan animation)
     page_slug: str | None = None
     error: str | None = None
     created_at: datetime = Field(default_factory=_now)

@@ -129,7 +129,12 @@ def generation_status(job_id: str, user: User = Depends(current_user),
     job = session.get(GenerationJob, job_id)
     if not job or job.handle != user.handle:
         raise HTTPException(404, "Job not found")
+    try:
+        preview = json.loads(job.preview) if job.preview else []
+    except Exception:
+        preview = []
     return {
         "jobId": job.id, "status": job.status, "stage": job.stage,
+        "phase": job.phase, "preview": preview, "durationS": job.duration_s,
         "pageSlug": job.page_slug, "error": job.error,
     }

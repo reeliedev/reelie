@@ -23,7 +23,9 @@ IS_PROD = ENV == "prod"
 
 # SQLite file in dev (zero setup). Postgres in prod via DATABASE_URL, e.g.
 # postgresql+psycopg://user:pass@host:5432/reelie
-_db = os.environ.get("DATABASE_URL", f"sqlite:///{HERE / 'reelie.db'}")
+# .strip() guards against a trailing newline sneaking in when the value is pasted
+# into a host's env var field (a very common cause of "database ... does not exist").
+_db = os.environ.get("DATABASE_URL", f"sqlite:///{HERE / 'reelie.db'}").strip()
 # Managed hosts hand out postgres://… (psycopg2 dialect); we use psycopg3.
 if _db.startswith("postgres://"):
     _db = "postgresql+psycopg://" + _db[len("postgres://"):]
@@ -50,8 +52,8 @@ OIDC_AUDIENCE = os.environ.get("OIDC_AUDIENCE", "")     # your client/app id (Ap
 # magic-link, headless (our own login UI). Set these two and everything else is
 # derived — the provider flips to OIDC and verifies Supabase tokens via its JWKS.
 # The anon key is a PUBLIC client key (safe to expose to the browser).
-SUPABASE_URL = os.environ.get("SUPABASE_URL", "").rstrip("/")
-SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "")
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "").strip().rstrip("/")
+SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "").strip()
 if SUPABASE_URL:
     AUTH_PROVIDER = "oidc"
     OIDC_JWKS_URL = OIDC_JWKS_URL or f"{SUPABASE_URL}/auth/v1/.well-known/jwks.json"

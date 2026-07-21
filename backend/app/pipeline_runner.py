@@ -90,7 +90,13 @@ def process_job(job_id: str) -> None:
         if src.startswith("upload:"):
             key = src[len("upload:"):]
             _set(job_id, status="running", stage="Fetching your video")
-            tmp = os.path.join(tempfile.gettempdir(), f"{uuid.uuid4().hex}.mp4")
+            # Download INTO video-llm/videos/<job_id>.mp4 (not a throwaway temp):
+            # process_video sets video_id = sanitize_id(stem) = job_id, and the
+            # build step's clip cutter (clips.resolve_source) looks for the source
+            # at videos/<video_id>.mp4 — so it must live there through _build.
+            videos_dir = config.VIDEO_LLM_DIR / "videos"
+            videos_dir.mkdir(parents=True, exist_ok=True)
+            tmp = str(videos_dir / f"{job_id}.mp4")
             storage.download_to(key, tmp)
             video_id = _extract(job_id, tmp)
             _set(job_id, video_id=video_id, stage="Found your products")

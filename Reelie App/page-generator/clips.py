@@ -205,21 +205,32 @@ def make_step_clips(video_id: str, products, duration: float,
     clips_dir = page_dir / "clips"
     clips_dir.mkdir(parents=True, exist_ok=True)
 
-    # dedupe identical windows -> one file, referenced by every product in it
-    by_window: dict[tuple[float, float], str] = {}
-    written = 0
+    # dedupe identical windows -> one file (deterministic stem by first appearance),
+    # then cut the unique windows in parallel — each _write_clip opens its own PyAV
+    # container (independent) and releases the GIL during encode.
+    from concurrent.futures import ThreadPoolExecutor
+    stem_of: dict[tuple[float, float], str] = {}
     for p in sorted(products, key=lambda x: x.position):
         win = windows[p.id]
-        stem = by_window.get(win)
-        if stem is None:
-            stem = f"{len(by_window) + 1:02d}"
-            ok = _write_clip(src, win[0], win[1],
-                             clips_dir / f"{stem}.mp4", clips_dir / f"{stem}.jpg",
-                             mirror)
-            if not ok:
-                continue
-            by_window[win] = stem
-            written += 1
-        p.clip = f"clips/{stem}.mp4"
-        p.clip_poster = f"clips/{stem}.jpg"
+        if win not in stem_of:
+            stem_of[win] = f"{len(stem_of) + 1:02d}"
+
+    def _cut(win):
+        stem = stem_of[win]
+        ok = _write_clip(src, win[0], win[1],
+                         clips_dir / f"{stem}.mp4", clips_dir / f"{stem}.jpg", mirror)
+        return win, ok
+
+    ok_windows = {}
+    if stem_of:
+        with ThreadPoolExecutor(max_workers=min(4, len(stem_of))) as ex:
+            for win, ok in ex.map(_cut, list(stem_of)):
+                ok_windows[win] = ok
+
+    written = sum(1 for ok in ok_windows.values() if ok)
+    for p in sorted(products, key=lambda x: x.position):
+        win = windows[p.id]
+        if ok_windows.get(win):
+            p.clip = f"clips/{stem_of[win]}.mp4"
+            p.clip_poster = f"clips/{stem_of[win]}.jpg"
     return written

@@ -618,6 +618,16 @@ def process_video(path: Path, client: anthropic.Anthropic, model: str,
     print(f"  ⏱ transcript+frames: {_time.time()-_t0:.1f}s · {len(frames)} frames"
           + (f" ({n_hold} held-product)" if hold else ""))
 
+    # Launch the caption/description parse NOW, in parallel with the frame-based
+    # extraction below — it only needs the description text, not the video, so it
+    # overlaps a full Claude round-trip instead of adding one at the end.
+    _desc_future = _desc_ex = None
+    _desc_text = get_description(video_id, cache_dir) if use_description else ""
+    _t_desc = _time.time()
+    if _desc_text.strip():
+        _desc_ex = _TPE(max_workers=1)
+        _desc_future = _desc_ex.submit(parse_description, client, model, _desc_text)
+
     # Un-mirror selfie-camera videos so reversed packaging text is legible.
     mirror = {"mirrored": False, "usage": {"input_tokens": 0, "output_tokens": 0, "api_calls": 0}}
     if auto_mirror and frames:
@@ -648,25 +658,24 @@ def process_video(path: Path, client: anthropic.Anthropic, model: str,
 
     # Combine with the creator's description list (union) for the most complete
     # result: the description's brands fill in the video's brand-null generics.
+    # (parse_description was launched in parallel above — just join it here.)
     n_video, n_desc = len(products), 0
-    if use_description:
-        desc_text = get_description(video_id, cache_dir)
-        if desc_text.strip():
-            _t = _time.time()
-            desc_products, d_usage = parse_description(client, model, desc_text)
-            print(f"  ⏱ parse-description (Claude): {_time.time()-_t:.1f}s")
-            n_desc = len(desc_products)
+    if _desc_future is not None:
+        desc_products, d_usage = _desc_future.result()
+        _desc_ex.shutdown()
+        print(f"  ⏱ parse-description (Claude, ran in parallel): {_time.time()-_t_desc:.1f}s")
+        n_desc = len(desc_products)
+        for k in usage:
+            usage[k] += d_usage[k]
+        if desc_products:
+            video_products = products
+            products, m_usage = merge_video_and_description(
+                client, model, video_products, desc_products)
             for k in usage:
-                usage[k] += d_usage[k]
-            if desc_products:
-                video_products = products
-                products, m_usage = merge_video_and_description(
-                    client, model, video_products, desc_products)
-                for k in usage:
-                    usage[k] += m_usage[k]
-                products = _tag_sources(products, video_products, desc_products)
-                print(f"  description: {n_desc} products  ->  merged comprehensive: "
-                      f"{len(products)}  (video alone: {n_video})")
+                usage[k] += m_usage[k]
+            products = _tag_sources(products, video_products, desc_products)
+            print(f"  description: {n_desc} products  ->  merged comprehensive: "
+                  f"{len(products)}  (video alone: {n_video})")
 
     ext_cost = extraction_cost(usage)
     tx_cost = (duration / 60 * WHISPER_API_PER_MIN) if use_api else 0.0

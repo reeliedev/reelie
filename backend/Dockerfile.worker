@@ -1,0 +1,31 @@
+# Reelie extraction worker — the heavy image with the full video->page pipeline.
+# Build context is the REPO ROOT (see render.yaml) so it can copy video-llm and
+# the page-generator alongside the backend.
+FROM python:3.11-slim
+
+# ffmpeg/ffprobe (clips + keyframes), curl+unzip (Deno), ca-certs.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      ffmpeg curl unzip ca-certificates && rm -rf /var/lib/apt/lists/*
+
+# Deno — yt-dlp needs a JS runtime for YouTube extraction.
+RUN curl -fsSL https://deno.land/install.sh | sh
+ENV PATH="/root/.deno/bin:${PATH}"
+
+ENV PYTHONUNBUFFERED=1 REELIE_ENV=prod PYTHONPATH=/app/backend
+WORKDIR /app
+
+# Python deps: backend + the extraction pipeline. anthropic/boto3 for LLM + R2.
+COPY backend/requirements.txt backend/requirements.txt
+COPY video-llm/requirements.txt video-llm/requirements.txt
+RUN pip install --no-cache-dir -r backend/requirements.txt -r video-llm/requirements.txt \
+    && pip install --no-cache-dir "anthropic>=0.39" boto3
+
+# Code (video-llm/videos, caches, venvs are gitignored so never copied).
+COPY backend/app backend/app
+COPY backend/migrations backend/migrations
+COPY backend/alembic.ini backend/alembic.ini
+COPY video-llm video-llm
+COPY ["Reelie App/page-generator", "Reelie App/page-generator"]
+
+WORKDIR /app/backend
+CMD ["python", "-m", "app.worker"]

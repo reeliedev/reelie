@@ -275,14 +275,21 @@ final class AppState {
     /// nil on failure). Refreshes the catalogue so the page is browsable.
     @MainActor @discardableResult
     func generatePage(videoId: String? = nil, url: String? = nil,
+                      uploadFileURL: URL? = nil, title: String? = nil,
                       onStage: ((String) -> Void)? = nil) async -> String? {
         guard let base = apiBaseURL, let token = authToken else { return nil }
         let client = APIClient(baseURL: base)
-        // A pasted link runs live extraction (download → transcribe → find products),
-        // so allow more time than generating from an already-extracted video.
-        let maxPolls = url != nil ? 150 : 40
+        // A pasted link or upload runs live extraction (download → transcribe → find
+        // products), so allow more time than generating from an already-extracted video.
+        let maxPolls = (url != nil || uploadFileURL != nil) ? 150 : 40
         do {
-            let jobId = try await client.startGeneration(videoId: videoId, url: url, token: token)
+            var uploadKey: String? = nil
+            if let f = uploadFileURL {
+                onStage?("Uploading your video…")
+                uploadKey = try await client.uploadVideo(fileURL: f, token: token)
+            }
+            let jobId = try await client.startGeneration(videoId: videoId, url: url,
+                                                         uploadKey: uploadKey, title: title, token: token)
             for _ in 0..<maxPolls {
                 let st = try await client.generationStatus(jobId: jobId, token: token)
                 onStage?(st.stage)

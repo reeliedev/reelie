@@ -75,6 +75,11 @@ textarea{resize:vertical;min-height:64px}
 .hide{display:none}
 .spin{display:inline-block;width:15px;height:15px;border:2px solid var(--line);border-top-color:var(--ink);border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px}
 @keyframes sp{to{transform:rotate(360deg)}}
+.tabs{display:flex;gap:8px;margin-bottom:12px}
+.tab{background:#fff;border:1.5px solid var(--line);color:var(--grey);font-weight:600;font-size:14px;padding:8px 14px;border-radius:999px;cursor:pointer;font-family:inherit}
+.tab.on{border-color:var(--ink);color:var(--ink);background:var(--wash,#faf7ef)}
+.tab .hint{font-weight:500;font-size:11px;color:var(--accent-deep);margin-left:5px}
+input[type=file]{padding:9px 12px}
 </style></head>
 <body>
 <div class="bar"><div class="in"><a class="brand" href="{{BASE}}">{{BRAND}}<span class="d">.</span></a>
@@ -215,9 +220,19 @@ function viewPending(){
 }
 
 async function viewDashboard(){
-  app.innerHTML = '<h1>Your pages</h1><p class="sub">Generate a page from a video link, then edit or manage it.</p>'+
-   '<div class="card"><h2>New page from a link</h2>'+
-   '<input id="url" placeholder="YouTube, TikTok, or a video URL">'+
+  app.innerHTML = '<h1>Your pages</h1><p class="sub">Turn a video into a shoppable routine page, then edit or manage it.</p>'+
+   '<div class="card"><h2>New page</h2>'+
+   '<div class="tabs">'+
+     '<button class="tab on" id="tab-link" onclick="pickTab(\'link\')">Paste a link</button>'+
+     '<button class="tab" id="tab-upload" onclick="pickTab(\'upload\')">Upload video <span class="hint">best quality</span></button>'+
+   '</div>'+
+   '<div id="pane-link">'+
+     '<input id="url" placeholder="YouTube, TikTok, or a video URL">'+
+   '</div>'+
+   '<div id="pane-upload" class="hide">'+
+     '<input id="file" type="file" accept="video/mp4,video/quicktime,video/*">'+
+     '<div class="muted" style="margin-top:6px">MP4 or MOV, up to ~500&nbsp;MB. Uploaded straight from your browser.</div>'+
+   '</div>'+
    '<div style="height:10px"></div>'+
    '<input id="ptitle" placeholder="Page name (optional — defaults to the video title)">'+
    '<div style="height:12px"></div><button class="btn" id="gen">Make page</button>'+
@@ -225,6 +240,22 @@ async function viewDashboard(){
    '<div class="card" id="pages"><p class="muted">Loading your pages…</p></div>';
   document.getElementById('gen').onclick = doGenerate;
   loadPages();
+}
+
+var GENTAB = 'link';
+function pickTab(which){
+  GENTAB = which;
+  document.getElementById('tab-link').classList.toggle('on', which==='link');
+  document.getElementById('tab-upload').classList.toggle('on', which==='upload');
+  document.getElementById('pane-link').classList.toggle('hide', which!=='link');
+  document.getElementById('pane-upload').classList.toggle('hide', which!=='upload');
+  document.getElementById('genstatus').textContent='';
+}
+window.pickTab = pickTab;
+function resetGenInputs(){
+  var u=document.getElementById('url'); if(u) u.value='';
+  var f=document.getElementById('file'); if(f) f.value='';
+  var t=document.getElementById('ptitle'); if(t) t.value='';
 }
 
 async function loadPages(){
@@ -279,21 +310,37 @@ async function archive(slug, live){ await api('POST','/me/pages/'+slug+'/'+(live
 async function del(slug){ if(!confirm('Delete this page? This cannot be undone.')) return; await api('DELETE','/me/pages/'+slug); loadPages(); }
 
 async function doGenerate(){
-  var url = document.getElementById('url').value.trim(), st=document.getElementById('genstatus'), btn=document.getElementById('gen');
+  var st=document.getElementById('genstatus'), btn=document.getElementById('gen');
   var title = document.getElementById('ptitle').value.trim();
-  if(!url){ st.textContent='Paste a video link first.'; return; }
-  btn.disabled=true; st.innerHTML='<span class="spin"></span> Starting…';
+  var body = { title: title||undefined };
+  if(GENTAB==='upload'){
+    var f = document.getElementById('file').files[0];
+    if(!f){ st.textContent='Choose a video file first.'; return; }
+    btn.disabled=true; st.innerHTML='<span class="spin"></span> Uploading…';
+    try {
+      var pre = await api('POST','/me/uploads/presign',{filename:f.name, contentType:f.type||'video/mp4'});
+      var put = await fetch(pre.uploadUrl, {method:'PUT', headers:{'Content-Type':f.type||'video/mp4'}, body:f});
+      if(!put.ok){ throw new Error('Upload failed ('+put.status+')'); }
+      body.uploadKey = pre.key;
+    } catch(e){ st.innerHTML='<span class="err">'+esc(e.message)+'</span>'; btn.disabled=false; return; }
+    st.innerHTML='<span class="spin"></span> Starting…';
+  } else {
+    var url = document.getElementById('url').value.trim();
+    if(!url){ st.textContent='Paste a video link first.'; return; }
+    body.url = url;
+    btn.disabled=true; st.innerHTML='<span class="spin"></span> Starting…';
+  }
   try {
-    var r = await api('POST','/me/generate',{url:url, title:title||undefined}); var job=r.jobId;
+    var r = await api('POST','/me/generate',body); var job=r.jobId;
     if(r.status==='received'){
       st.innerHTML='<span style="color:var(--accent-deep);font-weight:600">✓ Got it! Your page is being built — we\'ll email you when it\'s live.</span>';
-      document.getElementById('url').value=''; document.getElementById('ptitle').value=''; btn.disabled=false; return;
+      resetGenInputs(); btn.disabled=false; return;
     }
     for(var i=0;i<200;i++){
       await new Promise(function(res){setTimeout(res,3000);});
       var s = await api('GET','/me/generate/'+job);
       st.innerHTML = '<span class="spin"></span> '+esc(s.stage||s.status);
-      if(s.status==='done'){ st.textContent='Published ✓'; document.getElementById('url').value=''; loadPages(); break; }
+      if(s.status==='done'){ st.textContent='Published ✓'; resetGenInputs(); loadPages(); break; }
       if(s.status==='error'){ st.innerHTML='<span class="err">'+esc(s.error||'Failed')+'</span>'; break; }
     }
   } catch(e){ st.innerHTML='<span class="err">'+esc(e.message)+'</span>'; }

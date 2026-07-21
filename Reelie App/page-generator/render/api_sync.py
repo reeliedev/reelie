@@ -18,29 +18,50 @@ import config
 from models import Page
 
 
+def _r2_upload(local_path: Path, key: str, content_type: str) -> str:
+    """Upload a file to object storage (R2/S3) and return its public URL."""
+    import boto3
+    from botocore.config import Config as BotoConfig
+    client = boto3.client(
+        "s3", endpoint_url=os.environ["STORAGE_ENDPOINT"],
+        aws_access_key_id=os.environ["STORAGE_ACCESS_KEY_ID"],
+        aws_secret_access_key=os.environ["STORAGE_SECRET_ACCESS_KEY"],
+        region_name=os.environ.get("STORAGE_REGION", "auto"),
+        config=BotoConfig(signature_version="s3v4"))
+    client.upload_file(str(local_path), os.environ["STORAGE_BUCKET"], key,
+                       ExtraArgs={"ContentType": content_type})
+    return os.environ["STORAGE_PUBLIC_URL"].rstrip("/") + "/" + key
+
+
 def _media_clip(page: Page, p) -> tuple[str, str]:
-    """If clip hosting is on (REELIE_MEDIA_ROOT set) and this product has a clip,
-    copy the clip + poster into the media root and return their absolute URLs.
-    Otherwise returns empty strings (emoji fallback)."""
-    media_root = os.environ.get("REELIE_MEDIA_ROOT")
-    base = os.environ.get("REELIE_API_URL", "").rstrip("/")
-    if not (media_root and base and p.clip):
+    """Host this product's clip + poster and return their absolute URLs. Uploads
+    to object storage (R2/S3) when STORAGE_* is set (prod), else copies to the
+    local media root (dev). Empty strings → emoji fallback."""
+    if not p.clip:
         return "", ""
     src_dir = config.OUT_PUBLIC / page.handle / page.path_slug
-    dest_dir = Path(media_root) / page.handle / page.path_slug
+    use_r2 = bool(os.environ.get("STORAGE_ENDPOINT") and os.environ.get("STORAGE_BUCKET")
+                  and os.environ.get("STORAGE_PUBLIC_URL"))
+    media_root = os.environ.get("REELIE_MEDIA_ROOT")
+    base = os.environ.get("REELIE_API_URL", "").rstrip("/")
 
-    def cp(rel: str | None) -> str:
+    def host(rel: str | None, ctype: str) -> str:
         if not rel:
             return ""
         src = src_dir / rel
         if not src.exists():
             return ""
-        dst = dest_dir / rel
-        dst.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(src, dst)
-        return f"{base}/media/{page.handle}/{page.path_slug}/{rel}"
+        key = f"clips/{page.handle}/{page.path_slug}/{rel}"
+        if use_r2:
+            return _r2_upload(src, key, ctype)
+        if media_root and base:
+            dst = Path(media_root) / page.handle / page.path_slug / rel
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(src, dst)
+            return f"{base}/media/{page.handle}/{page.path_slug}/{rel}"
+        return ""
 
-    return cp(p.clip), cp(p.clip_poster)
+    return host(p.clip, "video/mp4"), host(p.clip_poster, "image/jpeg")
 
 
 def _payload(page: Page) -> dict:

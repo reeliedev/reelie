@@ -1,47 +1,93 @@
-# Render blueprint — deploys the Reelie API + public site (one Docker service).
-# Database is Supabase Postgres (set DATABASE_URL below), so there's no Render DB
-# to pay for. Push the repo, then Render → New → Blueprint → point at this file
-# and fill the sync:false secrets when prompted.
+# Render blueprint — Reelie API/web (light) + extraction worker (heavy).
+# Database + auth are Supabase; clips/uploads live in object storage (R2/S3).
+# Re-apply the blueprint in Render to create the worker; fill sync:false secrets.
+#
+# Secrets that MUST MATCH across both services (enter the same value in each):
+#   DATABASE_URL, INGEST_TOKEN, and every STORAGE_* value.
 services:
+  # ---------------------------------------------------------------- API + site
   - type: web
     name: reelie-api
     runtime: docker
-    plan: starter                    # $7/mo, stays warm (free tier sleeps — bad for crawlers)
+    plan: starter                    # $7/mo, stays warm
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
     healthCheckPath: /health
     envVars:
       - key: REELIE_ENV
         value: prod
-
-      # --- Database: Supabase Postgres ---
-      # Paste your Supabase "Session mode" pooler URI (Supabase → Project Settings
-      # → Database → Connection string). Our config rewrites it to psycopg3.
       - key: DATABASE_URL
-        sync: false
-
-      # --- Auth: Supabase (Apple / Google / email magic-link) ---
+        sync: false                  # Supabase "Session" pooler URI
       - key: SUPABASE_URL
-        sync: false                  # https://<project-ref>.supabase.co
+        sync: false
       - key: SUPABASE_ANON_KEY
-        sync: false                  # the public anon key (safe in the browser)
-
-      # --- Secrets (Render generates strong values) ---
+        sync: false
       - key: JWT_SECRET
-        generateValue: true          # signs OAuth state; still needed with Supabase auth
+        generateValue: true
       - key: INGEST_TOKEN
-        generateValue: true          # gates the internal /ingest write
+        sync: false                  # SAME value on the worker
       - key: ADMIN_TOKEN
-        generateValue: true          # gates the /admin beta review console — copy it from Render
-
-      # --- Public origin (reelie.io) ---
+        generateValue: true          # copy from the API's Environment tab for /admin
+      - key: WORKER_ENABLED
+        sync: false                  # set to "1" ONLY after reelie-worker is live +
+                                     # R2 is configured. Until then leave unset so the
+                                     # API captures requests ("received") instead of
+                                     # enqueuing jobs no worker will pick up.
+      # object storage (for presigned uploads) — SAME values on the worker
+      - key: STORAGE_ENDPOINT
+        sync: false
+      - key: STORAGE_BUCKET
+        sync: false
+      - key: STORAGE_ACCESS_KEY_ID
+        sync: false
+      - key: STORAGE_SECRET_ACCESS_KEY
+        sync: false
+      - key: STORAGE_PUBLIC_URL
+        sync: false                  # https://media.reelie.io or the r2.dev URL
+      - key: STORAGE_REGION
+        value: auto
       - key: ALLOWED_ORIGINS
         value: https://reelie.io,https://www.reelie.io
       - key: PUBLIC_BASE_URL
         value: https://reelie.io
       - key: REELIE_SELF_URL
-        value: https://reelie.io     # /r redirects + generator postback target
+        value: https://reelie.io
       - key: OAUTH_REDIRECT_BASE
-        value: https://reelie.io     # OAuth callback base (must match provider config)
+        value: https://reelie.io
       - key: WEB_CONCURRENCY
         value: "2"
+
+  # ------------------------------------------------------------- worker (heavy)
+  - type: worker
+    name: reelie-worker
+    runtime: docker
+    plan: standard                   # ~2GB RAM for Whisper (~$25/mo)
+    dockerfilePath: ./backend/Dockerfile.worker
+    dockerContext: .                 # repo root — needs video-llm + page-generator
+    envVars:
+      - key: REELIE_ENV
+        value: prod
+      - key: DATABASE_URL
+        sync: false                  # SAME Supabase URI as the API
+      - key: ANTHROPIC_API_KEY
+        sync: false                  # extraction LLM (~$0.045/video)
+      - key: GENERATE_LIVE
+        value: "1"                   # real prices/products (the worker has the pipeline)
+      - key: GENERATE_CLIPS
+        value: "1"
+      - key: INGEST_TOKEN
+        sync: false                  # SAME value as the API
+      - key: REELIE_SELF_URL
+        value: https://reelie.io     # the generator publishes back here (/ingest)
+      - key: STORAGE_ENDPOINT
+        sync: false
+      - key: STORAGE_BUCKET
+        sync: false
+      - key: STORAGE_ACCESS_KEY_ID
+        sync: false
+      - key: STORAGE_SECRET_ACCESS_KEY
+        sync: false
+      - key: STORAGE_PUBLIC_URL
+        sync: false
+      - key: STORAGE_REGION
+        value: auto

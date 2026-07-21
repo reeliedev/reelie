@@ -136,6 +136,21 @@ MEDIA_ROOT.mkdir(parents=True, exist_ok=True)
 # image so it ships with the API.
 LANDING_DIR = Path(__file__).resolve().parent / "landing"
 
+# --------------------------------------------------------------------------
+# Object storage (Cloudflare R2 / S3) — durable home for uploaded videos and
+# generated clips (so clips survive redeploys and the feed works in prod). When
+# unset, falls back to local /media (dev only). R2 is S3-compatible.
+# --------------------------------------------------------------------------
+STORAGE_ENDPOINT = os.environ.get("STORAGE_ENDPOINT", "").strip()          # https://<acct>.r2.cloudflarestorage.com
+STORAGE_BUCKET = os.environ.get("STORAGE_BUCKET", "").strip()
+STORAGE_ACCESS_KEY_ID = os.environ.get("STORAGE_ACCESS_KEY_ID", "").strip()
+STORAGE_SECRET_ACCESS_KEY = os.environ.get("STORAGE_SECRET_ACCESS_KEY", "").strip()
+STORAGE_PUBLIC_URL = os.environ.get("STORAGE_PUBLIC_URL", "").strip().rstrip("/")  # https://media.reelie.io or pub-xxx.r2.dev
+STORAGE_REGION = os.environ.get("STORAGE_REGION", "auto")                   # 'auto' for R2
+STORAGE_ENABLED = bool(STORAGE_ENDPOINT and STORAGE_BUCKET
+                       and STORAGE_ACCESS_KEY_ID and STORAGE_SECRET_ACCESS_KEY
+                       and STORAGE_PUBLIC_URL)
+
 # Mock keeps generation $0 (stub prices, no API key). Set GENERATE_LIVE=1 to use
 # the LLM (needs ANTHROPIC_API_KEY on the generator's environment).
 GENERATE_LIVE = os.environ.get("GENERATE_LIVE") == "1"
@@ -152,6 +167,11 @@ GENERATE_CLIPS = os.environ.get("GENERATE_CLIPS", "1") == "1"
 # the beta. True locally (files present), False on the API-only prod image.
 PIPELINE_AVAILABLE = (os.environ.get("PIPELINE_AVAILABLE", "").lower() in ("1", "true")
                       or (EXTRACT_ONE.exists() and GENERATE_PY.exists()))
+
+# Is a separate extraction worker deployed and polling for jobs? When on, the API
+# just enqueues jobs ('queued') and the worker processes them. When off, the API
+# runs generation inline (dev, if the pipeline is present) or captures the request.
+WORKER_ENABLED = os.environ.get("WORKER_ENABLED", "").lower() in ("1", "true")
 
 # --------------------------------------------------------------------------
 # Social OAuth (Pillar 2): connect a creator's YouTube / Instagram so we can

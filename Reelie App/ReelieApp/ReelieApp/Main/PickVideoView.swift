@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 /// Screen 06 — Pick a video to build a page from. Self-serve: the chosen video is
 /// generated into a shoppable page server-side and published to the creator's
@@ -16,6 +17,7 @@ struct PickVideoView: View {
     @State private var phase: Phase = .pick
     @State private var stage = "Starting…"
     @State private var newTitle = ""
+    @State private var showFilePicker = false
 
     enum Phase { case pick, generating, done, failed }
 
@@ -41,6 +43,34 @@ struct PickVideoView: View {
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
         .task { await load() }
+        .fileImporter(isPresented: $showFilePicker,
+                      allowedContentTypes: [.movie, .mpeg4Movie, .quickTimeMovie],
+                      allowsMultipleSelection: false) { result in
+            if case .success(let urls) = result, let picked = urls.first {
+                Task { await runUpload(picked) }
+            }
+        }
+    }
+
+    /// Copy the picked file into our sandbox (security-scoped access ends when the
+    /// importer closes), then upload + generate.
+    private func runUpload(_ picked: URL) async {
+        let scoped = picked.startAccessingSecurityScopedResource()
+        defer { if scoped { picked.stopAccessingSecurityScopedResource() } }
+        let dst = FileManager.default.temporaryDirectory
+            .appendingPathComponent(picked.lastPathComponent)
+        try? FileManager.default.removeItem(at: dst)
+        do { try FileManager.default.copyItem(at: picked, to: dst) }
+        catch { phase = .failed; return }
+        phase = .generating; stage = "Uploading your video…"
+        let slug = await app.generatePage(uploadFileURL: dst) { stage = $0 }
+        try? FileManager.default.removeItem(at: dst)
+        if let slug {
+            newTitle = app.catalog.first { $0.handle == app.handle && $0.slug == slug }?.title ?? "Your new page"
+            phase = .done
+        } else {
+            phase = .failed
+        }
     }
 
     private func load() async {
@@ -80,6 +110,23 @@ struct PickVideoView: View {
                 .padding(.top, 10)
                 Text("We'll watch it, find every product, and build your shoppable page.")
                     .font(ReelieFont.ui(12)).foregroundStyle(Palette.grey).padding(.top, 8)
+
+                // Upload your own file — highest quality (no re-compression from a host).
+                SectionLabel(text: "OR UPLOAD A VIDEO").padding(.top, 28).padding(.bottom, 10)
+                Button { showFilePicker = true } label: {
+                    HStack(spacing: 10) {
+                        Image(systemName: "arrow.up.circle.fill").font(.system(size: 18)).foregroundStyle(Palette.ink)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Upload an MP4 or MOV").font(ReelieFont.ui(14, weight: .medium)).foregroundStyle(Palette.ink)
+                            Text("Best quality — straight from your device").font(ReelieFont.ui(11.5)).foregroundStyle(Palette.grey)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right").font(.system(size: 12, weight: .semibold)).foregroundStyle(Palette.grey)
+                    }
+                    .padding(.horizontal, 14).frame(height: 62)
+                    .hairlineCard(cornerRadius: 14, color: Palette.line)
+                }
+                .buttonStyle(.plain)
 
                 if !connected.isEmpty {
                     SectionLabel(text: "FROM YOUR \(connectedPlatform.uppercased())").padding(.top, 28).padding(.bottom, 10)

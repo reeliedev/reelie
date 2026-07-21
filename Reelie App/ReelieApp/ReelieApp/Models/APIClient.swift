@@ -124,11 +124,34 @@ struct APIClient {
     func availableVideos(token: String) async throws -> [AvailableVideo] {
         try await get("me/videos", as: [AvailableVideo].self, token: token)
     }
-    func startGeneration(videoId: String?, url: String?, token: String) async throws -> String {
+    func startGeneration(videoId: String? = nil, url: String? = nil,
+                         uploadKey: String? = nil, title: String? = nil,
+                         token: String) async throws -> String {
         var body: [String: Any] = [:]
         if let url { body["url"] = url }
         if let videoId { body["videoId"] = videoId }
+        if let uploadKey { body["uploadKey"] = uploadKey }
+        if let title { body["title"] = title }
         return try await post("me/generate", body: body, as: StartGen.self, token: token).jobId
+    }
+
+    /// Upload a local video straight to object storage (best quality), returning the
+    /// storage key to pass as `uploadKey`. Two steps: presign → HTTP PUT the bytes.
+    func uploadVideo(fileURL: URL, token: String) async throws -> String {
+        let name = fileURL.lastPathComponent
+        let ctype = name.lowercased().hasSuffix(".mov") ? "video/quicktime" : "video/mp4"
+        let pre = try await post("me/uploads/presign",
+                                 body: ["filename": name, "contentType": ctype],
+                                 as: PresignResult.self, token: token)
+        guard let putURL = URL(string: pre.uploadUrl) else { throw URLError(.badURL) }
+        var req = URLRequest(url: putURL)
+        req.httpMethod = "PUT"
+        req.setValue(ctype, forHTTPHeaderField: "Content-Type")
+        let (_, resp) = try await URLSession.shared.upload(for: req, fromFile: fileURL)
+        guard let http = resp as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
+            throw URLError(.badServerResponse)
+        }
+        return pre.key
     }
     func generationStatus(jobId: String, token: String) async throws -> GenStatus {
         try await get("me/generate/\(jobId)", as: GenStatus.self, token: token)
@@ -212,6 +235,7 @@ struct AvailableVideo: Decodable, Identifiable {
     var id: String { videoId }
 }
 private struct StartGen: Decodable { let jobId: String }
+private struct PresignResult: Decodable { let uploadUrl: String; let key: String }
 struct GenStatus: Decodable { let status: String; let stage: String; let pageSlug: String?; let error: String? }
 
 // Social-connection payloads.

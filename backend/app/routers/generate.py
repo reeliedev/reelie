@@ -1,28 +1,27 @@
 """
-Self-serve generation (Phase 1.3). An authenticated creator picks a video and the
-server runs the existing page-generator pipeline as a subprocess; the generator
-POSTs the finished page back to /ingest, so it lands in the creator's account and
-shows up in the catalogue. Job status is polled by the client.
+Self-serve generation. A creator provides a source — a pasted video link, an
+uploaded .mp4, or a pre-extracted video — and the pipeline extracts products,
+cuts clips, and publishes a shoppable page.
 
-Locally this runs in --mock mode ($0, no API key). Set GENERATE_LIVE=1 for the
-real LLM pipeline. The full video→extraction step (needs ffmpeg) plugs in behind
-the same job; today we generate from already-extracted videos.
+Where it runs:
+  • WORKER_ENABLED → the API enqueues the job; the worker (worker.py) processes it.
+  • else PIPELINE_AVAILABLE → the API runs it inline (dev).
+  • else → the request is captured (status 'received') to build out-of-band.
 """
 
 from __future__ import annotations
 
 import json
-import os
 import re
-import subprocess
+import uuid
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel
-from sqlmodel import Session, select
+from sqlmodel import Session
 
-from app import config
+from app import config, pipeline_runner, storage
 from app.auth import current_user
-from app.db import engine, get_session
+from app.db import get_session
 from app.models import Creator, GenerationJob, User
 
 router = APIRouter(prefix="/me", tags=["generate"])
@@ -60,10 +59,32 @@ def available_videos(user: User = Depends(current_user),
     return videos
 
 
+# --- direct-to-storage upload (creator uploads their own mp4) --------------
+class PresignBody(BaseModel):
+    filename: str = "video.mp4"
+    contentType: str = "video/mp4"
+
+
+@router.post("/uploads/presign")
+def presign_upload(body: PresignBody, user: User = Depends(current_user),
+                   session: Session = Depends(get_session)):
+    """A presigned URL so the creator uploads their video straight to object
+    storage; the returned `key` is then passed to /me/generate as uploadKey."""
+    _require_creator(user, session)
+    if not storage.enabled():
+        raise HTTPException(503, "Video upload isn't enabled on this deployment yet.")
+    safe = re.sub(r"[^A-Za-z0-9._-]", "_", body.filename)[-60:] or "video.mp4"
+    key = f"uploads/{user.handle}/{uuid.uuid4().hex}-{safe}"
+    return {"uploadUrl": storage.presign_put(key, content_type=body.contentType or "video/mp4"),
+            "key": key}
+
+
+# --- generation ------------------------------------------------------------
 class GenerateBody(BaseModel):
-    videoId: str | None = None   # generate from an already-extracted video, OR…
-    url: str | None = None       # …a video link the creator pastes (extract, then build)
-    title: str | None = None     # optional: the creator's chosen page name
+    videoId: str | None = None    # a pre-extracted video, OR
+    url: str | None = None        # a pasted video link, OR
+    uploadKey: str | None = None  # the storage key of an uploaded mp4
+    title: str | None = None      # optional page name
 
 
 @router.post("/generate")
@@ -72,32 +93,33 @@ def start_generation(body: GenerateBody, background: BackgroundTasks,
                      session: Session = Depends(get_session)):
     _require_creator(user, session)
     url = (body.url or "").strip()
-    if url:
-        if not url.startswith("http"):
-            raise HTTPException(400, "Enter a valid video link.")
-    elif body.videoId:
+    upload_key = (body.uploadKey or "").strip()
+    if url and not url.startswith("http"):
+        raise HTTPException(400, "Enter a valid video link.")
+    if not (url or upload_key or body.videoId):
+        raise HTTPException(400, "Provide a video link, upload a video, or pick one.")
+    if body.videoId and config.PIPELINE_AVAILABLE and not config.WORKER_ENABLED:
         if not (config.VIDEO_LLM_OUTPUT / f"{body.videoId}.json").exists():
             raise HTTPException(404, "No extraction available for that video.")
-    else:
-        raise HTTPException(400, "Provide a video link or pick a video.")
 
-    # Closed beta on the API-only prod image: the extraction pipeline isn't bundled
-    # here, so capture the request and build the page out-of-band instead of crashing.
-    if not config.PIPELINE_AVAILABLE:
-        job = GenerationJob(handle=user.handle, video_id=body.videoId or "", source_url=url,
-                            status="received",
-                            stage="Got it! Your page is being built — we'll email you when it's live.")
-        session.add(job); session.commit(); session.refresh(job)
-        return {"jobId": job.id, "status": job.status}
+    source_url = url or (f"upload:{upload_key}" if upload_key else "")
+    title = (body.title or "").strip()
 
-    job = GenerationJob(handle=user.handle, video_id=body.videoId or "", source_url=url,
-                        status="queued", stage="Queued")
+    if config.WORKER_ENABLED:                       # prod: hand to the worker
+        status, stage, inline = "queued", "Queued — building your page…", False
+    elif config.PIPELINE_AVAILABLE:                 # dev: run inline
+        status, stage, inline = "queued", "Queued", True
+    else:                                           # no pipeline, no worker: capture
+        status, stage, inline = "received", \
+            "Got it! Your page is being built — we'll email you when it's live.", False
+
+    job = GenerationJob(handle=user.handle, video_id=body.videoId or "",
+                        source_url=source_url, title=title, status=status, stage=stage)
     session.add(job)
     session.commit()
     session.refresh(job)
-
-    background.add_task(_run_generation, job.id, user.handle, user.display_name,
-                        body.videoId, url or None, (body.title or "").strip() or None)
+    if inline:
+        background.add_task(pipeline_runner.process_job, job.id)
     return {"jobId": job.id, "status": job.status}
 
 
@@ -111,61 +133,3 @@ def generation_status(job_id: str, user: User = Depends(current_user),
         "jobId": job.id, "status": job.status, "stage": job.stage,
         "pageSlug": job.page_slug, "error": job.error,
     }
-
-
-# --------------------------------------------------------------------------
-# background runner
-# --------------------------------------------------------------------------
-def _set(job_id: str, **fields) -> None:
-    with Session(engine) as s:
-        job = s.get(GenerationJob, job_id)
-        if not job:
-            return
-        for k, v in fields.items():
-            setattr(job, k, v)
-        s.add(job)
-        s.commit()
-
-
-def _run_generation(job_id: str, handle: str, display_name: str,
-                    video_id: str | None, url: str | None = None,
-                    title: str | None = None) -> None:
-    try:
-        # 1) If the creator pasted a link, extract it first (download → transcribe →
-        #    keyframes → find products) into an output/<id>.json.
-        if url:
-            _set(job_id, status="running", stage="Fetching your video")
-            ex = subprocess.run([config.PYTHON_BIN, str(config.EXTRACT_ONE), url],
-                                cwd=str(config.VIDEO_LLM_DIR),
-                                capture_output=True, text=True, timeout=900)
-            if ex.returncode != 0:
-                raise RuntimeError("Couldn't process that link — try uploading the file. "
-                                   + (ex.stderr or ex.stdout)[-300:])
-            m = re.search(r"VIDEO_ID:(\S+)", ex.stdout)
-            if not m:
-                raise RuntimeError("Extraction produced no video.")
-            video_id = m.group(1)
-            _set(job_id, video_id=video_id, stage="Found your products")
-
-        # 2) Build + publish the page from the extraction.
-        _set(job_id, status="running", stage="Building your page")
-        cmd = [config.PYTHON_BIN, str(config.GENERATE_PY),
-               "--from-output", video_id, "--handle", handle,
-               "--name", display_name or handle]
-        if title:
-            cmd += ["--title", title]
-        if not config.GENERATE_CLIPS:
-            cmd.append("--no-clips")   # minimal worker without ffmpeg/source video
-        if not config.GENERATE_LIVE:
-            cmd.append("--mock")
-        env = {**os.environ, "REELIE_API_URL": config.SELF_URL,
-               "REELIE_MEDIA_ROOT": str(config.MEDIA_ROOT),
-               "REELIE_INGEST_TOKEN": config.INGEST_TOKEN}
-        result = subprocess.run(cmd, cwd=str(config.PAGE_GENERATOR_DIR), env=env,
-                                capture_output=True, text=True, timeout=300)
-        if result.returncode != 0:
-            raise RuntimeError((result.stderr or result.stdout)[-600:])
-        m = re.search(rf"{re.escape(handle)}/([a-z0-9\-]+)", result.stdout)
-        _set(job_id, status="done", stage="Published", page_slug=m.group(1) if m else None)
-    except Exception as e:  # noqa: BLE001
-        _set(job_id, status="error", stage="Failed", error=str(e))

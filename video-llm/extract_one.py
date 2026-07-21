@@ -92,9 +92,19 @@ def main() -> int:
     # whole job. Retries connection/5xx errors with backoff; generous per-request
     # timeout for the large multimodal (frames) request.
     client = anthropic.Anthropic(api_key=key, max_retries=6, timeout=180.0)
-    result = pipeline.process_video(
-        src, client, MODEL, cache_dir=CACHE, out_dir=OUTPUT,
-        use_api=False, whisper_size="base", title=title)
+    try:
+        result = pipeline.process_video(
+            src, client, MODEL, cache_dir=CACHE, out_dir=OUTPUT,
+            use_api=False, whisper_size="base", title=title)
+    except anthropic.APIConnectionError as e:
+        # Surface the REAL transport error under the SDK wrapper (httpx ConnectError/
+        # ReadError/etc.) — that's what actually explains the failure.
+        cause = e.__cause__
+        print(f"ERROR: Anthropic connection failed. root_cause={type(cause).__name__}: {cause!r}",
+              file=sys.stderr)
+        import traceback
+        traceback.print_exc()
+        return 7
     print(f"VIDEO_ID:{result['video_id']}")
     return 0
 

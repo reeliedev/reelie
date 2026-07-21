@@ -68,6 +68,21 @@ def main() -> None:
         print(f"[worker] anthropic reachable: HTTP {e.code} (connect+TLS OK)", flush=True)
     except Exception as e:  # noqa: BLE001
         print(f"[worker] anthropic UNREACHABLE: {type(e).__name__}: {e}", flush=True)
+    # Deterministic SDK probe: make a real (tiny) messages call via the anthropic
+    # client — the SAME transport the extraction uses — so a systematic SDK-level
+    # failure reproduces here with its true root cause, no video needed.
+    _key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
+    if _key:
+        try:
+            import anthropic
+            c = anthropic.Anthropic(api_key=_key, max_retries=0, timeout=30.0)
+            c.messages.create(model="claude-sonnet-4-6", max_tokens=1,
+                              messages=[{"role": "user", "content": "hi"}])
+            print("[worker] anthropic SDK call: OK", flush=True)
+        except Exception as e:  # noqa: BLE001
+            cause = getattr(e, "__cause__", None)
+            print(f"[worker] anthropic SDK call FAILED: {type(e).__name__}: {e} | "
+                  f"root_cause={type(cause).__name__ if cause else None}: {cause!r}", flush=True)
     while True:
         try:
             job_id = claim_next()

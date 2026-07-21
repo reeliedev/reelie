@@ -61,7 +61,9 @@ class OIDCAuthProvider:
         try:
             key = self._jwks.get_signing_key_from_jwt(token).key
             opts = {}
-            kwargs: dict = {"algorithms": ["RS256"]}
+            # Accept both common asymmetric families: RS256 (Clerk/Auth0/Apple) and
+            # ES256 (Supabase's default signing key).
+            kwargs: dict = {"algorithms": ["RS256", "ES256"]}
             if config.OIDC_AUDIENCE:
                 kwargs["audience"] = config.OIDC_AUDIENCE
             else:

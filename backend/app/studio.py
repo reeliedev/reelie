@@ -109,7 +109,11 @@ function loadScript(src){ return new Promise(function(res,rej){ var s=document.c
 async function supa(){
   if(sb) return sb;
   if(!window.supabase) await loadScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2');
-  sb = window.supabase.createClient(AUTHCFG.supabaseUrl, AUTHCFG.supabaseAnonKey);
+  sb = window.supabase.createClient(AUTHCFG.supabaseUrl, AUTHCFG.supabaseAnonKey, {
+    // implicit flow: magic-link/OAuth return the session in the URL hash — robust
+    // to email link pre-scanning (PKCE needs a locally-stored verifier and breaks).
+    auth: { flowType: 'implicit', detectSessionInUrl: true, persistSession: true, autoRefreshToken: true }
+  });
   sb.auth.onAuthStateChange(function(evt, s){
     var t = (s && s.access_token) || '';
     if(t){
@@ -155,6 +159,10 @@ async function viewSupabaseLogin(){
    '<label>Email</label><input id="email" type="email" placeholder="you@example.com" autocomplete="email">'+
    '<div style="height:12px"></div><button class="btn oauth" id="mlink">Send magic link</button>'+
    '<div class="muted" id="msg" style="margin-top:12px"></div></div>';
+  // Surface an auth error returned in the redirect (helps diagnose failed links).
+  var hp = new URLSearchParams((location.hash||'').replace(/^#/,'')), qp = new URLSearchParams(location.search);
+  var authErr = hp.get('error_description') || qp.get('error_description') || hp.get('error') || qp.get('error');
+  if(authErr){ document.getElementById('msg').innerHTML = '<span class="err">'+esc(decodeURIComponent(authErr))+'</span>'; }
   var c = await supa();
   document.getElementById('apple').onclick = function(){ c.auth.signInWithOAuth({provider:'apple', options:{redirectTo:location.href}}); };
   document.getElementById('google').onclick = function(){ c.auth.signInWithOAuth({provider:'google', options:{redirectTo:location.href}}); };

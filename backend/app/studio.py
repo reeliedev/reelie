@@ -285,6 +285,10 @@ async function doGenerate(){
   btn.disabled=true; st.innerHTML='<span class="spin"></span> Starting…';
   try {
     var r = await api('POST','/me/generate',{url:url, title:title||undefined}); var job=r.jobId;
+    if(r.status==='received'){
+      st.innerHTML='<span style="color:var(--accent-deep);font-weight:600">✓ Got it! Your page is being built — we\'ll email you when it\'s live.</span>';
+      document.getElementById('url').value=''; document.getElementById('ptitle').value=''; btn.disabled=false; return;
+    }
     for(var i=0;i<200;i++){
       await new Promise(function(res){setTimeout(res,3000);});
       var s = await api('GET','/me/generate/'+job);

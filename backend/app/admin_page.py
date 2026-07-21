@@ -59,12 +59,25 @@ async function load(){
   if(!TOK){ gate(); return; }
   try {
     var rows = await api('GET','/admin/applications'+(FILTER?'?status='+FILTER:''));
-    render(rows);
+    var reqs = await api('GET','/admin/requests');
+    render(rows, reqs);
   } catch(e){ gate(); var el=document.getElementById('e'); if(el){ el.textContent=e.message; el.style.display='block'; } }
 }
 function tab(name,label){ return '<div class="tab'+(FILTER===name?' on':'')+'" onclick="FILTER=\''+name+'\';load()">'+label+'</div>'; }
-function render(rows){
-  var html='<h1>Beta review</h1><p class="sub">Approve creators to let them publish. '+rows.length+' shown.</p>'+
+function render(rows, reqs){
+  var html='';
+  // Page-generation requests to build out-of-band during the beta.
+  if(reqs && reqs.length){
+    html+='<h1>Page requests</h1><p class="sub">'+reqs.length+' link(s) to build. Generate locally, then mark done.</p>';
+    reqs.forEach(function(q){
+      html+='<div class="card"><div class="app"><div>'+
+        '<div class="n">@'+esc(q.handle)+'</div>'+
+        '<div class="links"><a href="'+esc(q.url||'#')+'" target="_blank">'+esc(q.url||'(no url)')+'</a></div>'+
+        '<div class="m">'+esc((q.at||'').slice(0,16).replace('T',' '))+'</div></div></div></div>';
+    });
+    html+='<div style="height:24px"></div>';
+  }
+  html+='<h1>Beta review</h1><p class="sub">Approve creators to let them publish. '+rows.length+' shown.</p>'+
     '<div class="tabs">'+tab('pending','Pending')+tab('approved','Approved')+tab('rejected','Rejected')+tab('','All')+'</div>';
   if(!rows.length){ html+='<p class="muted">Nothing here.</p>'; }
   rows.forEach(function(a){

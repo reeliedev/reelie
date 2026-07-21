@@ -120,7 +120,8 @@ class GenerationJob(SQLModel, table=True):
     id: str = Field(default_factory=_uuid, primary_key=True)
     handle: str = Field(index=True)
     video_id: str = ""
-    status: str = "queued"
+    source_url: str = ""                                   # the link the creator pasted
+    status: str = "queued"                                 # queued|running|done|error|received
     stage: str = "Queued"                                  # human-readable progress label
     page_slug: str | None = None
     error: str | None = None

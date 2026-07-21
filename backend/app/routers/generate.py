@@ -81,7 +81,16 @@ def start_generation(body: GenerateBody, background: BackgroundTasks,
     else:
         raise HTTPException(400, "Provide a video link or pick a video.")
 
-    job = GenerationJob(handle=user.handle, video_id=body.videoId or "",
+    # Closed beta on the API-only prod image: the extraction pipeline isn't bundled
+    # here, so capture the request and build the page out-of-band instead of crashing.
+    if not config.PIPELINE_AVAILABLE:
+        job = GenerationJob(handle=user.handle, video_id=body.videoId or "", source_url=url,
+                            status="received",
+                            stage="Got it! Your page is being built — we'll email you when it's live.")
+        session.add(job); session.commit(); session.refresh(job)
+        return {"jobId": job.id, "status": job.status}
+
+    job = GenerationJob(handle=user.handle, video_id=body.videoId or "", source_url=url,
                         status="queued", stage="Queued")
     session.add(job)
     session.commit()

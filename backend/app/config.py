@@ -146,6 +146,13 @@ GENERATE_LIVE = os.environ.get("GENERATE_LIVE") == "1"
 # to disable (e.g. a minimal worker without the media deps).
 GENERATE_CLIPS = os.environ.get("GENERATE_CLIPS", "1") == "1"
 
+# Is the video->page pipeline present in this deployment? The plain API image
+# doesn't bundle video-llm / page-generator (or ffmpeg), so self-serve generation
+# can't run here — we capture the request instead and build it out-of-band during
+# the beta. True locally (files present), False on the API-only prod image.
+PIPELINE_AVAILABLE = (os.environ.get("PIPELINE_AVAILABLE", "").lower() in ("1", "true")
+                      or (EXTRACT_ONE.exists() and GENERATE_PY.exists()))
+
 # --------------------------------------------------------------------------
 # Social OAuth (Pillar 2): connect a creator's YouTube / Instagram so we can
 # list their videos. Credential-agnostic — if a platform's client id/secret are

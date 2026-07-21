@@ -12,7 +12,7 @@ from sqlmodel import Session, select
 
 from app import admin_page, config
 from app.db import get_session
-from app.models import Creator, User, _now
+from app.models import Creator, GenerationJob, User, _now
 
 router = APIRouter(tags=["admin"])
 
@@ -64,3 +64,23 @@ def approve(handle: str, session: Session = Depends(get_session)):
 @router.post("/admin/applications/{handle}/reject", dependencies=[Depends(require_admin)])
 def reject(handle: str, session: Session = Depends(get_session)):
     return _set_status(handle, "rejected", session)
+
+
+@router.get("/admin/requests", dependencies=[Depends(require_admin)])
+def list_requests(session: Session = Depends(get_session)):
+    """Page-generation requests captured during the beta (build these out-of-band)."""
+    jobs = session.exec(select(GenerationJob)
+                        .where(GenerationJob.status == "received")).all()
+    jobs.sort(key=lambda j: j.created_at, reverse=True)
+    return [{"handle": j.handle, "url": j.source_url, "videoId": j.video_id,
+             "at": j.created_at.isoformat()} for j in jobs]
+
+
+@router.post("/admin/requests/{job_id}/done", dependencies=[Depends(require_admin)])
+def mark_request_done(job_id: str, session: Session = Depends(get_session)):
+    j = session.get(GenerationJob, job_id)
+    if j:
+        j.status = "done"
+        session.add(j)
+        session.commit()
+    return {"ok": True}

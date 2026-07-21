@@ -11,6 +11,7 @@ Start:  python -m app.worker
 
 from __future__ import annotations
 
+import os
 import time
 
 from sqlalchemy import text
@@ -45,6 +46,16 @@ def main() -> None:
           f"storage={config.STORAGE_ENABLED}, live={config.GENERATE_LIVE}", flush=True)
     if not config.PIPELINE_AVAILABLE:
         print("[worker] WARNING: pipeline not present in this image — jobs will fail.", flush=True)
+    if not config.STORAGE_ENABLED:
+        # Name exactly which STORAGE_* vars are missing/empty (values masked).
+        seen = {k: ("set" if os.environ.get(k, "").strip() else "MISSING/EMPTY")
+                for k in ("STORAGE_ENDPOINT", "STORAGE_BUCKET", "STORAGE_ACCESS_KEY_ID",
+                          "STORAGE_SECRET_ACCESS_KEY", "STORAGE_PUBLIC_URL")}
+        print(f"[worker] storage disabled — STORAGE_* seen: {seen}", flush=True)
+    # DB the worker actually connected to (host only — never log credentials).
+    _db = os.environ.get("DATABASE_URL", "")
+    _host = _db.split("@")[-1].split("/")[0] if "@" in _db else ("sqlite (LOCAL — will not see API jobs!)" if not _db else _db[:20])
+    print(f"[worker] db → {_host}", flush=True)
     while True:
         try:
             job_id = claim_next()

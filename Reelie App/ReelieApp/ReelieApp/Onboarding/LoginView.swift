@@ -58,7 +58,7 @@ struct LoginView: View {
 
     private var legal: some View {
         // Markdown links open the public Terms/Privacy pages in Safari.
-        let base = AppConfig.productionAPIBaseURL.isEmpty ? "https://reelie.shop"
+        let base = AppConfig.productionAPIBaseURL.isEmpty ? "https://reelie.io"
                                                           : AppConfig.productionAPIBaseURL
         return Text(.init(
             "By continuing you agree to our [Terms](\(base)/terms) & [Privacy Policy](\(base)/privacy)."))

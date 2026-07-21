@@ -8,7 +8,7 @@
   "handle": "glowbyjess",
   "creatorName": "Jess Tan",
   "platforms": ["YouTube", "Instagram"],
-  "publicURL": "https://reelie.shop/glowbyjess/k-beauty-night-routine",
+  "publicURL": "https://reelie.io/glowbyjess/k-beauty-night-routine",
   "disclosure": "Some links earn Jess a commission — it never changes what you pay.",
   "products": [
     {
@@ -29,7 +29,7 @@
       "linkKind": "reelie",
       "rate": 8,
       "ownLabel": null,
-      "url": "https://reelie.shop/r/glowbyjess/k-beauty-night-routine/01"
+      "url": "https://reelie.io/r/glowbyjess/k-beauty-night-routine/01"
     },
     {
       "id": "p2",
@@ -49,7 +49,7 @@
       "linkKind": "reelie",
       "rate": 7,
       "ownLabel": null,
-      "url": "https://reelie.shop/r/glowbyjess/k-beauty-night-routine/02"
+      "url": "https://reelie.io/r/glowbyjess/k-beauty-night-routine/02"
     },
     {
       "id": "p3",
@@ -69,7 +69,7 @@
       "linkKind": "reelie",
       "rate": 6,
       "ownLabel": null,
-      "url": "https://reelie.shop/r/glowbyjess/k-beauty-night-routine/03"
+      "url": "https://reelie.io/r/glowbyjess/k-beauty-night-routine/03"
     },
     {
       "id": "p4",
@@ -89,7 +89,7 @@
       "linkKind": "own",
       "rate": null,
       "ownLabel": "LTK",
-      "url": "https://reelie.shop/r/glowbyjess/k-beauty-night-routine/04"
+      "url": "https://reelie.io/r/glowbyjess/k-beauty-night-routine/04"
     },
     {
       "id": "p5",
@@ -109,7 +109,7 @@
       "linkKind": "reelie",
       "rate": 6,
       "ownLabel": null,
-      "url": "https://reelie.shop/r/glowbyjess/k-beauty-night-routine/05"
+      "url": "https://reelie.io/r/glowbyjess/k-beauty-night-routine/05"
     }
   ]
 }

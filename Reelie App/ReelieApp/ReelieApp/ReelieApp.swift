@@ -61,7 +61,7 @@ struct RootView: View {
                 #if DEBUG
                 // Dev-only hooks to exercise the auth + generation paths for verification.
                 if ProcessInfo.processInfo.environment["REELIE_DEMO_SIGNIN"] != nil, !app.isCreator {
-                    await app.signIn(email: "demo.creator@reelie.shop")
+                    await app.signIn(email: "demo.creator@reelie.io")
                     await app.becomeCreatorAPI(handle: "demoauthcreator")
                     app.selectedTab = .pages
                 }

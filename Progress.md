@@ -348,9 +348,9 @@ locally.
 
 Deploy path: push repo → Render Blueprint (`backend/render.yaml`) → set
 `ALLOWED_ORIGINS` → set iOS `AppConfig.productionAPIBaseURL` to the API URL. Static
-site (page-generator `out/`) → a CDN at reelie.shop with SEO files at root.
+site (page-generator `out/`) → a CDN at reelie.io with SEO files at root.
 
-## Backend completion (2026-07-19) — domain bought (reelie.shop)
+## Backend completion (2026-07-19) — domain bought (reelie.io)
 
 Finished the remaining API surface so the backend is launch-complete (external
 integrations still behind stubs). All verified via curl.
@@ -368,7 +368,7 @@ integrations still behind stubs). All verified via curl.
   URL; baseline revision covers all 9 tables (`import sqlmodel` added to the mako
   template + baseline); prod boot uses `alembic upgrade head` (Dockerfile), dev
   keeps `create_all`. `db.init_db` skips create_all in prod.
-- Config: prod CORS defaults to the reelie.shop domains.
+- Config: prod CORS defaults to the reelie.io domains.
 
 **Backend now launch-complete except items needing YOUR external accounts:** real
 affiliate deep links (3.2, Amazon/Rakuten/Impact), real Stripe Connect transfers

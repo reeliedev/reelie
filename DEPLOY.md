@@ -1,4 +1,4 @@
-# Deploying Reelie to reelie.shop
+# Deploying Reelie to reelie.io
 
 This deploys **one service** that serves both the API *and* the public
 AI-discoverable site (they share known route prefixes; the site owns `/`,
@@ -15,7 +15,7 @@ alongside. ~15 min of clicking; ~$0–14/mo to start.
 
 ## Prerequisites
 - A **GitHub** account, a **Render** account (render.com), and access to the
-  **DNS** for reelie.shop (wherever you registered it).
+  **DNS** for reelie.io (wherever you registered it).
 
 ## 1 — Push the repo to GitHub
 The repo is already committed locally on `main`. Create an empty GitHub repo, then:
@@ -36,29 +36,29 @@ git push -u origin main
 
 ## 3 — Set the remaining env vars
 In the `reelie-api` service → **Environment**:
-- `ALLOWED_ORIGINS = https://reelie.shop,https://www.reelie.shop`
+- `ALLOWED_ORIGINS = https://reelie.io,https://www.reelie.io`
 
 (`PUBLIC_BASE_URL`, `REELIE_SELF_URL`, `OAUTH_REDIRECT_BASE` are already set to
-`https://reelie.shop` in render.yaml. Google/Meta keys come later — `OAUTH_SETUP.md`.)
+`https://reelie.io` in render.yaml. Google/Meta keys come later — `OAUTH_SETUP.md`.)
 
-## 4 — Point reelie.shop at Render
-1. `reelie-api` → **Settings → Custom Domains** → add `reelie.shop` and
-   `www.reelie.shop`. Render shows a DNS target.
+## 4 — Point reelie.io at Render
+1. `reelie-api` → **Settings → Custom Domains** → add `reelie.io` and
+   `www.reelie.io`. Render shows a DNS target.
 2. In your **DNS provider**:
-   - `reelie.shop` → the `ALIAS`/`A` target Render gives (apex).
+   - `reelie.io` → the `ALIAS`/`A` target Render gives (apex).
    - `www` → `CNAME` to the Render target.
 3. Wait for DNS + Render's automatic **TLS** (Let's Encrypt) to go green.
 
 ## 5 — Verify it's live + AI-discoverable
 ```bash
-curl https://reelie.shop/health
-curl https://reelie.shop/robots.txt          # invites GPTBot/ClaudeBot/PerplexityBot…
-curl https://reelie.shop/llms.txt            # products + prices inline
-curl https://reelie.shop/glowbyjess/everyday-routine   # a rendered page
+curl https://reelie.io/health
+curl https://reelie.io/robots.txt          # invites GPTBot/ClaudeBot/PerplexityBot…
+curl https://reelie.io/llms.txt            # products + prices inline
+curl https://reelie.io/glowbyjess/everyday-routine   # a rendered page
 ```
 - Paste a page URL into Google's **Rich Results Test** / **Schema Markup Validator**
   to confirm the Article/HowTo/Product/FAQPage graph parses.
-- The iOS release build already targets `https://reelie.shop`
+- The iOS release build already targets `https://reelie.io`
   ([AppConfig](Reelie%20App/ReelieApp/ReelieApp/Models/APIClient.swift)).
 
 ## Notes / gotchas

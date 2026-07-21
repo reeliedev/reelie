@@ -55,7 +55,7 @@ The API is containerized and reads everything from env. Nothing is hardcoded.
 - `REELIE_ENV=prod` — tightens CORS, requires a real `JWT_SECRET`.
 - `DATABASE_URL` — a Postgres URL (`postgres://…` or `postgresql://…` is auto-normalized to psycopg3).
 - `JWT_SECRET` — a strong secret.
-- `ALLOWED_ORIGINS` — comma-separated web origins (e.g. `https://reelie.shop`).
+- `ALLOWED_ORIGINS` — comma-separated web origins (e.g. `https://reelie.io`).
 - `WEB_CONCURRENCY` — uvicorn workers (default 2).
 
 **Local prod-like run** (Postgres + prod config), needs Docker:
@@ -75,7 +75,7 @@ have real data to migrate.
 
 The public creator pages, directory, and `robots.txt` / `sitemap.xml` / `llms.txt`
 are **static** (generated into `Reelie App/page-generator/out/`). Host them on a CDN
-(Cloudflare Pages / Netlify / S3+CloudFront) at `reelie.shop`, with the SEO files at
+(Cloudflare Pages / Netlify / S3+CloudFront) at `reelie.io`, with the SEO files at
 the domain **root**. Point the generator's `BASE_URL` (in `page-generator/config.py`)
 at the live domain, and set `REELIE_API_URL` when generating so pages sync to the API.
 

@@ -81,6 +81,6 @@ def page_app(page: Page, products: list[Product], creator: Creator) -> dict:
         "creatorName": creator.display_name if creator else page.handle,
         "platforms": creator.platforms if creator else [],
         "disclosure": page.disclosure,
-        "publicURL": f"reelie.shop/{page.handle}/{page.slug}",
+        "publicURL": f"reelie.io/{page.handle}/{page.slug}",
         "products": [product_app(p) for p in sorted(products, key=lambda x: x.position)],
     }

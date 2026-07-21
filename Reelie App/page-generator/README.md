@@ -4,7 +4,7 @@ Turns a creator's video into one **shoppable routine page**, then emits it two w
 
 1. **In-app** — an app-facing JSON the Reelie iOS app loads and previews (creator
    can name their own link before publishing).
-2. **On the web** — a public page at `reelie.shop/<handle>/<slug>` that is built to
+2. **On the web** — a public page at `reelie.io/<handle>/<slug>` that is built to
    be **maximally AI-discoverable**: embedded Schema.org, plus site-wide
    `robots.txt` / `llms.txt` / `sitemap.xml`, and **prices on every product** so AI
    assistants read a complete offer.
@@ -42,7 +42,7 @@ or run with `../../video-llm/.venv/bin/python3`. `--mock` needs no dependencies.
 
 | file | purpose |
 |---|---|
-| `config.py` | brand (`Reelie`), domain (`reelie.shop`), AI-crawler allow-list, paths — **the one place to change branding** |
+| `config.py` | brand (`Reelie`), domain (`reelie.io`), AI-crawler allow-list, paths — **the one place to change branding** |
 | `models.py` | canonical `Page` / `ProductItem` / `Price` / `Link` dataclasses + JSON (de)serialization |
 | `extractor.py` | load an existing `video-llm/output/{id}.json`, or run full extraction via `video-llm/pipeline.py` |
 | `price.py` | `PriceResolver` interface + `LLMPriceResolver` (default) + `StubPriceResolver` (`--mock`) — **swap point for a real commerce feed** |

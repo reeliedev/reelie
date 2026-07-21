@@ -30,7 +30,7 @@ struct GeneratedPage: Identifiable {
     }
 
     /// Display URL for the public page (matches the generator's config domain).
-    var publicURL: String { "reelie.shop/\(handle)/\(pathSlug)" }
+    var publicURL: String { "reelie.io/\(handle)/\(pathSlug)" }
 
     var platformLine: String { platforms.joined(separator: " & ") }
 

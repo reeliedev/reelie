@@ -1,5 +1,5 @@
 """
-Public site (served at reelie.shop) — the crawlable creator pages + SEO files,
+Public site (served at reelie.io) — the crawlable creator pages + SEO files,
 rendered dynamically from the database so a page is live the moment it's created.
 
 IMPORTANT: the `/{handle}` and `/{handle}/{slug}` routes are greedy, so this

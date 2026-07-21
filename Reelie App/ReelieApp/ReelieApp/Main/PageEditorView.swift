@@ -26,7 +26,7 @@ struct PageEditorView: View {
                         field("YOUR LINK", text: Binding(
                             get: { app.generatedPages[idx].customSlug ?? app.generatedPages[idx].slug },
                             set: { app.generatedPages[idx].customSlug = $0 }),
-                            prefix: "reelie.shop/\(app.generatedPages[idx].handle)/", mono: true)
+                            prefix: "reelie.io/\(app.generatedPages[idx].handle)/", mono: true)
                         editor("INTRO", text: Binding(
                             get: { app.generatedPages[idx].intro },
                             set: { app.generatedPages[idx].intro = $0 }))

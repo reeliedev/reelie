@@ -14,7 +14,7 @@ from app import config
 def home_html() -> str:
     s = (config.LANDING_DIR / "index.html").read_text()
     # rebrand (the static file predates the Reelie rename)
-    s = s.replace("Retrieva", config.BRAND).replace("retrieva.com", "reelie.shop")
+    s = s.replace("Retrieva", config.BRAND).replace("retrieva.com", "reelie.io")
     # nav → live pages
     s = s.replace('<a class="nav-try" href="/">Browse creators</a>',
                   '<a class="nav-try" href="/discover">Discover creators</a>')

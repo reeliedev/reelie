@@ -54,7 +54,7 @@ Legend: 🔴 blocker · 🟡 soon-after · ✅ done · 🚧 in progress
       **Remaining**: swap `MockPayoutProvider` for real **Stripe Connect** (your account).
 
 ## 4. Infra / deployment
-- [~] 🔴 4.1 Own **reelie.shop**; deploy static site + API over **HTTPS** behind a CDN.
+- [~] 🔴 4.1 Own **reelie.io**; deploy static site + API over **HTTPS** behind a CDN.
       **Artifacts ready** (`backend/Dockerfile`, `render.yaml`, README deploy steps);
       **remaining**: buy domain + click-deploy (Render Blueprint) + point DNS/CDN.
 - [x] ✅ 4.2 **Managed Postgres + migrations** — config supports it (`DATABASE_URL`,

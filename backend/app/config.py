@@ -31,11 +31,11 @@ elif _db.startswith("postgresql://"):
     _db = "postgresql+psycopg://" + _db[len("postgresql://"):]
 DATABASE_URL = _db
 
-# CORS: comma-separated allowed origins. "*" in dev; the reelie.shop domains in
+# CORS: comma-separated allowed origins. "*" in dev; the reelie.io domains in
 # prod by default (override with ALLOWED_ORIGINS for custom/staging origins).
 _origins = os.environ.get(
     "ALLOWED_ORIGINS",
-    "https://reelie.shop,https://www.reelie.shop" if IS_PROD else "*")
+    "https://reelie.io,https://www.reelie.io" if IS_PROD else "*")
 ALLOWED_ORIGINS = [o.strip() for o in _origins.split(",") if o.strip()]
 
 # Auth provider: 'dev' (local JWT) or 'oidc' (verify a real provider's RS256 token
@@ -82,10 +82,10 @@ TAGLINE = "Every product in your favourite creators' videos — found, priced an
 DEFAULT_AVATAR_GRADIENT = ["#E8E4DA", "#D8D2C4"]
 
 # Public site: the domain the crawlable pages + SEO files live at. In prod this
-# is the custom domain (https://reelie.shop); locally it's the dev server so
+# is the custom domain (https://reelie.io); locally it's the dev server so
 # links resolve. Used to build absolute URLs in JSON-LD / sitemap / llms.txt.
 PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", os.environ.get("REELIE_SELF_URL", "http://127.0.0.1:8010")).rstrip("/")
-SUPPORT_EMAIL = os.environ.get("SUPPORT_EMAIL", "hello@reelie.shop")
+SUPPORT_EMAIL = os.environ.get("SUPPORT_EMAIL", "hello@reelie.io")
 # AI crawlers we explicitly invite in robots.txt.
 AI_CRAWLERS = ["GPTBot", "OAI-SearchBot", "ChatGPT-User", "ClaudeBot", "Claude-Web",
                "anthropic-ai", "PerplexityBot", "Perplexity-User", "Google-Extended",

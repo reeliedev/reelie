@@ -26,7 +26,7 @@ services:
       REELIE_ENV: prod
       DATABASE_URL: postgresql+psycopg://reelie:reelie@db:5432/reelie
       JWT_SECRET: local-compose-secret-change-me
-      ALLOWED_ORIGINS: "http://localhost:3000,https://reelie.shop"
+      ALLOWED_ORIGINS: "http://localhost:3000,https://reelie.io"
     ports:
       - "8000:8000"
 

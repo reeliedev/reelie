@@ -22,10 +22,10 @@ Set the resulting keys in Render → `reelie-api` → **Environment**.
    - **Scopes:** add `.../auth/youtube.readonly` (a *sensitive* scope).
    - **Test users:** add the Google accounts you'll demo with (up to 100 work
      immediately, before Google verification).
-   - Add your **Privacy Policy** + **Terms** URLs (e.g. `https://reelie.shop/privacy`).
+   - Add your **Privacy Policy** + **Terms** URLs (e.g. `https://reelie.io/privacy`).
 4. **Credentials → Create Credentials → OAuth client ID** → type **Web application**.
    - **Authorized redirect URI:**
-     `https://reelie.shop/connect/youtube/callback`
+     `https://reelie.io/connect/youtube/callback`
    - Copy the **Client ID** and **Client secret**.
 5. In Render set:
    - `GOOGLE_CLIENT_ID = <client id>`
@@ -49,7 +49,7 @@ Review**.
 2. Add the **Instagram** product → **API setup with Instagram login**.
 3. **Business login settings:**
    - **Valid OAuth Redirect URIs:**
-     `https://reelie.shop/connect/instagram/callback`
+     `https://reelie.io/connect/instagram/callback`
    - Note the app's **Instagram app ID** and **Instagram app secret**.
 4. **App roles → Roles** → add yourself / demo users as **Instagram testers**;
    each must accept the invite from their IG account (must be Professional).
@@ -64,7 +64,7 @@ Review**.
 ---
 
 ## Verify
-- `https://reelie.shop/me/connect/youtube` (with a creator bearer token) returns an
+- `https://reelie.io/me/connect/youtube` (with a creator bearer token) returns an
   `authorizeUrl` pointing at `accounts.google.com` (not the mock callback), and
   `"mock": false`.
 - In the app: Profile → Become a creator → Connect → real consent → row flips to

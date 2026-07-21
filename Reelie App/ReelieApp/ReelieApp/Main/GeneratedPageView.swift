@@ -136,7 +136,7 @@ struct GeneratedPageView: View {
         VStack(alignment: .leading, spacing: 8) {
             SectionLabel(text: "YOUR LINK")
             HStack(spacing: 2) {
-                Text("reelie.shop/\(page.handle)/")
+                Text("reelie.io/\(page.handle)/")
                     .font(ReelieFont.ui(13.5, weight: .medium)).foregroundStyle(Palette.grey)
                 TextField("your-link", text: link)
                     .font(ReelieFont.ui(13.5, weight: .bold))

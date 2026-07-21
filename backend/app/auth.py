@@ -83,7 +83,7 @@ class OIDCAuthProvider:
         if user:
             return user
         # First sign-in with this provider identity → provision a viewer account.
-        email = (payload.get("email") or f"{sub}@users.reelie.shop").lower()
+        email = (payload.get("email") or f"{sub}@users.reelie.io").lower()
         user = session.exec(select(User).where(User.email == email)).first()
         if user:                       # link an existing email-based account
             user.external_id = sub

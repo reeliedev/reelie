@@ -9,10 +9,10 @@ import os
 from pathlib import Path
 
 # --------------------------------------------------------------------------
-# Brand / domain (tentative: reelie.shop)
+# Brand / domain (tentative: reelie.io)
 # --------------------------------------------------------------------------
 BRAND = "Reelie"
-DOMAIN = "reelie.shop"
+DOMAIN = "reelie.io"
 BASE_URL = f"https://{DOMAIN}"
 TAGLINE = "Every product in your favourite creators' videos — found, priced and linked, automatically."
 SUPPORT_EMAIL = f"hello@{DOMAIN}"

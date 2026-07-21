@@ -1,5 +1,5 @@
 """
-Dynamic public site (served at reelie.shop). Renders the crawlable creator pages
+Dynamic public site (served at reelie.io). Renders the crawlable creator pages
 + SEO files straight from the database, so a page is live and AI-discoverable the
 moment it's generated — no static build, no file sync.
 

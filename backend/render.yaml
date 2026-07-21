@@ -18,17 +18,17 @@ services:
       - key: JWT_SECRET
         generateValue: true          # Render generates a strong secret
       - key: ALLOWED_ORIGINS
-        sync: false                  # set to your web origins, e.g. https://reelie.shop
+        sync: false                  # set to your web origins, e.g. https://reelie.io
       # Public site + SEO: the custom domain the crawlable pages live at. This
       # service serves BOTH the API (known route prefixes) and the public site
-      # (root + /{handle}/{slug}) — point reelie.shop at it in Render → Settings →
+      # (root + /{handle}/{slug}) — point reelie.io at it in Render → Settings →
       # Custom Domains, then set these three to the live https origin.
       - key: PUBLIC_BASE_URL
-        value: https://reelie.shop
+        value: https://reelie.io
       - key: REELIE_SELF_URL
-        value: https://reelie.shop   # /r redirects + generator postback target
+        value: https://reelie.io   # /r redirects + generator postback target
       - key: OAUTH_REDIRECT_BASE
-        value: https://reelie.shop   # OAuth callback base (must match Google/Meta app config)
+        value: https://reelie.io   # OAuth callback base (must match Google/Meta app config)
       - key: WEB_CONCURRENCY
         value: "2"
 

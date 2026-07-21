@@ -95,7 +95,7 @@ def seed_if_empty() -> bool:
                     evidence="both", timestamp="0:00", retailer=retailer,
                     price_display=price, price_amount=_amount(price), currency="USD",
                     price_estimated=True, link_kind="reelie", rate=rate,
-                    url=f"https://reelie.shop/r/{handle}/{slug}/{i:02d}",
+                    url=f"https://reelie.io/r/{handle}/{slug}/{i:02d}",
                     product_key=normalize_product(brand, pname)))
 
         # Dated sales for glowbyjess so the dashboard has real rollups (incl. paid).

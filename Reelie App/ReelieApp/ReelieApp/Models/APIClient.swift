@@ -1,13 +1,13 @@
 import SwiftUI
 
 // App configuration. Set `productionAPIBaseURL` to the deployed HTTPS API once it's
-// live (e.g. "https://api.reelie.shop"). Until then it's empty and release builds
+// live (e.g. "https://api.reelie.io"). Until then it's empty and release builds
 // run on mock data. In any build, the REELIE_API_URL env var overrides this (used
 // for local dev + TestFlight pointing at staging).
 enum AppConfig {
     // The deployed API + public site (one service). Release builds talk to this;
     // REELIE_API_URL env overrides it for local dev / staging.
-    static let productionAPIBaseURL = "https://reelie.shop"
+    static let productionAPIBaseURL = "https://reelie.io"
 }
 
 // Thin client for the Reelie backend. Used when a base URL is configured

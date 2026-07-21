@@ -24,8 +24,8 @@ env vars the Studio falls back to the local dev email login.
    - **Email** (magic link — on by default)
    - **Google** → paste a Google OAuth client id/secret (Google Cloud console)
    - **Apple** → paste the Apple service id + key (Apple Developer)
-3. **Authentication → URL Configuration** → set **Site URL** = `https://reelie.shop`
-   and add redirect URLs: `https://reelie.shop/studio`, `https://reelie.shop/*`.
+3. **Authentication → URL Configuration** → set **Site URL** = `https://reelie.io`
+   and add redirect URLs: `https://reelie.io/studio`, `https://reelie.io/*`.
 4. Ensure asymmetric JWTs: **Auth → Signing keys** → use the ES256/RS256 key
    (exposes the JWKS endpoint our backend reads). Legacy HS256-only projects
    won't verify via JWKS.

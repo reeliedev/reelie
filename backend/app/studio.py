@@ -218,7 +218,7 @@ function pageRow(p){
   var live = !p.archived;
   return '<div class="pg" id="row-'+esc(p.slug)+'"><div>'+
     '<div class="t">'+esc(p.title)+' <span class="pill '+(live?'live':'arch')+'">'+(live?'Live':'Archived')+'</span></div>'+
-    '<div class="l"><a href="{{BASE}}/'+esc(p.handle)+'/'+esc(p.slug)+'" target="_blank">reelie.shop/'+esc(p.handle)+'/'+esc(p.slug)+' →</a> · '+p.products.length+' products</div>'+
+    '<div class="l"><a href="{{BASE}}/'+esc(p.handle)+'/'+esc(p.slug)+'" target="_blank">reelie.io/'+esc(p.handle)+'/'+esc(p.slug)+' →</a> · '+p.products.length+' products</div>'+
     '</div><div class="row">'+
     '<button class="btn ghost sm" onclick="toggleEdit(\''+esc(p.slug)+'\')">Edit</button>'+
     '<button class="btn ghost sm" onclick="archive(\''+esc(p.slug)+'\','+(live?'true':'false')+')">'+(live?'Archive':'Unarchive')+'</button>'+

@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN curl -fsSL https://deno.land/install.sh | sh
 ENV PATH="/root/.deno/bin:${PATH}"
 
-ENV PYTHONUNBUFFERED=1 REELIE_ENV=prod PYTHONPATH=/app/backend
+ENV PYTHONUNBUFFERED=1 REELIE_ENV=prod REELIE_ROLE=worker PYTHONPATH=/app/backend
 WORKDIR /app
 
 # Python deps: backend + the extraction pipeline. anthropic/boto3 for LLM + R2.

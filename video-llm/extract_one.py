@@ -91,7 +91,15 @@ def main() -> int:
     # Background worker: ride out transient network blips instead of failing the
     # whole job. Retries connection/5xx errors with backoff; generous per-request
     # timeout for the large multimodal (frames) request.
-    client = anthropic.Anthropic(api_key=key, max_retries=6, timeout=180.0)
+    # Force IPv4: large multimodal uploads (video frames) from some container
+    # networks stall/reset over a broken IPv6/MTU path — small requests survive,
+    # big ones fail with APIConnectionError. Binding to an IPv4 local address
+    # pins the connection to IPv4. (Override with REELIE_FORCE_IPV4=0 if ever needed.)
+    import httpx
+    _kw = {"timeout": httpx.Timeout(180.0, connect=30.0)}
+    if os.environ.get("REELIE_FORCE_IPV4", "1").lower() in ("1", "true"):
+        _kw["transport"] = httpx.HTTPTransport(local_address="0.0.0.0")
+    client = anthropic.Anthropic(api_key=key, max_retries=6, http_client=httpx.Client(**_kw))
     try:
         result = pipeline.process_video(
             src, client, MODEL, cache_dir=CACHE, out_dir=OUTPUT,

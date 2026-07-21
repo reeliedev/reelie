@@ -39,7 +39,8 @@ def _extract(job_id: str, source_arg: str) -> str:
                         cwd=str(config.VIDEO_LLM_DIR),
                         capture_output=True, text=True, timeout=1800)
     if ex.returncode != 0:
-        raise RuntimeError("Couldn't process that video. " + (ex.stderr or ex.stdout)[-300:])
+        # Keep enough of the tail to include the extractor's root_cause line.
+        raise RuntimeError("Couldn't process that video. " + (ex.stderr or ex.stdout)[-1200:])
     m = re.search(r"VIDEO_ID:(\S+)", ex.stdout)
     if not m:
         raise RuntimeError("Extraction produced no video.")

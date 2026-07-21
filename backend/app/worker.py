@@ -73,16 +73,28 @@ def main() -> None:
     # failure reproduces here with its true root cause, no video needed.
     _key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
     if _key:
-        try:
-            import anthropic
-            c = anthropic.Anthropic(api_key=_key, max_retries=0, timeout=30.0)
-            c.messages.create(model="claude-sonnet-4-6", max_tokens=1,
-                              messages=[{"role": "user", "content": "hi"}])
-            print("[worker] anthropic SDK call: OK", flush=True)
-        except Exception as e:  # noqa: BLE001
-            cause = getattr(e, "__cause__", None)
-            print(f"[worker] anthropic SDK call FAILED: {type(e).__name__}: {e} | "
-                  f"root_cause={type(cause).__name__ if cause else None}: {cause!r}", flush=True)
+        import anthropic
+        import httpx
+
+        def _large_probe(label: str, http_client) -> None:
+            # ~5 MB payload → forces a multi-packet upload like the frames request.
+            # A 4xx here means the UPLOAD succeeded (server rejected on content) =
+            # network fine; an APIConnectionError means the upload itself failed.
+            try:
+                c = anthropic.Anthropic(api_key=_key, max_retries=0, http_client=http_client)
+                c.messages.create(model="claude-sonnet-4-6", max_tokens=1,
+                                  messages=[{"role": "user", "content": "x" * 5_000_000}])
+                print(f"[worker] large probe [{label}]: OK", flush=True)
+            except anthropic.APIStatusError as e:
+                print(f"[worker] large probe [{label}]: HTTP {e.status_code} — upload OK (network fine)", flush=True)
+            except Exception as e:  # noqa: BLE001
+                cause = getattr(e, "__cause__", None)
+                print(f"[worker] large probe [{label}]: {type(e).__name__}: {e} | "
+                      f"root={type(cause).__name__ if cause else None}: {cause!r}", flush=True)
+
+        _large_probe("default", httpx.Client(timeout=httpx.Timeout(60.0, connect=30.0)))
+        _large_probe("ipv4", httpx.Client(timeout=httpx.Timeout(60.0, connect=30.0),
+                                          transport=httpx.HTTPTransport(local_address="0.0.0.0")))
     while True:
         try:
             job_id = claim_next()

@@ -86,6 +86,9 @@ var BASE = window.location.origin;
 var tok = localStorage.getItem('reelie.token') || '';
 var me = null; try { me = JSON.parse(localStorage.getItem('reelie.user')||'null'); } catch(e){}
 var app = document.getElementById('app'), who = document.getElementById('whoami');
+// Capture the redirect params IMMEDIATELY (before supabase-js reads/clears the hash),
+// so the login screen can report what came back after a magic-link/OAuth click.
+var INIT_HASH = location.hash || '', INIT_SEARCH = location.search || '';
 
 function esc(s){ return (s||'').replace(/[&<>"]/g, function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
 
@@ -159,10 +162,14 @@ async function viewSupabaseLogin(){
    '<label>Email</label><input id="email" type="email" placeholder="you@example.com" autocomplete="email">'+
    '<div style="height:12px"></div><button class="btn oauth" id="mlink">Send magic link</button>'+
    '<div class="muted" id="msg" style="margin-top:12px"></div></div>';
-  // Surface an auth error returned in the redirect (helps diagnose failed links).
-  var hp = new URLSearchParams((location.hash||'').replace(/^#/,'')), qp = new URLSearchParams(location.search);
+  // Diagnose: report exactly what the redirect brought back (from the captured URL).
+  var hp = new URLSearchParams((INIT_HASH||'').replace(/^#/,'')), qp = new URLSearchParams(INIT_SEARCH||'');
   var authErr = hp.get('error_description') || qp.get('error_description') || hp.get('error') || qp.get('error');
-  if(authErr){ document.getElementById('msg').innerHTML = '<span class="err">'+esc(decodeURIComponent(authErr))+'</span>'; }
+  var keys = Array.from(new Set([].concat(Array.from(hp.keys()), Array.from(qp.keys()))));
+  var msgEl = document.getElementById('msg');
+  if(authErr){ msgEl.innerHTML = '<span class="err">'+esc(decodeURIComponent(authErr))+'</span>'; }
+  else if(keys.length){ msgEl.innerHTML = '<span class="muted">redirect brought: '+esc(keys.join(', '))+'</span>'; }
+  else { msgEl.innerHTML = '<span class="muted">redirect brought: (nothing)</span>'; }
   var c = await supa();
   document.getElementById('apple').onclick = function(){ c.auth.signInWithOAuth({provider:'apple', options:{redirectTo:location.href}}); };
   document.getElementById('google').onclick = function(){ c.auth.signInWithOAuth({provider:'google', options:{redirectTo:location.href}}); };

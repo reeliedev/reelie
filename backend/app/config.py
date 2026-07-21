@@ -157,6 +157,14 @@ STORAGE_ENABLED = bool(STORAGE_ENDPOINT and STORAGE_BUCKET
                        and STORAGE_ACCESS_KEY_ID and STORAGE_SECRET_ACCESS_KEY
                        and STORAGE_PUBLIC_URL)
 
+# Normalize the Anthropic key in-process: strip surrounding whitespace/newlines
+# (common when pasted into a host's env UI) and write it back, so every downstream
+# consumer — bare `anthropic.Anthropic()` clients and the extraction/build
+# subprocesses that inherit this env — gets a clean value. A newline here makes
+# httpx reject the auth header, surfacing as a misleading APIConnectionError.
+if os.environ.get("ANTHROPIC_API_KEY"):
+    os.environ["ANTHROPIC_API_KEY"] = os.environ["ANTHROPIC_API_KEY"].strip()
+
 # Mock keeps generation $0 (stub prices, no API key). Set GENERATE_LIVE=1 to use
 # the LLM (needs ANTHROPIC_API_KEY on the generator's environment).
 GENERATE_LIVE = os.environ.get("GENERATE_LIVE") == "1"

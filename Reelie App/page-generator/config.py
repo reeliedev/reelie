@@ -84,4 +84,6 @@ PRICE_VALID_DAYS = 90
 
 
 def anthropic_key() -> str | None:
-    return os.environ.get("ANTHROPIC_API_KEY")
+    # .strip(): a trailing newline (from pasting the key into a host env UI) makes
+    # httpx reject the auth header → confusing APIConnectionError.
+    return (os.environ.get("ANTHROPIC_API_KEY") or "").strip() or None

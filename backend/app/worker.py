@@ -56,45 +56,14 @@ def main() -> None:
     _db = os.environ.get("DATABASE_URL", "")
     _host = _db.split("@")[-1].split("/")[0] if "@" in _db else ("sqlite (LOCAL — will not see API jobs!)" if not _db else _db[:20])
     print(f"[worker] db → {_host}", flush=True)
-    # One-time egress probe: can we reach the Anthropic API over HTTPS? (A 401 here
-    # is success — it proves connect+TLS work; the extraction supplies the real key.)
-    import urllib.request
-    import urllib.error
-    print(f"[worker] anthropic_api_key={'set' if os.environ.get('ANTHROPIC_API_KEY','').strip() else 'MISSING/EMPTY'}", flush=True)
-    try:
-        urllib.request.urlopen("https://api.anthropic.com/v1/messages", timeout=15)
-        print("[worker] anthropic reachable: 200", flush=True)
-    except urllib.error.HTTPError as e:
-        print(f"[worker] anthropic reachable: HTTP {e.code} (connect+TLS OK)", flush=True)
-    except Exception as e:  # noqa: BLE001
-        print(f"[worker] anthropic UNREACHABLE: {type(e).__name__}: {e}", flush=True)
-    # Deterministic SDK probe: make a real (tiny) messages call via the anthropic
-    # client — the SAME transport the extraction uses — so a systematic SDK-level
-    # failure reproduces here with its true root cause, no video needed.
-    _key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
-    if _key:
-        import anthropic
-        import httpx
-
-        def _large_probe(label: str, http_client) -> None:
-            # ~5 MB payload → forces a multi-packet upload like the frames request.
-            # A 4xx here means the UPLOAD succeeded (server rejected on content) =
-            # network fine; an APIConnectionError means the upload itself failed.
-            try:
-                c = anthropic.Anthropic(api_key=_key, max_retries=0, http_client=http_client)
-                c.messages.create(model="claude-sonnet-4-6", max_tokens=1,
-                                  messages=[{"role": "user", "content": "x" * 5_000_000}])
-                print(f"[worker] large probe [{label}]: OK", flush=True)
-            except anthropic.APIStatusError as e:
-                print(f"[worker] large probe [{label}]: HTTP {e.status_code} — upload OK (network fine)", flush=True)
-            except Exception as e:  # noqa: BLE001
-                cause = getattr(e, "__cause__", None)
-                print(f"[worker] large probe [{label}]: {type(e).__name__}: {e} | "
-                      f"root={type(cause).__name__ if cause else None}: {cause!r}", flush=True)
-
-        _large_probe("default", httpx.Client(timeout=httpx.Timeout(60.0, connect=30.0)))
-        _large_probe("ipv4", httpx.Client(timeout=httpx.Timeout(60.0, connect=30.0),
-                                          transport=httpx.HTTPTransport(local_address="0.0.0.0")))
+    # Flag a malformed key early: a trailing newline/space makes httpx reject the
+    # auth header (surfaces as APIConnectionError deep in extraction). extract_one
+    # strips it, but warn so the env var itself gets cleaned up.
+    _raw = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not _raw.strip():
+        print("[worker] WARNING: ANTHROPIC_API_KEY is MISSING/EMPTY", flush=True)
+    elif _raw != _raw.strip():
+        print("[worker] NOTE: ANTHROPIC_API_KEY had surrounding whitespace/newline (stripped at use)", flush=True)
     while True:
         try:
             job_id = claim_next()

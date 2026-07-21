@@ -70,7 +70,10 @@ def main() -> int:
         return 2
     arg = sys.argv[1].strip()
 
-    key = os.environ.get("ANTHROPIC_API_KEY")
+    # .strip(): a trailing newline (common when pasting the key into a host's env
+    # UI) makes httpx reject the auth header as an "illegal header value", which
+    # surfaces confusingly as APIConnectionError.
+    key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
     if not key:
         print("ERROR: ANTHROPIC_API_KEY not set", file=sys.stderr)
         return 4

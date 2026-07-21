@@ -27,7 +27,7 @@ git push -u origin main
 
 ## 2 — Deploy the blueprint on Render
 1. Render dashboard → **New → Blueprint**.
-2. Connect the GitHub repo. Render auto-detects [`backend/render.yaml`](backend/render.yaml).
+2. Connect the GitHub repo. Render auto-detects [`render.yaml`](render.yaml).
 3. It provisions **`reelie-api`** (Docker web service) + **`reelie-db`** (Postgres).
    `JWT_SECRET` is auto-generated; `DATABASE_URL` is wired from the DB.
 4. Click **Apply**. First build runs `alembic upgrade head` then starts gunicorn.

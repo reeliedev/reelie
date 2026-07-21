@@ -106,12 +106,15 @@ def main() -> int:
             use_api=False, whisper_size="base", title=title)
     except anthropic.APIConnectionError as e:
         # Surface the REAL transport error under the SDK wrapper (httpx ConnectError/
-        # ReadError/etc.) — that's what actually explains the failure.
-        cause = e.__cause__
-        print(f"ERROR: Anthropic connection failed. root_cause={type(cause).__name__}: {cause!r}",
-              file=sys.stderr)
+        # ReadError/WriteError/etc.) — that's what actually explains the failure.
+        # Print the traceback FIRST and the root_cause line LAST so it survives the
+        # caller's tail-truncation of stderr.
         import traceback
         traceback.print_exc()
+        cause = e.__cause__
+        inner = getattr(cause, "__cause__", None)
+        print(f"ROOT_CAUSE: {type(cause).__name__}: {cause!r} :: "
+              f"inner={type(inner).__name__ if inner else None}: {inner!r}", file=sys.stderr)
         return 7
     print(f"VIDEO_ID:{result['video_id']}")
     return 0

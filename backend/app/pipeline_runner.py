@@ -104,7 +104,9 @@ def process_job(job_id: str) -> None:
         _set(job_id, status="running", stage="Building your page")
         _build(job_id, handle, display_name, video_id, title)
     except Exception as e:  # noqa: BLE001
-        _set(job_id, status="error", stage="Failed", error=str(e)[-500:])
+        msg = str(e)
+        print(f"[worker] job {job_id} FAILED: {msg[-1500:]}", flush=True)  # full-ish in worker log
+        _set(job_id, status="error", stage="Failed", error=msg[-800:])
     finally:
         if tmp and os.path.exists(tmp):
             try:

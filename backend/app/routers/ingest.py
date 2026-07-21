@@ -60,6 +60,7 @@ class IngestPage(BaseModel):
     summary: str = ""
     disclosure: str = ""
     videoId: str = ""
+    draft: bool = False          # self-serve generation sends True → needs approval
     products: list[IngestProduct] = []
 
 
@@ -88,6 +89,10 @@ def ingest_page(body: IngestPage, session: Session = Depends(get_session)):
     page.title, page.emoji, page.meta = body.title, body.emoji, body.meta
     page.intro, page.summary, page.disclosure = body.intro, body.summary, body.disclosure
     page.video_id = body.videoId
+    # A draft generation lands unpublished for review; re-generating a page sends
+    # it back to draft so the new version is re-approved before going live.
+    if body.draft:
+        page.published = False
     session.add(page)
     session.flush()
 

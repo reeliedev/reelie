@@ -65,6 +65,7 @@ textarea{resize:vertical;min-height:64px}
 .err{color:var(--red);font-size:13.5px;margin-top:10px}
 .pill{font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;padding:3px 9px;border-radius:999px;background:var(--soft);color:var(--grey)}
 .pill.live{background:#E8F6EC;color:#2C8C4A}.pill.arch{background:#F2E9E4;color:#9A6A4A}
+.pill.draft{background:#FBF0D6;color:#9A7A18}
 .pg{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0;border-top:1px solid var(--line)}
 .pg:first-child{border-top:none}
 .pg .t{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:18px}
@@ -268,17 +269,37 @@ async function loadPages(){
 }
 
 function pageRow(p){
-  var live = !p.archived;
+  var archived = p.archived, published = (p.published !== false);
+  var state = archived ? 'arch' : (published ? 'live' : 'draft');
+  var badge = archived ? 'Archived' : (published ? 'Live' : 'Draft · review');
+  var link = archived ? '{{BASE}}/'+esc(p.handle)+'/'+esc(p.slug)
+                      : '{{BASE}}/'+esc(p.handle)+'/'+esc(p.slug);
+  var linkText = published ? 'reelie.io/'+esc(p.handle)+'/'+esc(p.slug)+' →' : 'Preview draft →';
+  var actions = '';
+  if(!archived && !published)
+    actions += '<button class="btn sm" onclick="publish(\''+esc(p.slug)+'\')">Approve &amp; Publish</button>';
+  actions += '<button class="btn ghost sm" onclick="toggleEdit(\''+esc(p.slug)+'\')">Edit</button>';
+  if(!archived && published)
+    actions += '<button class="btn ghost sm" onclick="unpublish(\''+esc(p.slug)+'\')">Unpublish</button>';
+  actions += '<button class="btn ghost sm" onclick="archive(\''+esc(p.slug)+'\','+(archived?'false':'true')+')">'+(archived?'Unarchive':'Archive')+'</button>';
+  actions += '<button class="btn danger sm" onclick="del(\''+esc(p.slug)+'\')">Delete</button>';
   return '<div class="pg" id="row-'+esc(p.slug)+'"><div>'+
-    '<div class="t">'+esc(p.title)+' <span class="pill '+(live?'live':'arch')+'">'+(live?'Live':'Archived')+'</span></div>'+
-    '<div class="l"><a href="{{BASE}}/'+esc(p.handle)+'/'+esc(p.slug)+'" target="_blank">reelie.io/'+esc(p.handle)+'/'+esc(p.slug)+' →</a> · '+p.products.length+' products</div>'+
-    '</div><div class="row">'+
-    '<button class="btn ghost sm" onclick="toggleEdit(\''+esc(p.slug)+'\')">Edit</button>'+
-    '<button class="btn ghost sm" onclick="archive(\''+esc(p.slug)+'\','+(live?'true':'false')+')">'+(live?'Archive':'Unarchive')+'</button>'+
-    '<button class="btn danger sm" onclick="del(\''+esc(p.slug)+'\')">Delete</button>'+
+    '<div class="t">'+esc(p.title)+' <span class="pill '+state+'">'+badge+'</span></div>'+
+    '<div class="l"><a href="'+link+'" target="_blank">'+linkText+'</a> · '+p.products.length+' products</div>'+
+    '</div><div class="row">'+ actions +
     '</div></div>'+
     '<div class="hide" id="edit-'+esc(p.slug)+'"></div>';
 }
+async function publish(slug){
+  var el=document.getElementById('row-'+slug); if(el) el.style.opacity=.5;
+  try { await api('POST','/me/pages/'+slug+'/publish'); } catch(e){ alert(e.message); }
+  loadPages();
+}
+async function unpublish(slug){
+  if(!confirm('Take this page offline (back to draft)? It won\'t appear publicly until you publish again.')) return;
+  await api('POST','/me/pages/'+slug+'/unpublish'); loadPages();
+}
+window.publish = publish; window.unpublish = unpublish;
 
 var CACHE = {};
 async function toggleEdit(slug){
@@ -340,7 +361,7 @@ async function doGenerate(){
       await new Promise(function(res){setTimeout(res,3000);});
       var s = await api('GET','/me/generate/'+job);
       st.innerHTML = '<span class="spin"></span> '+esc(s.stage||s.status);
-      if(s.status==='done'){ st.textContent='Published ✓'; resetGenInputs(); loadPages(); break; }
+      if(s.status==='done'){ st.innerHTML='<span style="color:var(--accent-deep);font-weight:600">✓ Draft ready — review it below, then <b>Approve &amp; Publish</b>.</span>'; resetGenInputs(); loadPages(); break; }
       if(s.status==='error'){ st.innerHTML='<span class="err">'+esc(s.error||'Failed')+'</span>'; break; }
     }
   } catch(e){ st.innerHTML='<span class="err">'+esc(e.message)+'</span>'; }

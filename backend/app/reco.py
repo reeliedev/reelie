@@ -20,7 +20,7 @@ from app.models import Creator, Page, Product
 def _creator_index(session: Session) -> dict[str, dict]:
     """One aggregate record per creator: brand set + product-key set."""
     creators = {c.handle: c for c in session.exec(select(Creator)).all()}
-    live_pages = {p.id: p for p in session.exec(select(Page).where(Page.archived == False)).all()}  # noqa: E712
+    live_pages = {p.id: p for p in session.exec(select(Page).where(Page.archived == False, Page.published == True)).all()}  # noqa: E712
     idx: dict[str, dict] = {}
     for c in creators.values():
         idx[c.handle] = {"handle": c.handle, "name": c.display_name,

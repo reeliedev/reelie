@@ -32,10 +32,12 @@ def my_pages(user: User = Depends(current_user), session: Session = Depends(get_
     creator = session.get(Creator, user.handle)
     pages = session.exec(select(Page).where(Page.handle == user.handle)).all()
     out = []
-    for p in sorted(pages, key=lambda x: (x.archived, x.slug)):
+    # Drafts (awaiting approval) first, then live, then archived.
+    for p in sorted(pages, key=lambda x: (x.archived, x.published, x.slug)):
         prods = session.exec(select(Product).where(Product.page_id == p.id)).all()
         payload = page_app(p, prods, creator)
         payload["archived"] = p.archived
+        payload["published"] = p.published
         out.append(payload)
     return out
 
@@ -80,6 +82,24 @@ def edit_page(slug: str, body: PageEdit, user: User = Depends(current_user),
     creator = session.get(Creator, user.handle)
     prods = session.exec(select(Product).where(Product.page_id == page.id)).all()
     return page_app(page, prods, creator)
+
+
+@router.post("/{slug}/publish")
+def publish_page(slug: str, user: User = Depends(current_user), session: Session = Depends(get_session)):
+    """Creator approves a reviewed draft — it goes live on all public surfaces."""
+    page = _owned(slug, user, session)
+    page.published = True
+    session.add(page); session.commit()
+    return {"ok": True, "published": True}
+
+
+@router.post("/{slug}/unpublish")
+def unpublish_page(slug: str, user: User = Depends(current_user), session: Session = Depends(get_session)):
+    """Take a live page back to draft (unlisted) — e.g. to make more edits."""
+    page = _owned(slug, user, session)
+    page.published = False
+    session.add(page); session.commit()
+    return {"ok": True, "published": False}
 
 
 @router.post("/{slug}/archive")

@@ -24,7 +24,7 @@ router = APIRouter(tags=["public-site"])
 
 def _rows(session: Session) -> list[dict]:
     """Registry-shaped list of every live page (drives the directory + SEO files)."""
-    pages = session.exec(select(Page).where(Page.archived == False)).all()  # noqa: E712
+    pages = session.exec(select(Page).where(Page.archived == False, Page.published == True)).all()  # noqa: E712
     creators = {c.handle: c for c in session.exec(select(Creator)).all()}
     out = []
     for pg in pages:
@@ -107,7 +107,7 @@ def landing_js():
 @router.get("/discover", response_class=HTMLResponse)
 def discover(session: Session = Depends(get_session)):
     creators = {c.handle: c for c in session.exec(select(Creator)).all()}
-    pages = session.exec(select(Page).where(Page.archived == False)).all()  # noqa: E712
+    pages = session.exec(select(Page).where(Page.archived == False, Page.published == True)).all()  # noqa: E712
     pages.sort(key=lambda p: p.created_at, reverse=True)   # newest first
     counts = like_counts(session)
     items = []

@@ -32,20 +32,20 @@ def get_creator(handle: str, session: Session = Depends(get_session)):
 
 @router.get("/creators/{handle}/routines")
 def creator_routines(handle: str, session: Session = Depends(get_session)):
-    pages = session.exec(select(Page).where(Page.handle == handle, Page.archived == False)).all()  # noqa: E712
+    pages = session.exec(select(Page).where(Page.handle == handle, Page.archived == False, Page.published == True)).all()  # noqa: E712
     return [_page_payload(p, session) for p in sorted(pages, key=lambda x: x.slug)]
 
 
 @router.get("/routines")
 def all_routines(session: Session = Depends(get_session)):
-    pages = session.exec(select(Page).where(Page.archived == False)).all()  # noqa: E712
+    pages = session.exec(select(Page).where(Page.archived == False, Page.published == True)).all()  # noqa: E712
     return [_page_payload(p, session) for p in sorted(pages, key=lambda x: (x.handle, x.slug))]
 
 
 @router.get("/routines/{handle}/{slug}")
 def get_routine(handle: str, slug: str, session: Session = Depends(get_session)):
     page = session.exec(select(Page).where(
-        Page.handle == handle, Page.slug == slug, Page.archived == False)).first()  # noqa: E712
+        Page.handle == handle, Page.slug == slug, Page.archived == False, Page.published == True)).first()  # noqa: E712
     if not page:
         raise HTTPException(404, "Routine not found")
     return _page_payload(page, session)

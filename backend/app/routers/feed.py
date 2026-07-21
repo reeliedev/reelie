@@ -20,7 +20,7 @@ router = APIRouter(tags=["feed"])
 @router.get("/feed")
 def feed(session: Session = Depends(get_session)):
     creators = {c.handle: c for c in session.exec(select(Creator)).all()}
-    pages = session.exec(select(Page).where(Page.archived == False)).all()  # noqa: E712
+    pages = session.exec(select(Page).where(Page.archived == False, Page.published == True)).all()  # noqa: E712
     pages.sort(key=lambda p: p.created_at, reverse=True)
     counts = like_counts(session)
     out = []

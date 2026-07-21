@@ -78,6 +78,9 @@ def _payload(page: Page) -> dict:
         "summary": page.summary,
         "disclosure": page.disclosure,
         "videoId": page.video_id,
+        # Self-serve pages land as drafts for the creator to review + approve.
+        # Set REELIE_DRAFT=0 to publish directly (e.g. trusted batch runs).
+        "draft": os.environ.get("REELIE_DRAFT", "1") != "0",
         "products": [
             {
                 "position": p.position, "brand": p.brand, "name": p.name, "emoji": p.emoji,

@@ -58,6 +58,11 @@ class Page(SQLModel, table=True):
     disclosure: str = ""
     video_id: str = ""
     archived: bool = Field(default=False, index=True)
+    # Review-before-live: a generated page starts unpublished (draft) so the
+    # creator can check + edit before approving. Only published pages appear on
+    # public surfaces (feed / site / directory / reco). Defaults True so existing
+    # pages and non-draft creations stay visible.
+    published: bool = Field(default=True, index=True)
     created_at: datetime = Field(default_factory=_now)
 
     @property

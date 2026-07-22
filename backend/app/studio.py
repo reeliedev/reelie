@@ -337,7 +337,7 @@ async function viewDashboard(){
      '<button class="tab" id="tab-upload" onclick="pickTab(\'upload\')">Upload video <span class="hint">best quality</span></button>'+
    '</div>'+
    '<div id="pane-link">'+
-     '<input id="url" placeholder="YouTube, TikTok, or a video URL">'+
+     '<input id="url" placeholder="YouTube, TikTok, Instagram, or a video URL">'+
    '</div>'+
    '<div id="pane-upload" class="hide">'+
      '<input id="file" type="file" accept="video/mp4,video/quicktime,video/*">'+
@@ -348,7 +348,9 @@ async function viewDashboard(){
    '<div style="height:12px"></div><button class="btn" id="gen">Make page</button>'+
    '<div class="muted" id="genstatus" style="margin-top:10px"></div></div>'+
    '<div class="card" id="pages"><p class="muted">Loading your pages…</p></div>';
+  GENTAB = 'link';   // match the freshly-rendered default (tab-link is active)
   document.getElementById('gen').onclick = doGenerate;
+  document.getElementById('url').addEventListener('keydown', function(e){ if(e.key==='Enter') doGenerate(); });
   loadPages();
 }
 

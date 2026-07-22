@@ -129,6 +129,7 @@ input[type=file]{padding:9px 12px}
 .rv-prod[open] .rv-chev{transform:rotate(180deg)}
 .rv-fields{padding:2px 15px 16px}
 .rv-fields label{display:block;font-size:12px;font-weight:600;color:var(--grey);margin:10px 0 4px}
+.rv-rowbtns{display:flex;gap:8px;margin-top:12px}
 .rv-actions{display:flex;gap:10px;margin-top:22px}
 .rv-actions .btn{flex:1}
 .eh{font-family:'Space Grotesk',sans-serif;font-size:18px;margin:26px 0 12px}
@@ -578,7 +579,7 @@ async function showProductReview(slug){
   app.innerHTML =
     '<div class="rv2">'+
     '<div class="rv-head"><h1>Found '+page.products.length+' product'+(page.products.length!==1?'s':'')+' ✨</h1>'+
-      '<p class="sub">Check each one’s brand, name and link. Add anything we missed — then publish.</p></div>'+
+      '<p class="sub">Check each product, and <b>Test link ↗</b> to make sure it goes to the right place — all before you publish. Add anything we missed, then publish.</p></div>'+
     '<div class="rv-split">'+
       '<div class="rv-videocol">'+vid+'</div>'+
       '<div class="rv-editcol">'+
@@ -596,6 +597,29 @@ async function showProductReview(slug){
   document.getElementById('rv-add').onclick = addReviewProduct;
   document.getElementById('rv-pub').onclick = autoPublish;
   document.getElementById('rv-edit').onclick = editAndReview;
+  pollResolvedLinks();   // direct links resolve shortly after generation — pull them in
+}
+// Fill in auto-resolved buy links as they finish (only empty, non-focused fields,
+// so we never clobber what the creator is typing).
+function pollResolvedLinks(){
+  var tries = 0, slug = REVIEW.slug;
+  (function tick(){
+    if(tries++ >= 6 || REVIEW.slug !== slug) return;
+    setTimeout(async function(){
+      if(REVIEW.slug !== slug) return;
+      try {
+        var fresh = await api('GET','/me/pages/'+slug); REVIEW.page = fresh;
+        fresh.products.forEach(function(fp){
+          var card = document.querySelector('.rv-prod[data-id="'+fp.id+'"]');
+          if(!card) return;
+          var input = card.querySelector('.rv-url');
+          if(input && document.activeElement!==input && !input.value.trim()
+             && fp.linkKind==='auto' && fp.url){ input.value = fp.url; }
+        });
+      } catch(e){}
+      tick();
+    }, 4000);
+  })();
 }
 window.showProductReview = showProductReview;
 
@@ -605,17 +629,33 @@ function renderReviewProducts(){
 function productCard(p){
   var title = ((p.brand||'')+' '+(p.name||'')).trim() || 'New product';
   var link = (p.linkKind==='own' || p.linkKind==='auto') ? (p.url||'') : '';
-  return '<details class="rv-prod" data-id="'+esc(p.id||'')+'">'+
+  var pos = (p.position!=null && p.position!=='') ? String(p.position) : '';
+  var canTest = pos!=='';
+  return '<details class="rv-prod" data-id="'+esc(p.id||'')+'" data-pos="'+esc(pos)+'">'+
     '<summary><span class="rv-em">'+esc(p.emoji||'🛍️')+'</span>'+
       '<span class="rv-t">'+esc(title)+'</span><span class="rv-chev">▾</span></summary>'+
     '<div class="rv-fields">'+
       '<label>Brand</label><input class="rv-brand" value="'+esc(p.brand||'')+'" oninput="rvSyncTitle(this)">'+
       '<label>Product name</label><input class="rv-name" value="'+esc(p.name||'')+'" oninput="rvSyncTitle(this)">'+
-      '<label>Affiliate link <span class="muted">(your own — optional)</span></label>'+
-      '<input class="rv-url" type="url" placeholder="https://…" value="'+esc(link)+'">'+
-      '<div style="margin-top:10px"><button class="btn danger sm" onclick="removeReviewProduct(this)">Remove</button></div>'+
+      '<label>Buy link <span class="muted">— auto-linked; paste your own affiliate link to override</span></label>'+
+      '<input class="rv-url" type="url" placeholder="Auto-linked from the product — or paste your own" value="'+esc(link)+'">'+
+      '<div class="rv-rowbtns">'+
+        (canTest?'<button class="btn ghost sm" onclick="testLink(this)">Test link ↗</button>':'')+
+        '<button class="btn danger sm" onclick="removeReviewProduct(this)">Remove</button>'+
+      '</div>'+
     '</div></details>';
 }
+// Open the exact link a shopper would get: the creator's own URL if typed,
+// else the /r/ redirect (works on the draft, resolves at click time).
+function testLink(btn){
+  var card=btn.closest('.rv-prod');
+  var url=(card.querySelector('.rv-url').value||'').trim();
+  var pos=card.getAttribute('data-pos');
+  var target = url || ('{{BASE}}/r/'+encodeURIComponent(REVIEW.page.handle)+'/'+
+                       encodeURIComponent(REVIEW.slug)+'/'+encodeURIComponent(pos));
+  window.open(target, '_blank', 'noopener');
+}
+window.testLink = testLink;
 function rvSyncTitle(inp){
   var card=inp.closest('.rv-prod');
   var t=(card.querySelector('.rv-brand').value+' '+card.querySelector('.rv-name').value).trim();

@@ -49,7 +49,9 @@ def _startup() -> None:
 
 @app.get("/health")
 def health() -> dict:
-    return {"ok": True, "brand": config.BRAND, "auth": config.AUTH_PROVIDER}
+    return {"ok": True, "brand": config.BRAND, "auth": config.AUTH_PROVIDER,
+            # diagnostics (no secrets — just whether they're configured)
+            "email": bool(config.RESEND_API_KEY), "emailTo": config.ADMIN_EMAIL}
 
 
 # The public site's `/{handle}` routes are greedy — include LAST so every API

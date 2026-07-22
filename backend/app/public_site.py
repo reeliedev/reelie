@@ -64,8 +64,9 @@ def _offer(page: Page, p: Product) -> dict | None:
     offer = {"@type": "Offer", "price": f"{p.price_amount:.2f}",
              "priceCurrency": p.currency, "availability": "https://schema.org/InStock",
              "url": shop_url(page.handle, page.slug, p.position)}
-    if p.retailer:
-        offer["seller"] = {"@type": "Organization", "name": p.retailer}
+    _seller = _effective_retailer(p)
+    if _seller:
+        offer["seller"] = {"@type": "Organization", "name": _seller}
     return offer
 
 
@@ -165,7 +166,8 @@ def faqs(page: Page, creator: Creator, products: list[Product]) -> list[tuple[st
                     f"They're available at {', '.join(t['retailers'])}."))
     for p in priced[:4]:
         disp = p.price_display or _money(p.price_amount, p.currency)
-        at = f" at {p.retailer}" if p.retailer else ""
+        _r = _effective_retailer(p)
+        at = f" at {_r}" if _r else ""
         out.append((f"How much is the {_pname(p)}?", f"The {_pname(p)} is {disp}{at}."))
     result = [(q, a, False) for q, a in out]        # generated (read-only)
     try:
@@ -334,14 +336,26 @@ def _approx(estimated: bool) -> str:
     return ' <span class="approx">approx.</span>' if estimated else ""
 
 
+def _effective_retailer(p: Product) -> str:
+    """Where this product actually links: a known retailer when the resolved link
+    points there, else the brand's own store; falls back to the guessed retailer
+    only for a trusted-retailer search link. Keeps 'available at …' honest."""
+    if p.link_kind in ("own", "auto") and (p.url or "").startswith("http"):
+        return retailer_for_url(p.url) or (p.brand or "").strip()
+    if is_trusted_retailer(p.retailer):
+        return (p.retailer or "").strip()
+    return (p.brand or "").strip()
+
+
 def _totals(products: list[Product]) -> dict:
     priced = [p for p in products if p.price_amount is not None]
     amounts = [p.price_amount for p in priced]
     currency = priced[0].currency if priced else "USD"
     retailers: list[str] = []
     for p in products:
-        if p.retailer and p.retailer not in retailers:
-            retailers.append(p.retailer)
+        r = _effective_retailer(p)
+        if r and r not in retailers:
+            retailers.append(r)
     return {
         "count": len(products),
         "total_display": _money(sum(amounts), currency) if amounts else "",

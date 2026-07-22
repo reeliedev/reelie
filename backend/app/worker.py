@@ -56,6 +56,15 @@ def main() -> None:
     _db = os.environ.get("DATABASE_URL", "")
     _host = _db.split("@")[-1].split("/")[0] if "@" in _db else ("sqlite (LOCAL — will not see API jobs!)" if not _db else _db[:20])
     print(f"[worker] db → {_host}", flush=True)
+    # Real CPU budget: os.cpu_count() reports HOST cores (misleading in a container);
+    # sched_getaffinity is the process's allocatable set on Linux. _POOL caps our
+    # own parallelism so we don't oversubscribe a small plan.
+    try:
+        _aff = len(os.sched_getaffinity(0))
+    except Exception:
+        _aff = "n/a"
+    print(f"[worker] cpu: count={os.cpu_count()} affinity={_aff} "
+          f"REELIE_WORKERS={os.environ.get('REELIE_WORKERS','3')}", flush=True)
     # Flag a malformed key early: a trailing newline/space makes httpx reject the
     # auth header (surfaces as APIConnectionError deep in extraction). extract_one
     # strips it, but warn so the env var itself gets cleaned up.

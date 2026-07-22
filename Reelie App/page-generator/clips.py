@@ -221,9 +221,13 @@ def make_step_clips(video_id: str, products, duration: float,
                          clips_dir / f"{stem}.mp4", clips_dir / f"{stem}.jpg", mirror)
         return win, ok
 
+    # Cap concurrency modestly — NOT os.cpu_count() (lies in containers). Tunable
+    # via REELIE_WORKERS to match the worker's real CPU plan.
+    import os as _os
+    _pool = max(1, int(_os.environ.get("REELIE_WORKERS", "3") or 3))
     ok_windows = {}
     if stem_of:
-        with ThreadPoolExecutor(max_workers=min(4, len(stem_of))) as ex:
+        with ThreadPoolExecutor(max_workers=min(_pool, len(stem_of))) as ex:
             for win, ok in ex.map(_cut, list(stem_of)):
                 ok_windows[win] = ok
 

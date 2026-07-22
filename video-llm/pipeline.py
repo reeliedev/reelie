@@ -26,6 +26,11 @@ from prompts import (SYSTEM_PROMPT, EXTRACTION_SCHEMA, build_extraction_messages
                      build_mirror_detect_messages,
                      RECOVER_SCHEMA, RECOVER_SYSTEM_PROMPT, build_recover_messages)
 
+# Parallelism cap for CPU/ffmpeg work. Deliberately NOT os.cpu_count() — in a
+# container that reports the host's cores and oversubscribes the worker (which
+# made extraction slower). Tune with REELIE_WORKERS when on a bigger CPU plan.
+_POOL = max(1, int(os.environ.get("REELIE_WORKERS", "3") or 3))
+
 # --------------------------------------------------------------------------
 # Config / pricing
 # --------------------------------------------------------------------------
@@ -115,11 +120,12 @@ def download_youtube(url: str, videos_dir: Path) -> Path:
 def _get_whisper(size: str):
     global _WHISPER_MODEL
     if _WHISPER_MODEL is None:
-        import os
         from faster_whisper import WhisperModel
-        # Use all available cores — the CT2 backend defaults conservatively.
+        # NB: os.cpu_count() lies in containers (reports host cores, not the cgroup
+        # CPU limit) — using it oversubscribed the worker and made things SLOWER.
+        # Use a modest, env-tunable thread count instead.
         _WHISPER_MODEL = WhisperModel(size, device="auto", compute_type="int8",
-                                      cpu_threads=os.cpu_count() or 4)
+                                      cpu_threads=_POOL)
     return _WHISPER_MODEL
 
 
@@ -247,7 +253,7 @@ def _hold_timestamps(path: Path, noise: str, min_dur: float) -> list:
                 cand.append((hi, s + (e - s) * i / (HOLD_SHARPEST_OF - 1)))
     if not cand:
         return []
-    with ThreadPoolExecutor(max_workers=min(8, len(cand))) as ex:
+    with ThreadPoolExecutor(max_workers=min(_POOL, len(cand))) as ex:
         sharp = list(ex.map(lambda c: _sharpness_at(path, c[1]), cand))
     best: dict[int, tuple[float, float]] = {}
     for (hi, ts), sh in zip(cand, sharp):
@@ -317,7 +323,7 @@ def load_or_extract_frames(path: Path, video_id: str, cache_dir: Path,
 
     from concurrent.futures import ThreadPoolExecutor
     jobs = [(i, ts, kind) for i, (ts, kind) in enumerate(timestamps)]
-    with ThreadPoolExecutor(max_workers=min(8, len(jobs) or 1)) as ex:
+    with ThreadPoolExecutor(max_workers=min(_POOL, len(jobs) or 1)) as ex:
         results = list(ex.map(_one, jobs))     # ex.map preserves input (timestamp) order
     frames = [r for r in results if r]
 

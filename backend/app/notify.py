@@ -8,12 +8,21 @@ Call these from a BackgroundTask so the response isn't blocked.
 from __future__ import annotations
 
 import json
+import ssl
 import urllib.error
 import urllib.request
 
 from app import config
 
 _ENDPOINT = "https://api.resend.com/emails"
+
+# Verify TLS against certifi's CA bundle so a slim container (or a macOS Python
+# without system certs) can still reach api.resend.com. Falls back to default.
+try:
+    import certifi
+    _SSL_CTX: ssl.SSLContext | None = ssl.create_default_context(cafile=certifi.where())
+except Exception:  # noqa: BLE001
+    _SSL_CTX = None
 
 
 def _esc(s: str) -> str:
@@ -32,9 +41,11 @@ def send_email(to: str | list[str], subject: str, html: str, reply_to: str | Non
     req = urllib.request.Request(
         _ENDPOINT, data=json.dumps(payload).encode(),
         headers={"Authorization": f"Bearer {config.RESEND_API_KEY}",
-                 "Content-Type": "application/json"})
+                 "Content-Type": "application/json",
+                 # Cloudflare (fronting Resend) 403s the default Python-urllib UA.
+                 "User-Agent": "Reelie/1.0 (+https://reelie.io)"})
     try:
-        with urllib.request.urlopen(req, timeout=10) as r:
+        with urllib.request.urlopen(req, timeout=10, context=_SSL_CTX) as r:
             r.read()
         print(f"[notify] sent {subject!r} → {recipients}", flush=True)
         return True
@@ -67,3 +78,21 @@ def creator_applied(handle: str, display_name: str, email: str,
         f'border-radius:999px;font-weight:600">Review in admin →</a></p></div>')
     send_email(config.ADMIN_EMAIL, f"New creator application: @{handle}", html,
                reply_to=email or None)
+
+
+def creator_confirmation(email: str, display_name: str, handle: str) -> None:
+    """Reassure the creator we received their closed-beta application."""
+    if not email:
+        return
+    name = _esc(display_name.split()[0]) if display_name else "there"
+    html = (
+        f'<div style="font-family:-apple-system,Segoe UI,sans-serif;color:#201B0A;max-width:520px;line-height:1.6">'
+        f'<h2 style="margin:0 0 6px">You’re on the list ✨</h2>'
+        f'<p>Hi {name}, thanks for applying to <b>Reelie</b> — we’ve got your application '
+        f'for <b>@{_esc(handle)}</b> and you’re in the review queue.</p>'
+        f'<p>We’re in closed beta and approve creators in small batches. '
+        f'<b>Keep an eye on your Instagram DMs</b> — that’s how we verify you and send your invite.</p>'
+        f'<p>Once you’re in, you’ll be able to turn any of your videos into a shoppable '
+        f'routine page in a couple of minutes.</p>'
+        f'<p style="color:#7A6F4A;margin-top:22px">— The Reelie team</p></div>')
+    send_email(email, "Your Reelie application is in ✨", html, reply_to=config.ADMIN_EMAIL)

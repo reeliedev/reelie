@@ -90,11 +90,11 @@ def become_creator(body: BecomeCreator, background: BackgroundTasks,
     session.add(user)
     session.commit()
     session.refresh(user)
-    # Notify the team a new creator is awaiting approval (best-effort, off-request).
+    # Best-effort, off-request: alert the team + confirm to the creator.
     if is_new:
-        background.add_task(notify.creator_applied, handle,
-                            body.displayName or user.display_name or "",
-                            user.email or "", ig, yt)
+        name = body.displayName or user.display_name or ""
+        background.add_task(notify.creator_applied, handle, name, user.email or "", ig, yt)
+        background.add_task(notify.creator_confirmation, user.email or "", name, handle)
     return user_dict(user, session)
 
 

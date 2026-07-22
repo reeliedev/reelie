@@ -8,3 +8,4 @@ pyjwt[crypto]>=2.8       # crypto extra = RS256 verification for OIDC providers
 python-dotenv>=1.0
 psycopg[binary]>=3.1     # Postgres driver (used when DATABASE_URL is postgresql+psycopg://…)
 boto3>=1.34          # object storage (Cloudflare R2 / S3) for uploads + clips
+certifi>=2024.0          # CA bundle for outbound HTTPS (Resend email)

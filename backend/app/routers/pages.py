@@ -29,15 +29,8 @@ def _owned(slug: str, user: User, session: Session) -> Page:
 
 def _page_faqs(page: Page, creator: Creator | None, products: list[Product]) -> list[dict]:
     """Auto-generated FAQs (read-only) followed by the creator's custom ones."""
-    out = [{"q": q, "a": a, "custom": False}
-           for q, a in public_site.faqs(page, creator, products)]
-    try:
-        custom = json.loads(page.custom_faqs) if page.custom_faqs else []
-    except Exception:
-        custom = []
-    out += [{"q": (c.get("q") or "").strip(), "a": (c.get("a") or "").strip(), "custom": True}
-            for c in custom if (c.get("q") or "").strip()]
-    return out
+    return [{"q": q, "a": a, "custom": custom}
+            for q, a, custom in public_site.faqs(page, creator, products)]
 
 
 @router.get("")

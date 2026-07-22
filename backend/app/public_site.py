@@ -166,7 +166,14 @@ def faqs(page: Page, creator: Creator, products: list[Product]) -> list[tuple[st
         disp = p.price_display or _money(p.price_amount, p.currency)
         at = f" at {p.retailer}" if p.retailer else ""
         out.append((f"How much is the {_pname(p)}?", f"The {_pname(p)} is {disp}{at}."))
-    return out
+    result = [(q, a, False) for q, a in out]        # generated (read-only)
+    try:
+        custom = json.loads(page.custom_faqs) if page.custom_faqs else []
+    except Exception:
+        custom = []
+    result += [((c.get("q") or "").strip(), (c.get("a") or "").strip(), True)
+               for c in custom if (c.get("q") or "").strip()]
+    return result
 
 
 def _faq_node(page: Page, creator: Creator, products: list[Product]) -> dict | None:
@@ -178,7 +185,7 @@ def _faq_node(page: Page, creator: Creator, products: list[Product]) -> dict | N
         "mainEntity": [
             {"@type": "Question", "name": q,
              "acceptedAnswer": {"@type": "Answer", "text": a}}
-            for q, a in qa
+            for q, a, _ in qa
         ],
     }
 
@@ -361,10 +368,12 @@ def _also_used(others: list[dict]) -> str:
 
 
 def _product_block(page: Page, p: Product, also: list[dict] | None = None) -> str:
-    brand = f'<div class="s-brand">{_esc(p.brand)}</div>' if p.brand else ""
+    # data-edit / data-pos hooks let the studio editor make the real page editable
+    # inline (harmless attributes on the public page).
+    brand = f'<div class="s-brand" data-edit="brand">{_esc(p.brand)}</div>' if p.brand else ""
     variant = f' <span class="s-variant">{_esc(p.variant)}</span>' if p.variant else ""
     narration = p.guide or (f'"{p.note}"' if p.note else None)
-    note = f'<p class="s-note">{_esc(narration)}</p>' if narration else ""
+    note = f'<p class="s-note" data-edit="note">{_esc(narration)}</p>' if narration else ""
     evidence = _EVIDENCE.get(p.evidence, "")
     ev_tag = f'<div class="s-tags"><span class="tag">{evidence}</span></div>' if evidence else ""
     price_html = ""
@@ -372,9 +381,9 @@ def _product_block(page: Page, p: Product, also: list[dict] | None = None) -> st
         disp = p.price_display or _money(p.price_amount, p.currency)
         price_html = f'<div class="s-price">{_esc(disp)}{_approx(p.price_estimated)}</div>'
     retailer = _esc(p.retailer) if p.retailer else "Shop"
-    return f"""          <div class="s-product">
+    return f"""          <div class="s-product" data-pos="{p.position}">
             {brand}
-            <h3 class="s-name">{_esc(p.name)}{variant}</h3>
+            <h3 class="s-name"><span data-edit="name">{_esc(p.name)}</span>{variant}</h3>
             {ev_tag}
             {note}
             <div class="s-buy">
@@ -454,8 +463,11 @@ def _faq_html(page: Page, creator: Creator, products: list[Product]) -> str:
     if not qa:
         return ""
     items = "".join(
-        f'<details class="faq-item"><summary>{_esc(q)}</summary>'
-        f'<div class="faq-a">{_esc(a)}</div></details>' for q, a in qa)
+        (f'<details class="faq-item" data-custom="1"><summary data-cq>{_esc(q)}</summary>'
+         f'<div class="faq-a" data-ca>{_esc(a)}</div></details>') if custom else
+        (f'<details class="faq-item"><summary>{_esc(q)}</summary>'
+         f'<div class="faq-a">{_esc(a)}</div></details>')
+        for q, a, custom in qa)
     return (f'<section class="faq" id="faq"><div class="wrap">'
             f'<div class="eyebrow">Good to know</div>'
             f'<h2>Questions &amp; answers</h2>'

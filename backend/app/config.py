@@ -97,9 +97,10 @@ SUPPORT_EMAIL = os.environ.get("SUPPORT_EMAIL", "hello@reelie.io")
 # Transactional email via Resend (the reelie.io domain is already verified there).
 # Notifications no-op + log when the key is absent, so dev never sends.
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "").strip()
-EMAIL_FROM = os.environ.get("EMAIL_FROM", "Reelie <noreply@reelie.io>").strip()
-# Where team notifications (new creator applications) are sent.
-ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", SUPPORT_EMAIL).strip()
+# Sent from (and, for team alerts, to) marketing@reelie.io by default — both on
+# the verified reelie.io domain. Override with EMAIL_FROM / ADMIN_EMAIL if needed.
+EMAIL_FROM = os.environ.get("EMAIL_FROM", "Reelie <marketing@reelie.io>").strip()
+ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "marketing@reelie.io").strip()
 # AI crawlers we explicitly invite in robots.txt.
 AI_CRAWLERS = ["GPTBot", "OAI-SearchBot", "ChatGPT-User", "ClaudeBot", "Claude-Web",
                "anthropic-ai", "PerplexityBot", "Perplexity-User", "Google-Extended",

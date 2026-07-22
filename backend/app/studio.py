@@ -752,8 +752,14 @@ function initEditFrame(fr){
   doc.querySelectorAll('[data-edit],[data-cq],[data-ca]').forEach(function(el){
     el.setAttribute('contenteditable','true'); el.spellcheck=false;
   });
-  // Editing only — neutralise navigation + the page's own JS buttons.
+  // Editing only — neutralise navigation + the page's own JS buttons, EXCEPT the
+  // Shop buttons: those stay clickable (in a new tab) so creators can test links.
   doc.querySelectorAll('a,button').forEach(function(el){
+    if(el.classList && el.classList.contains('shop')){
+      el.setAttribute('target','_blank'); el.setAttribute('rel','noopener nofollow sponsored');
+      el.removeAttribute('contenteditable');   // never editable — it's a link to test
+      return;
+    }
     el.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); }, true);
   });
   var list=doc.querySelector('.faq-list');

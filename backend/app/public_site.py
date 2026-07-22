@@ -22,6 +22,7 @@ import json
 from pathlib import Path
 
 from app import config
+from app.integrations import is_trusted_retailer
 from app.models import Creator, Page, Product
 
 BASE = config.PUBLIC_BASE_URL
@@ -380,7 +381,10 @@ def _product_block(page: Page, p: Product, also: list[dict] | None = None) -> st
     if p.price_amount is not None:
         disp = p.price_display or _money(p.price_amount, p.currency)
         price_html = f'<div class="s-price">{_esc(disp)}{_approx(p.price_estimated)}</div>'
-    retailer = _esc(p.retailer) if p.retailer else "Shop"
+    # Only claim "Shop at <retailer>" when the link actually goes there; otherwise
+    # the buy link is a Google Shopping search, so keep the label a plain "Shop".
+    buy_label = (f"Shop at {_esc(p.retailer)}"
+                 if is_trusted_retailer(p.retailer) else "Shop")
     return f"""          <div class="s-product" data-pos="{p.position}">
             {brand}
             <h3 class="s-name"><span data-edit="name">{_esc(p.name)}</span>{variant}</h3>
@@ -388,7 +392,7 @@ def _product_block(page: Page, p: Product, also: list[dict] | None = None) -> st
             {note}
             <div class="s-buy">
               {price_html}
-              <a class="shop" href="{_esc(shop_url(page.handle, page.slug, p.position))}" rel="sponsored nofollow" target="_blank">Shop at {retailer} <span aria-hidden="true">→</span></a>
+              <a class="shop" href="{_esc(shop_url(page.handle, page.slug, p.position))}" rel="sponsored nofollow" target="_blank">{buy_label} <span aria-hidden="true">→</span></a>
             </div>
             {_also_used(also or [])}
           </div>"""

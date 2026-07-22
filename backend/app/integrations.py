@@ -11,18 +11,30 @@ from typing import Protocol
 
 from urllib.parse import quote_plus
 
-# Retailer → search-URL template. A real affiliate network returns a tracked deep
-# link; until then we send shoppers to the retailer's search for the product so
-# the redirect actually lands somewhere believable.
+# Retailers whose on-site search reliably lands on the product AND is likely to
+# carry it. We only send shoppers to a specific retailer when we're confident;
+# everything else goes to Google Shopping (below), which finds the product across
+# every store — so the link always works instead of dead-ending at a store that
+# doesn't stock it.
 _RETAILER_SEARCH = {
-    "sephora": "https://www.sephora.com/search?keyword={q}",
-    "ulta": "https://www.ulta.com/search?q={q}",
     "amazon": "https://www.amazon.com/s?k={q}",
-    "walmart": "https://www.walmart.com/search?q={q}",
-    "yesstyle": "https://www.yesstyle.com/en/search?q={q}",
-    "olive young": "https://global.oliveyoung.com/display/search?query={q}",
+    "sephora": "https://www.sephora.com/search?keyword={q}",
     "target": "https://www.target.com/s?searchTerm={q}",
+    "walmart": "https://www.walmart.com/search?q={q}",
 }
+
+
+def is_trusted_retailer(retailer: str) -> bool:
+    """True when we link shoppers to this retailer's own search (so the page can
+    honestly say 'Shop at <retailer>')."""
+    return (retailer or "").strip().lower() in _RETAILER_SEARCH
+
+
+def _shopping_search(brand: str, name: str, retailer: str = "") -> str:
+    """Google Shopping search for the product — finds it across all retailers, so
+    it always resolves to something buyable even when the retailer guess is off."""
+    q = quote_plus(" ".join(t for t in (brand, name) if t).strip() or retailer or "product")
+    return f"https://www.google.com/search?tbm=shop&q={q}"
 
 
 class AffiliateNetwork(Protocol):
@@ -31,11 +43,14 @@ class AffiliateNetwork(Protocol):
 
 
 class MockAffiliateNetwork:
-    """No real network yet — routes to the retailer's product search."""
+    """No real network yet. Prefer a trusted retailer's search when we're confident
+    it carries the item; otherwise Google Shopping so the link always works."""
     def resolve_link(self, brand: str, name: str, retailer: str) -> dict:
-        q = quote_plus(f"{brand} {name}".strip())
-        tmpl = _RETAILER_SEARCH.get((retailer or "").lower())
-        url = tmpl.format(q=q) if tmpl else f"https://www.google.com/search?q={q}"
+        tmpl = _RETAILER_SEARCH.get((retailer or "").strip().lower())
+        if tmpl:
+            url = tmpl.format(q=quote_plus(f"{brand} {name}".strip()))
+        else:
+            url = _shopping_search(brand, name, retailer)
         return {"url": url, "rate": 8, "retailer": retailer, "network": "mock"}
 
 

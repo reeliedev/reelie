@@ -15,15 +15,26 @@ from __future__ import annotations
 
 import base64
 import json
+import re
 import ssl
 import urllib.error
 import urllib.request
+from urllib.parse import urlparse
 
 from app import config
 
-_ENDPOINT = "https://api.dataforseo.com/v3/merchant/google/products/live/advanced"
+# Google organic SERP: for a specific product query the top organic result is
+# almost always the direct product page (brand's own store or a retailer). The
+# shopping/"popular_products" carousel has price/seller but no direct URL, so we
+# resolve from organic.
+_ENDPOINT = "https://api.dataforseo.com/v3/serp/google/organic/live/advanced"
 _LOCATION_CODE = 2840   # United States
 _LANGUAGE_CODE = "en"
+
+# Not a place to buy — never resolve a product link to these.
+_SKIP_DOMAINS = ("youtube.", "reddit.", "tiktok.", "instagram.", "pinterest.",
+                 "facebook.", "twitter.", "x.com", "quora.", "wikipedia.",
+                 "threads.net", "medium.com")
 
 try:
     import certifi
@@ -45,71 +56,100 @@ def _query(brand: str, name: str, variant: str = "") -> str:
     return " ".join(t.strip() for t in (brand, name, variant) if t and t.strip()).strip()
 
 
-def _brand_ok(brand: str, title: str) -> bool:
-    """Guard against wrong matches: the result title must contain the brand (or,
-    when we have no brand, accept — the query was just the product name)."""
-    b = (brand or "").strip().lower()
+def _norm(s: str) -> str:
+    return re.sub(r"[^a-z0-9]", "", (s or "").lower())
+
+
+def _domain(url: str) -> str:
+    try:
+        return urlparse(url).netloc.lower().replace("www.", "")
+    except Exception:
+        return ""
+
+
+_TRACKING = ("srsltid", "gclid", "gclsrc", "dclid", "fbclid", "_branch_match_id")
+
+
+def _clean_url(url: str) -> str:
+    """Drop Google/ads tracking query params for a clean direct link."""
+    try:
+        from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+        s = urlsplit(url)
+        kept = [(k, v) for k, v in parse_qsl(s.query, keep_blank_values=True)
+                if k.lower() not in _TRACKING and not k.lower().startswith("utm_")]
+        return urlunsplit((s.scheme, s.netloc, s.path, urlencode(kept), s.fragment))
+    except Exception:
+        return url
+
+
+def _brand_ok(brand: str, title: str, url: str) -> bool:
+    """Guard against wrong products: the brand must show up in the result title,
+    the domain (brand's own store), or the URL path (retailer/<brand>). No brand
+    → accept (the query was just the product name)."""
+    b = _norm(brand)
     if not b:
         return True
-    t = (title or "").lower()
-    # match on the brand as a whole or its most distinctive word
-    if b in t:
+    if b in _norm(title) or b in _norm(_domain(url)) or b in _norm(url):
         return True
-    longest = max(b.split(), key=len, default="")
-    return len(longest) >= 4 and longest in t
+    # distinctive brand word (≥4 chars) as a looser fallback
+    words = [w for w in re.sub(r"[^a-z0-9 ]", "", (brand or "").lower()).split() if len(w) >= 4]
+    hay = _norm(title) + _norm(_domain(url))
+    return any(w in hay for w in words)
 
 
 def _pick_url(items: list[dict], brand: str) -> tuple[str, str] | None:
-    """First brand-matching product → (direct_url, title). None if none match."""
+    """Highest-ranked organic result that's a real buy page + brand-matches →
+    (url, title). None if nothing qualifies (caller keeps the search link)."""
     for it in items:
-        if it.get("type") not in (None, "product", "shopping"):
+        if it.get("type") != "organic":
             continue
-        title = it.get("title") or ""
-        if not _brand_ok(brand, title):
+        url = str(it.get("url") or "")
+        if not url.startswith("http"):
             continue
-        url = it.get("url") or it.get("link") or it.get("shop_url")
-        if url and str(url).startswith("http"):
-            return str(url), title
+        if any(sd in _domain(url) for sd in _SKIP_DOMAINS):
+            continue
+        if _brand_ok(brand, it.get("title") or "", url):
+            return _clean_url(url), (it.get("title") or "")
     return None
 
 
-def resolve_batch(products: list[dict]) -> dict[str, dict]:
-    """products: [{"id","brand","name","variant"}]. Returns {id: {"url","title"}}
-    for confident matches only. Never raises — a failure returns {} so callers
-    fall back to search links."""
-    if not enabled() or not products:
-        return {}
-    tasks = [{"keyword": _query(p.get("brand", ""), p.get("name", ""), p.get("variant", "")),
-              "location_code": _LOCATION_CODE, "language_code": _LANGUAGE_CODE,
-              "tag": str(p.get("id", i))}
-             for i, p in enumerate(products) if _query(p.get("brand", ""), p.get("name", ""))]
-    if not tasks:
-        return {}
-    body = json.dumps(tasks).encode()
+def _resolve_one(product: dict) -> tuple[str, str] | None:
+    """One live SERP request for one product (the live endpoint takes a single
+    task per request). Returns (url, title) for a confident match, else None."""
+    q = _query(product.get("brand", ""), product.get("name", ""), product.get("variant", ""))
+    if not q:
+        return None
+    body = json.dumps([{"keyword": q, "location_code": _LOCATION_CODE,
+                        "language_code": _LANGUAGE_CODE}]).encode()
     req = urllib.request.Request(_ENDPOINT, data=body, headers={
         "Authorization": _auth_header(), "Content-Type": "application/json",
         "User-Agent": "Reelie/1.0 (+https://reelie.io)"})
     try:
-        with urllib.request.urlopen(req, timeout=60, context=_SSL_CTX) as r:
+        with urllib.request.urlopen(req, timeout=45, context=_SSL_CTX) as r:
             data = json.loads(r.read())
-    except (urllib.error.HTTPError, urllib.error.URLError, Exception) as e:  # noqa: BLE001
-        print(f"[product_search] request failed: {type(e).__name__}: {e}", flush=True)
-        return {}
+    except Exception as e:  # noqa: BLE001
+        print(f"[product_search] request failed for {q!r}: {type(e).__name__}: {e}", flush=True)
+        return None
+    task = (data.get("tasks") or [{}])[0]
+    items: list[dict] = []
+    for res in task.get("result") or []:
+        items.extend(res.get("items") or [])
+    return _pick_url(items, product.get("brand", ""))
 
-    # Map each result task back to its product via the tag we sent (= product id),
-    # then apply the brand guard using that product's brand.
-    inputs = {str(p.get("id", i)): p for i, p in enumerate(products)}
+
+def resolve_batch(products: list[dict]) -> dict[str, dict]:
+    """Resolve each product to a direct buy link (concurrent single-task requests).
+    Returns {id: {"url","title"}} for confident matches only; never raises."""
+    if not enabled() or not products:
+        return {}
+    from concurrent.futures import ThreadPoolExecutor
+    # Require a brand — brand-null products are guesses; keep them as search links.
+    todo = [p for p in products
+            if (p.get("brand") or "").strip() and _query(p.get("brand", ""), p.get("name", ""))]
     out: dict[str, dict] = {}
-    for task in data.get("tasks", []) or []:
-        tag = str((task.get("data") or {}).get("tag") or task.get("tag") or "")
-        src = inputs.get(tag)
-        if not src:
-            continue
-        items: list[dict] = []
-        for res in task.get("result") or []:
-            items.extend(res.get("items") or [])
-        hit = _pick_url(items, src.get("brand", ""))
-        if hit:
-            out[tag] = {"url": hit[0], "title": hit[1]}
-    print(f"[product_search] resolved {len(out)}/{len(tasks)} products to direct links", flush=True)
+    with ThreadPoolExecutor(max_workers=min(8, len(todo) or 1)) as ex:
+        for p, hit in zip(todo, ex.map(_resolve_one, todo)):
+            if hit:
+                out[str(p.get("id"))] = {"url": hit[0], "title": hit[1]}
+    print(f"[product_search] resolved {len(out)}/{len(todo)} products to direct links", flush=True)
     return out

@@ -76,6 +76,12 @@ textarea{resize:vertical;min-height:64px}
 .ai-crawls{display:flex;flex-wrap:wrap;gap:8px}
 .aichip{background:var(--accent-soft);color:var(--accent-deep);border-radius:999px;padding:6px 13px;font-size:13px;font-weight:500}
 .aichip b{font-weight:700}
+.sumcard{background:linear-gradient(135deg,#fff,#FBF7E6)}
+.sumgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media(max-width:520px){.sumgrid{grid-template-columns:repeat(2,1fr)}}
+.sumstat{text-align:center;padding:6px 4px}
+.sumstat .sn{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:26px;color:var(--ink)}
+.sumstat .sl{font-size:12px;color:var(--grey);margin-top:2px}
 .pg{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0;border-top:1px solid var(--line)}
 .pg:first-child{border-top:none}
 .pg .t{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:18px}
@@ -341,6 +347,7 @@ function viewPending(){
 
 async function viewDashboard(){
   app.innerHTML = '<h1>Your pages</h1><p class="sub">Turn a video into a shoppable routine page, then edit or manage it.</p>'+
+   '<div id="summary"></div>'+
    '<div class="card"><h2>New page</h2>'+
    '<div class="tabs">'+
      '<button class="tab on" id="tab-link" onclick="pickTab(\'link\')">Paste a link</button>'+
@@ -361,8 +368,23 @@ async function viewDashboard(){
   GENTAB = 'link';   // match the freshly-rendered default (tab-link is active)
   document.getElementById('gen').onclick = doGenerate;
   document.getElementById('url').addEventListener('keydown', function(e){ if(e.key==='Enter') doGenerate(); });
-  loadPages();
+  loadPages(); loadSummary();
 }
+async function loadSummary(){
+  var box=document.getElementById('summary'); if(!box) return;
+  var st; try { st=await api('GET','/me/stats'); } catch(e){ return; }
+  if(!st.humanViews && !st.aiCrawls && !st.clicks){ box.innerHTML=''; return; }  // nothing yet
+  var sumStat=function(n,label){ return '<div class="sumstat"><div class="sn">'+n+'</div><div class="sl">'+label+'</div></div>'; };
+  var engines=(st.aiByEngine||[]).slice(0,6).map(function(e){
+    return '<span class="aichip">'+esc(e.engine)+' <b>'+fmtN(e.count)+'</b></span>'; }).join('');
+  box.innerHTML='<div class="card sumcard">'+
+    '<div style="font-weight:600;color:var(--ink);margin-bottom:14px">Across all your pages</div>'+
+    '<div class="sumgrid">'+ sumStat(fmtN(st.humanViews),'views')+ sumStat(fmtN(st.aiCrawls),'AI crawls')+
+      sumStat(fmtN(st.clicks),'clicks')+ sumStat('$'+(st.earnings||0).toFixed(0),'earned')+ '</div>'+
+    (engines?'<div class="ai-crawls" style="margin-top:16px">'+engines+'</div>':'')+
+    '</div>';
+}
+window.loadSummary = loadSummary;
 
 var GENTAB = 'link';
 function pickTab(which){

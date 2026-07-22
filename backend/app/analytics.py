@@ -82,6 +82,37 @@ def page_stats_lite(session: Session, handle: str, slug: str) -> dict:
     }
 
 
+def creator_stats(session: Session, handle: str) -> dict:
+    """All-pages totals for the dashboard header (aggregate queries, no row scan)."""
+    def c(model, **where) -> int:
+        q = select(func.count()).select_from(model)
+        for k, v in where.items():
+            q = q.where(getattr(model, k) == v)
+        return session.exec(q).one()
+
+    unique = session.exec(
+        select(func.count(func.distinct(PageView.session)))
+        .where(PageView.handle == handle, PageView.kind == "human")).one()
+    rows = session.exec(
+        select(PageView.agent, func.count()).where(
+            PageView.handle == handle, PageView.kind == "ai").group_by(PageView.agent)).all()
+    by_engine: dict[str, int] = {}
+    for agent, cnt in rows:
+        name = engine_name(agent)
+        by_engine[name] = by_engine.get(name, 0) + int(cnt)
+    sale_rows = session.exec(select(Sale).where(Sale.handle == handle)).all()
+    return {
+        "humanViews": c(PageView, handle=handle, kind="human"),
+        "uniqueViews": int(unique or 0),
+        "aiCrawls": c(PageView, handle=handle, kind="ai"),
+        "aiByEngine": [{"engine": k, "count": v}
+                       for k, v in sorted(by_engine.items(), key=lambda kv: -kv[1])],
+        "clicks": c(Click, handle=handle),
+        "sales": len(sale_rows),
+        "earnings": round(sum(r.value for r in sale_rows), 2),
+    }
+
+
 def page_stats(session: Session, handle: str, slug: str) -> dict:
     """Funnel + GEO/AEO breakdown for one page."""
     views = session.exec(select(PageView).where(

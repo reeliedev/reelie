@@ -6,7 +6,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel
 from sqlmodel import Session, delete, select
 
-from app import config, notify
+from app import analytics, config, notify
 from app.auth import current_user
 from app.db import get_session
 from app.models import (Click, Creator, Favorite, GenerationJob, Page, Payout,
@@ -19,6 +19,15 @@ router = APIRouter(prefix="/me", tags=["me"])
 @router.get("")
 def me(user: User = Depends(current_user), session: Session = Depends(get_session)):
     return user_dict(user, session)
+
+
+@router.get("/stats")
+def my_stats(user: User = Depends(current_user), session: Session = Depends(get_session)):
+    """Creator-wide totals across all their pages (dashboard header)."""
+    if not user.handle:
+        return {"humanViews": 0, "uniqueViews": 0, "aiCrawls": 0, "aiByEngine": [],
+                "clicks": 0, "sales": 0, "earnings": 0}
+    return analytics.creator_stats(session, user.handle)
 
 
 @router.delete("")

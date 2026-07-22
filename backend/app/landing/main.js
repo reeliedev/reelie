@@ -4,6 +4,30 @@
 
   var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+  /* ---------- signed-in nav: show the creator, not "Sign in" ---------- */
+  (function () {
+    var tok = null;
+    try { tok = localStorage.getItem("reelie.token"); } catch (e) { return; }
+    if (!tok) return;
+    fetch("/me", { headers: { Authorization: "Bearer " + tok } })
+      .then(function (r) {
+        if (!r.ok) {                      // stale/expired session — clear + keep "Sign in"
+          try { localStorage.removeItem("reelie.token"); localStorage.removeItem("reelie.user"); } catch (e) {}
+          return null;
+        }
+        return r.json();
+      })
+      .then(function (u) {
+        if (!u) return;
+        var name = u.handle ? "@" + u.handle : (u.email || "My studio");
+        var signin = document.getElementById("nav-signin");
+        if (signin) { signin.textContent = name; signin.href = "/studio"; }
+        var cta = document.getElementById("nav-cta");
+        if (cta) { cta.textContent = "Go to studio →"; cta.href = "/studio"; }
+      })
+      .catch(function () {});
+  })();
+
   /* ---------- phone story: 4 scenes ---------- */
   var scenes = document.querySelectorAll(".scene");
   var dots = document.querySelectorAll(".scene-dots .sd");

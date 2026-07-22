@@ -91,10 +91,15 @@ def become_creator(body: BecomeCreator, background: BackgroundTasks,
     session.commit()
     session.refresh(user)
     # Best-effort, off-request: alert the team + confirm to the creator.
+    print(f"[apply] become-creator handle=@{handle} is_new={is_new} "
+          f"email={'set' if user.email else 'EMPTY'}", flush=True)
     if is_new:
         name = body.displayName or user.display_name or ""
         background.add_task(notify.creator_applied, handle, name, user.email or "", ig, yt)
         background.add_task(notify.creator_confirmation, user.email or "", name, handle)
+    else:
+        print(f"[apply] @{handle} already existed — no emails sent "
+              f"(re-submission, not a new application)", flush=True)
     return user_dict(user, session)
 
 

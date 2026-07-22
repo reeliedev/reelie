@@ -200,7 +200,12 @@ def make_step_clips(video_id: str, products, duration: float,
     except Exception:
         return 0
 
-    mirror = is_mirrored(video_id)
+    # Never un-mirror the displayed clip — it should faithfully match the source
+    # video the creator posted (Instagram front-cam reels are saved mirrored; the
+    # un-mirror is only an internal aid for reading reversed packaging text during
+    # extraction, not for playback). Set REELIE_UNMIRROR_CLIPS=1 to restore.
+    import os as _os
+    mirror = is_mirrored(video_id) if _os.environ.get("REELIE_UNMIRROR_CLIPS") == "1" else False
     windows = plan_windows(products, duration)
     clips_dir = page_dir / "clips"
     clips_dir.mkdir(parents=True, exist_ok=True)

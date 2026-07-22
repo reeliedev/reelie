@@ -232,13 +232,15 @@ async function doLogin(){
 
 async function viewSupabaseLogin(){
   app.innerHTML =
-   '<h1>Creator Studio</h1><p class="sub">Sign in to turn your videos into shoppable, AI-discoverable pages.</p>'+
+   '<h1>Become a Reelie creator</h1><p class="sub">New here or already a creator — start below. '+
+   'First-timers pick a handle and connect their socials next; we approve creators in the closed beta.</p>'+
    '<div class="card" style="max-width:420px">'+
-   '<button class="btn oauth apple" id="apple"> Sign in with Apple</button>'+
+   '<div class="muted" style="margin-bottom:12px;font-weight:600;color:var(--ink)">Sign up or sign in</div>'+
+   '<button class="btn oauth apple" id="apple"> Continue with Apple</button>'+
    '<button class="btn oauth google" id="google"> Continue with Google</button>'+
-   '<div class="hr"><span>or</span></div>'+
+   '<div class="hr"><span>or with email</span></div>'+
    '<label>Email</label><input id="email" type="email" placeholder="you@example.com" autocomplete="email">'+
-   '<div style="height:12px"></div><button class="btn oauth" id="mlink">Send magic link</button>'+
+   '<div style="height:12px"></div><button class="btn oauth" id="mlink">Email me a sign-in link</button>'+
    '<div class="muted" id="msg" style="margin-top:12px"></div></div>';
   // Diagnose: report exactly what the redirect brought back (from the captured URL).
   var hp = new URLSearchParams((INIT_HASH||'').replace(/^#/,'')), qp = new URLSearchParams(INIT_SEARCH||'');

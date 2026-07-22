@@ -13,12 +13,8 @@ from app import config
 
 def home_html() -> str:
     s = (config.LANDING_DIR / "index.html").read_text()
-    # rebrand (the static file predates the Reelie rename)
+    # rebrand (the static file predates the Reelie rename); nav + CTAs already
+    # point at /discover and /studio in the source.
     s = s.replace("Retrieva", config.BRAND).replace("retrieva.com", "reelie.io")
-    # nav → live pages
-    s = s.replace('<a class="nav-try" href="/">Browse creators</a>',
-                  '<a class="nav-try" href="/discover">Discover creators</a>')
-    s = s.replace('<a class="nav-try" href="/try">Try it out!</a>',
-                  '<a class="nav-try" href="/studio">Creator studio</a>')
-    s = s.replace('href="/try"', 'href="/studio"')
+    s = s.replace('href="/try"', 'href="/studio"')   # safety net for any stray link
     return s

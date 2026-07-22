@@ -66,6 +66,16 @@ textarea{resize:vertical;min-height:64px}
 .pill{font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;padding:3px 9px;border-radius:999px;background:var(--soft);color:var(--grey)}
 .pill.live{background:#E8F6EC;color:#2C8C4A}.pill.arch{background:#F2E9E4;color:#9A6A4A}
 .pill.draft{background:#FBF0D6;color:#9A7A18}
+.pstat{font-size:12.5px;color:var(--grey);margin-top:5px}
+.funnel{display:flex;align-items:center;gap:6px}
+.fstep{flex:1;text-align:center;background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:14px 8px}
+.fstep .fn{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:22px;color:var(--ink)}
+.fstep .fl{font-size:12px;color:var(--grey);margin-top:2px}
+.fstep .frate{color:var(--accent-deep);font-weight:600}
+.farrow{color:var(--faint);font-size:16px}
+.ai-crawls{display:flex;flex-wrap:wrap;gap:8px}
+.aichip{background:var(--accent-soft);color:var(--accent-deep);border-radius:999px;padding:6px 13px;font-size:13px;font-weight:500}
+.aichip b{font-weight:700}
 .pg{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0;border-top:1px solid var(--line)}
 .pg:first-child{border-top:none}
 .pg .t{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:18px}
@@ -392,14 +402,46 @@ function pageRow(p){
   actions += '<button class="btn ghost sm" onclick="editFromDash(\''+esc(p.slug)+'\')">Edit</button>';
   if(!archived && published)
     actions += '<button class="btn ghost sm" onclick="unpublish(\''+esc(p.slug)+'\')">Unpublish</button>';
+  actions += '<button class="btn ghost sm" onclick="toggleStats(\''+esc(p.slug)+'\')">📊 Stats</button>';
   actions += '<button class="btn ghost sm" onclick="archive(\''+esc(p.slug)+'\','+(archived?'false':'true')+')">'+(archived?'Unarchive':'Archive')+'</button>';
   actions += '<button class="btn danger sm" onclick="del(\''+esc(p.slug)+'\')">Delete</button>';
+  var s = p.stats || {humanViews:0, aiCrawls:0, clicks:0};
   return '<div class="pg" id="row-'+esc(p.slug)+'"><div>'+
     '<div class="t">'+esc(p.title)+' <span class="pill '+state+'">'+badge+'</span></div>'+
     '<div class="l"><a href="'+link+'" target="_blank">'+linkText+'</a> · '+p.products.length+' products</div>'+
+    '<div class="pstat">👁 '+fmtN(s.humanViews)+' views · 🤖 '+fmtN(s.aiCrawls)+' AI crawls · 🖱 '+fmtN(s.clicks)+' clicks</div>'+
     '</div><div class="row">'+ actions +
     '</div></div>'+
-    '<div class="hide" id="edit-'+esc(p.slug)+'"></div>';
+    '<div class="hide" id="edit-'+esc(p.slug)+'"></div>'+
+    '<div class="hide" id="stats-'+esc(p.slug)+'"></div>';
+}
+function fmtN(n){ n=n||0; return n>=1000 ? (n/1000).toFixed(n>=10000?0:1)+'k' : String(n); }
+function pct(a,b){ return b ? Math.round(a/b*100)+'%' : ''; }
+async function toggleStats(slug){
+  var box=document.getElementById('stats-'+slug);
+  if(!box.classList.contains('hide')){ box.classList.add('hide'); box.innerHTML=''; return; }
+  box.classList.remove('hide');
+  box.innerHTML='<div class="card" style="margin-top:2px"><span class="spin"></span> Loading analytics…</div>';
+  var st; try { st=await api('GET','/me/pages/'+slug+'/stats'); }
+  catch(e){ box.innerHTML='<div class="card"><p class="err">'+esc(e.message)+'</p></div>'; return; }
+  box.innerHTML = statsPanel(st);
+}
+window.toggleStats = toggleStats;
+function statsPanel(st){
+  var fstep=function(label,n,rate){ return '<div class="fstep"><div class="fn">'+fmtN(n)+'</div>'+
+    '<div class="fl">'+label+(rate?' <span class="frate">'+rate+'</span>':'')+'</div></div>'; };
+  var funnel='<div class="funnel">'+fstep('Views',st.humanViews,'')+'<span class="farrow">→</span>'+
+    fstep('Clicks',st.clicks,pct(st.clicks,st.humanViews))+'<span class="farrow">→</span>'+
+    fstep('Sales',st.sales,pct(st.sales,st.clicks))+'</div>';
+  var ai=(st.aiByEngine&&st.aiByEngine.length)
+    ? st.aiByEngine.map(function(e){ return '<span class="aichip">'+esc(e.engine)+' <b>'+fmtN(e.count)+'</b></span>'; }).join('')
+    : '<span class="muted">No answer engines have crawled this page yet — give it time after publishing.</span>';
+  return '<div class="card" style="margin-top:2px">'+
+    '<div class="muted" style="margin-bottom:14px">'+fmtN(st.uniqueViews)+' unique visitors · $'+(st.earnings||0).toFixed(2)+' earned</div>'+
+    funnel+
+    '<div class="eh" style="font-size:15px;margin:20px 0 10px">🤖 Answer-engine crawls'+
+      ' <span class="muted" style="font-weight:400;font-size:13px">— who\'s reading this page for AI answers</span></div>'+
+    '<div class="ai-crawls">'+ai+'</div></div>';
 }
 async function publish(slug){
   var el=document.getElementById('row-'+slug); if(el) el.style.opacity=.5;

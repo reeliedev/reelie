@@ -11,7 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlmodel import Session, delete, select
 
-from app import public_site
+from app import analytics, public_site
 from app.auth import current_user
 from app.db import get_session
 from app.models import Creator, Page, Product, User
@@ -47,8 +47,17 @@ def my_pages(user: User = Depends(current_user), session: Session = Depends(get_
         payload = page_app(p, prods, creator)
         payload["archived"] = p.archived
         payload["published"] = p.published
+        payload["stats"] = analytics.page_stats_lite(session, p.handle, p.slug)
         out.append(payload)
     return out
+
+
+@router.get("/{slug}/stats")
+def page_stats(slug: str, user: User = Depends(current_user),
+               session: Session = Depends(get_session)):
+    """Full analytics for one page — the funnel + which AI engines crawled it."""
+    page = _owned(slug, user, session)
+    return analytics.page_stats(session, page.handle, page.slug)
 
 
 class ProductEdit(BaseModel):

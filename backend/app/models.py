@@ -122,6 +122,20 @@ class Click(SQLModel, table=True):
     ts: datetime = Field(default_factory=_now)
 
 
+class PageView(SQLModel, table=True):
+    """One public page load. `kind`: 'human' | 'ai' | 'bot'. For 'ai', `agent` is
+    the crawler (e.g. 'GPTBot') → the GEO/AEO signal. `session` is a cookieless
+    per-day hash for de-duping unique human views."""
+    id: str = Field(default_factory=_uuid, primary_key=True)
+    handle: str = Field(index=True)
+    page_slug: str = Field(default="", index=True)
+    kind: str = Field(default="human", index=True)
+    agent: str = Field(default="", index=True)             # AI crawler name, else ""
+    session: str = ""                                       # hash(ip+ua+day) for unique
+    referer: str = ""
+    ts: datetime = Field(default_factory=_now, index=True)
+
+
 class GenerationJob(SQLModel, table=True):
     """A self-serve page-generation job: creator picks a video → pipeline runs →
     page published to their account. `status`: queued → running → done | error."""

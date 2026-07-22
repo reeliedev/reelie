@@ -10,11 +10,12 @@ they can never shadow an API path.
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import (APIRouter, BackgroundTasks, Depends, Header, HTTPException,
+                     Request, Response)
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTextResponse
 from sqlmodel import Session, select
 
-from app import config, landing_page, public_site, reco, studio
+from app import analytics, config, landing_page, public_site, reco, studio
 from app.db import get_session
 from app.models import Creator, Page, Product
 from app.routers.likes import like_counts
@@ -160,13 +161,19 @@ def creator_index(handle: str, session: Session = Depends(get_session)):
 
 
 @router.get("/{handle}/{slug}", response_class=HTMLResponse)
-def routine_page(handle: str, slug: str, session: Session = Depends(get_session)):
+def routine_page(handle: str, slug: str, request: Request, background: BackgroundTasks,
+                 user_agent: str = Header(default=""), referer: str = Header(default=""),
+                 session: Session = Depends(get_session)):
     if handle in config.RESERVED_HANDLES:
         raise HTTPException(404)
     page = session.exec(select(Page).where(
         Page.handle == handle, Page.slug == slug, Page.archived == False)).first()  # noqa: E712
     if not page:
         raise HTTPException(404, "No such page")
+    # Log the view off-request (real IP is the first X-Forwarded-For hop on Render).
+    ip = (request.headers.get("x-forwarded-for", "").split(",")[0].strip()
+          or (request.client.host if request.client else ""))
+    background.add_task(analytics.log_view, handle, slug, ip, user_agent, referer)
     creator = session.get(Creator, handle) or Creator(handle=handle, display_name=handle,
                                                        avatar_gradient=config.DEFAULT_AVATAR_GRADIENT)
     products = session.exec(select(Product).where(Product.page_id == page.id)

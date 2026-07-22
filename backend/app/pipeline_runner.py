@@ -69,9 +69,11 @@ def _log_timings(label: str, elapsed: float, stdout: str) -> None:
 def _extract(job_id: str, source_arg: str) -> str:
     """Run extract_one on a URL or a local file path → returns the video_id."""
     t0 = time.time()
+    # 10-min cap: a short reel that isn't done by then is hung, not slow — fail it
+    # so the creator gets an error instead of an endless "processing".
     ex = subprocess.run([config.PYTHON_BIN, str(config.EXTRACT_ONE), source_arg],
                         cwd=str(config.VIDEO_LLM_DIR),
-                        capture_output=True, text=True, timeout=1800)
+                        capture_output=True, text=True, timeout=600)
     if ex.returncode != 0:
         # Keep enough of the tail to include the extractor's root_cause line.
         raise RuntimeError("Couldn't process that video. " + (ex.stderr or ex.stdout)[-1200:])

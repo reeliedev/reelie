@@ -231,10 +231,29 @@ def _sharpest_ts(path: Path, start: float, end: float, n: int = HOLD_SHARPEST_OF
 
 def _hold_timestamps(path: Path, noise: str, min_dur: float) -> list:
     """Sharpest instant of each distinct 'held product' still-window, capped to
-    HOLD_MAX (longest holds first — a longer hold = a more deliberate product show)."""
+    HOLD_MAX (longest holds first — a longer hold = a more deliberate product show).
+    Sharpness probes (one ffmpeg each) run in parallel — independent, GIL-released."""
+    from concurrent.futures import ThreadPoolExecutor
     holds = _merge_segments(_freeze_segments(path, noise, min_dur), HOLD_MERGE_GAP)
     holds.sort(key=lambda se: se[1] - se[0], reverse=True)
-    return sorted(round(_sharpest_ts(path, s, e), 2) for s, e in holds[:HOLD_MAX])
+    holds = holds[:HOLD_MAX]
+    # Build every (hold, candidate-timestamp) probe, measure all in parallel.
+    cand = []
+    for hi, (s, e) in enumerate(holds):
+        if e <= s or HOLD_SHARPEST_OF <= 1:
+            cand.append((hi, (s + e) / 2))
+        else:
+            for i in range(HOLD_SHARPEST_OF):
+                cand.append((hi, s + (e - s) * i / (HOLD_SHARPEST_OF - 1)))
+    if not cand:
+        return []
+    with ThreadPoolExecutor(max_workers=min(8, len(cand))) as ex:
+        sharp = list(ex.map(lambda c: _sharpness_at(path, c[1]), cand))
+    best: dict[int, tuple[float, float]] = {}
+    for (hi, ts), sh in zip(cand, sharp):
+        if hi not in best or sh > best[hi][1]:
+            best[hi] = (ts, sh)
+    return sorted(round(best[hi][0], 2) for hi in best)
 
 
 # Priority governs which frame survives when two land within 1s of each other:
@@ -285,13 +304,22 @@ def load_or_extract_frames(path: Path, video_id: str, cache_dir: Path,
     scale = (f"scale='if(gt(iw,ih),min(iw,{FRAME_LONG_EDGE}),-2)'"
              f":'if(gt(iw,ih),-2,min(ih,{FRAME_LONG_EDGE}))'")
 
-    frames = []
-    for i, (ts, kind) in enumerate(timestamps):
+    # Each frame is an independent ffmpeg seek+decode — extract them in parallel
+    # (subprocess releases the GIL) instead of one process spawn at a time.
+    def _one(job):
+        i, ts, kind = job
         fp = fdir / f"frame_{i:03d}_{ts:.1f}s_{kind}.jpg"
         _run(["ffmpeg", "-y", "-ss", str(ts), "-i", str(path),
               "-frames:v", "1", "-vf", scale, "-q:v", "3", str(fp)])
         if fp.exists() and fp.stat().st_size > 0:
-            frames.append({"timestamp_s": ts, "path": str(fp), "kind": kind})
+            return {"timestamp_s": ts, "path": str(fp), "kind": kind}
+        return None
+
+    from concurrent.futures import ThreadPoolExecutor
+    jobs = [(i, ts, kind) for i, (ts, kind) in enumerate(timestamps)]
+    with ThreadPoolExecutor(max_workers=min(8, len(jobs) or 1)) as ex:
+        results = list(ex.map(_one, jobs))     # ex.map preserves input (timestamp) order
+    frames = [r for r in results if r]
 
     manifest.write_text(json.dumps(frames, indent=2))
     return frames
@@ -605,18 +633,22 @@ def process_video(path: Path, client: anthropic.Anthropic, model: str,
     # them concurrently so wall-clock is the slower of the two, not the sum.
     import time as _time
     from concurrent.futures import ThreadPoolExecutor as _TPE
-    _t0 = _time.time()
     print("  transcribing + keyframes (parallel)...")
+    def _do_tx():
+        _s = _time.time(); r = transcribe(path, video_id, cache_dir, use_api, whisper_size)
+        return r, _time.time() - _s
+    def _do_fr():
+        _s = _time.time(); r = load_or_extract_frames(path, video_id, cache_dir,
+                                                      scene_threshold, floor_interval, hold)
+        return r, _time.time() - _s
     with _TPE(max_workers=2) as _ex:
-        _ftx = _ex.submit(transcribe, path, video_id, cache_dir, use_api, whisper_size)
-        _ffr = _ex.submit(load_or_extract_frames, path, video_id, cache_dir,
-                          scene_threshold, floor_interval, hold)
-        tx = _ftx.result()
-        frames = _ffr.result()
+        _ftx = _ex.submit(_do_tx); _ffr = _ex.submit(_do_fr)
+        tx, _tx_s = _ftx.result()
+        frames, _fr_s = _ffr.result()
     transcript_text = format_transcript(tx["segments"])
     n_hold = sum(1 for f in frames if f.get("kind") == "hold")
-    print(f"  ⏱ transcript+frames: {_time.time()-_t0:.1f}s · {len(frames)} frames"
-          + (f" ({n_hold} held-product)" if hold else ""))
+    print(f"  ⏱ transcript: {_tx_s:.1f}s | frames: {_fr_s:.1f}s (parallel wall {max(_tx_s, _fr_s):.1f}s) · "
+          f"{len(frames)} frames" + (f" ({n_hold} held-product)" if hold else ""))
 
     # Launch the caption/description parse NOW, in parallel with the frame-based
     # extraction below — it only needs the description text, not the video, so it

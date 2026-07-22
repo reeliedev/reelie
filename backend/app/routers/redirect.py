@@ -52,7 +52,11 @@ def redirect(handle: str, slug: str, nn: str, request: Request,
         session=request.query_params.get("s"), user_agent=user_agent, referer=referer))
     session.commit()
 
-    dest = affiliate.resolve_link(product.brand, product.name, product.retailer)["url"]
+    # A creator-set affiliate link wins; otherwise resolve via the network stub.
+    if product.link_kind == "own" and (product.url or "").startswith("http"):
+        dest = product.url
+    else:
+        dest = affiliate.resolve_link(product.brand, product.name, product.retailer)["url"]
     return RedirectResponse(dest, status_code=302)
 
 

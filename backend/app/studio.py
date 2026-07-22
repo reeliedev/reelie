@@ -115,6 +115,28 @@ input[type=file]{padding:9px 12px}
 .az-var{color:var(--grey);font-weight:500;font-size:12.5px}
 .az-ts{font-size:11.5px;color:var(--accent-deep);font-weight:600;margin-top:2px;text-transform:capitalize}
 .az-foot{text-align:center;margin-top:28px}
+/* product review + full editor */
+.rv{max-width:640px;margin:0 auto}
+.rv-head{text-align:center;margin-bottom:22px}
+.rv-head h1{font-size:26px}
+.rv-prod{border:1.5px solid var(--line);border-radius:14px;background:#fff;margin-bottom:10px;overflow:hidden}
+.rv-prod[open]{border-color:#d9d2f7;box-shadow:0 5px 16px rgba(111,93,240,.10)}
+.rv-prod summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:11px;padding:14px 15px;font-weight:600}
+.rv-prod summary::-webkit-details-marker{display:none}
+.rv-em{font-size:18px}
+.rv-t{flex:1;font-size:14.5px;color:var(--ink)}
+.rv-chev{color:var(--grey);font-size:13px;transition:transform .2s}
+.rv-prod[open] .rv-chev{transform:rotate(180deg)}
+.rv-fields{padding:2px 15px 16px}
+.rv-fields label{display:block;font-size:12px;font-weight:600;color:var(--grey);margin:10px 0 4px}
+.rv-actions{display:flex;gap:10px;margin-top:22px}
+.rv-actions .btn{flex:1}
+.eh{font-family:'Space Grotesk',sans-serif;font-size:18px;margin:26px 0 12px}
+.faq-gen{border-left:3px solid var(--accent-soft);padding:4px 0 4px 14px;margin-bottom:14px}
+.faq-gen .faq-q{font-weight:600;font-size:14px;color:var(--ink)}
+.faq-gen .faq-a{font-size:13.5px;color:var(--grey);margin-top:3px}
+.faq-edit{border:1.5px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px}
+.faq-edit input,.faq-edit textarea{margin-bottom:8px}
 </style></head>
 <body>
 <div class="bar"><div class="in"><a class="brand" href="{{BASE}}">{{BRAND}}<span class="d">.</span></a>
@@ -460,7 +482,9 @@ async function pollAnalyze(job){
     }
     if(s.phase==='building') setAzLabel('Pricing & building your page');
     lastPhase = s.phase || lastPhase;
-    if(s.status==='done'){ stop(); while(revealNext(preview)){} azDone(s.pageSlug, false); return; }
+    if(s.status==='done'){ stop(); while(revealNext(preview)){}
+      if(s.pageSlug){ setTimeout(function(){ showProductReview(s.pageSlug); }, 650); }
+      else { azDone(null, false); } return; }
     if(s.status==='error'){ stop(); azError(s.error||'Something went wrong'); return; }
   }
 }
@@ -486,6 +510,202 @@ function azError(msg){
   if(foot) foot.innerHTML='<div class="err" style="margin-bottom:14px">'+esc(msg)+'</div><button class="btn ghost" onclick="viewDashboard()">← Back &amp; try again</button>';
 }
 window.viewDashboard = viewDashboard;
+
+// --- post-analysis: review + edit products, then publish -------------------
+var REVIEW = { slug:null, page:null };
+
+async function showProductReview(slug){
+  REVIEW.slug = slug;
+  var page; try { page = await api('GET','/me/pages/'+slug); } catch(e){ azError(e.message); return; }
+  REVIEW.page = page;
+  app.innerHTML =
+    '<div class="rv">'+
+    '<div class="rv-head"><h1>Found '+page.products.length+' product'+(page.products.length!==1?'s':'')+' ✨</h1>'+
+      '<p class="sub">Check each one’s brand, name and link. Add anything we missed — then publish.</p></div>'+
+    '<div id="rv-list"></div>'+
+    '<button class="btn ghost sm" id="rv-add" style="margin-top:4px">+ Add a product</button>'+
+    '<div class="rv-actions">'+
+      '<button class="btn" id="rv-pub">Auto Publish</button>'+
+      '<button class="btn ink" id="rv-edit">Edit &amp; Review your page</button>'+
+    '</div>'+
+    '<div class="muted" id="rv-status" style="margin-top:12px;text-align:center"></div>'+
+    '</div>';
+  renderReviewProducts();
+  document.getElementById('rv-add').onclick = addReviewProduct;
+  document.getElementById('rv-pub').onclick = autoPublish;
+  document.getElementById('rv-edit').onclick = editAndReview;
+}
+window.showProductReview = showProductReview;
+
+function renderReviewProducts(){
+  document.getElementById('rv-list').innerHTML = REVIEW.page.products.map(productCard).join('');
+}
+function productCard(p){
+  var title = ((p.brand||'')+' '+(p.name||'')).trim() || 'New product';
+  var link = (p.linkKind==='own') ? (p.url||'') : '';
+  return '<details class="rv-prod" data-id="'+esc(p.id||'')+'">'+
+    '<summary><span class="rv-em">'+esc(p.emoji||'🛍️')+'</span>'+
+      '<span class="rv-t">'+esc(title)+'</span><span class="rv-chev">▾</span></summary>'+
+    '<div class="rv-fields">'+
+      '<label>Brand</label><input class="rv-brand" value="'+esc(p.brand||'')+'" oninput="rvSyncTitle(this)">'+
+      '<label>Product name</label><input class="rv-name" value="'+esc(p.name||'')+'" oninput="rvSyncTitle(this)">'+
+      '<label>Affiliate link <span class="muted">(your own — optional)</span></label>'+
+      '<input class="rv-url" type="url" placeholder="https://…" value="'+esc(link)+'">'+
+      '<div style="margin-top:10px"><button class="btn danger sm" onclick="removeReviewProduct(this)">Remove</button></div>'+
+    '</div></details>';
+}
+function rvSyncTitle(inp){
+  var card=inp.closest('.rv-prod');
+  var t=(card.querySelector('.rv-brand').value+' '+card.querySelector('.rv-name').value).trim();
+  card.querySelector('.rv-t').textContent = t || 'New product';
+}
+window.rvSyncTitle = rvSyncTitle;
+function addReviewProduct(){
+  var box=document.getElementById('rv-list');
+  var d=document.createElement('div'); d.innerHTML=productCard({emoji:'🆕'});
+  var card=d.firstChild; box.appendChild(card); card.open=true;
+  card.querySelector('.rv-brand').focus();
+}
+function removeReviewProduct(btn){
+  var card=btn.closest('.rv-prod');
+  if(card.getAttribute('data-id')){ card.setAttribute('data-remove','1'); card.style.display='none'; }
+  else { card.remove(); }
+}
+window.removeReviewProduct = removeReviewProduct;
+function collectProducts(){
+  var out=[];
+  document.querySelectorAll('.rv-prod').forEach(function(c){
+    var id=c.getAttribute('data-id');
+    if(c.getAttribute('data-remove')==='1'){ if(id) out.push({id:id, remove:true}); return; }
+    var brand=c.querySelector('.rv-brand').value.trim();
+    var name=c.querySelector('.rv-name').value.trim();
+    var url=c.querySelector('.rv-url').value.trim();
+    if(!id && !brand && !name) return;
+    var e={ brand:brand, name:name, url:url };
+    if(id) e.id=id;
+    out.push(e);
+  });
+  return out;
+}
+async function autoPublish(){
+  var st=document.getElementById('rv-status'); st.innerHTML='<span class="spin"></span> Publishing…';
+  try {
+    await api('PATCH','/me/pages/'+REVIEW.slug, { products: collectProducts() });
+    await api('POST','/me/pages/'+REVIEW.slug+'/publish');
+    showPublished(REVIEW.slug);
+  } catch(e){ st.innerHTML='<span class="err">'+esc(e.message)+'</span>'; }
+}
+async function editAndReview(){
+  var st=document.getElementById('rv-status'); st.innerHTML='<span class="spin"></span> Saving…';
+  try { await api('PATCH','/me/pages/'+REVIEW.slug, { products: collectProducts() }); }
+  catch(e){ st.innerHTML='<span class="err">'+esc(e.message)+'</span>'; return; }
+  showPageEditor(REVIEW.slug);
+}
+
+function showPublished(slug){
+  app.innerHTML='<div class="rv" style="text-align:center">'+
+    '<div style="font-size:52px">🎉</div><h1>You’re live</h1>'+
+    '<p class="sub">Your routine page is published.</p>'+
+    '<div class="rv-actions" style="justify-content:center">'+
+    '<a class="btn" href="{{BASE}}/'+esc(me.handle)+'/'+esc(slug)+'" target="_blank">View live page →</a>'+
+    '<button class="btn ink" onclick="viewDashboard()">Your pages</button></div></div>';
+}
+window.showPublished = showPublished;
+
+// --- full page editor ("Edit & Review your page") --------------------------
+async function showPageEditor(slug){
+  var p; try { p = await api('GET','/me/pages/'+slug); } catch(e){ alert(e.message); return; }
+  EDIT_PAGE = p;
+  app.innerHTML =
+    '<div class="rv"><div class="rv-head"><h1>Edit &amp; review</h1>'+
+      '<p class="sub">Every text box is editable. Review it, then publish.</p></div>'+
+    '<div class="card"><label>Page title</label><input id="e-title" value="'+esc(p.title||'')+'">'+
+      '<label>Intro</label><textarea id="e-intro">'+esc(p.intro||'')+'</textarea>'+
+      '<label>Disclosure</label><textarea id="e-disc">'+esc(p.disclosure||'')+'</textarea></div>'+
+    '<h2 class="eh">Products</h2><div id="rv-list"></div>'+
+    '<button class="btn ghost sm" id="rv-add" style="margin-top:4px">+ Add a product</button>'+
+    '<h2 class="eh">Questions &amp; answers</h2>'+
+    '<p class="muted" style="margin:-6px 0 12px">Auto-written from your page — add your own below.</p>'+
+    '<div id="e-faqs"></div>'+
+    '<button class="btn ghost sm" id="e-addfaq" style="margin-top:4px">+ Add a question</button>'+
+    '<div class="rv-actions">'+
+      '<button class="btn ink" onclick="viewDashboard()">Save as draft</button>'+
+      '<button class="btn" id="e-pub">Save &amp; Publish</button></div>'+
+    '<div class="muted" id="e-status" style="margin-top:12px;text-align:center"></div></div>';
+  renderEditProducts(); renderEditFaqs();
+  document.getElementById('rv-add').onclick = addReviewProduct;
+  document.getElementById('e-addfaq').onclick = addCustomFaq;
+  document.getElementById('e-pub').onclick = savePublish;
+}
+window.showPageEditor = showPageEditor;
+var EDIT_PAGE = null;
+function renderEditProducts(){
+  document.getElementById('rv-list').innerHTML = EDIT_PAGE.products.map(productEditCard).join('');
+}
+function productEditCard(p){
+  var title=((p.brand||'')+' '+(p.name||'')).trim()||'New product';
+  var link=(p.linkKind==='own')?(p.url||''):'';
+  return '<details class="rv-prod" data-id="'+esc(p.id||'')+'">'+
+    '<summary><span class="rv-em">'+esc(p.emoji||'🛍️')+'</span><span class="rv-t">'+esc(title)+'</span><span class="rv-chev">▾</span></summary>'+
+    '<div class="rv-fields">'+
+      '<label>Brand</label><input class="rv-brand" value="'+esc(p.brand||'')+'" oninput="rvSyncTitle(this)">'+
+      '<label>Product name</label><input class="rv-name" value="'+esc(p.name||'')+'" oninput="rvSyncTitle(this)">'+
+      '<label>Note</label><input class="rv-note" value="'+esc(p.note||'')+'">'+
+      '<label>Affiliate link <span class="muted">(your own — optional)</span></label>'+
+      '<input class="rv-url" type="url" placeholder="https://…" value="'+esc(link)+'">'+
+      '<div style="margin-top:10px"><button class="btn danger sm" onclick="removeReviewProduct(this)">Remove</button></div>'+
+    '</div></details>';
+}
+function collectEditProducts(){
+  var out=[];
+  document.querySelectorAll('.rv-prod').forEach(function(c){
+    var id=c.getAttribute('data-id');
+    if(c.getAttribute('data-remove')==='1'){ if(id) out.push({id:id, remove:true}); return; }
+    var brand=c.querySelector('.rv-brand').value.trim();
+    var name=c.querySelector('.rv-name').value.trim();
+    var note=c.querySelector('.rv-note'); var url=c.querySelector('.rv-url').value.trim();
+    if(!id && !brand && !name) return;
+    var e={ brand:brand, name:name, url:url }; if(note) e.note=note.value;
+    if(id) e.id=id;
+    out.push(e);
+  });
+  return out;
+}
+function renderEditFaqs(){
+  var box=document.getElementById('e-faqs');
+  box.innerHTML = (EDIT_PAGE.faqs||[]).map(function(f){
+    if(!f.custom) return '<div class="faq-gen"><div class="faq-q">'+esc(f.q)+'</div><div class="faq-a">'+esc(f.a)+'</div></div>';
+    return faqEditRow(f.q, f.a);
+  }).join('');
+}
+function faqEditRow(q,a){
+  return '<div class="faq-edit"><input class="faq-eq" placeholder="Question" value="'+esc(q||'')+'">'+
+    '<textarea class="faq-ea" placeholder="Answer">'+esc(a||'')+'</textarea>'+
+    '<button class="btn danger sm" onclick="this.closest(\'.faq-edit\').remove()">Remove</button></div>';
+}
+function addCustomFaq(){
+  var d=document.createElement('div'); d.innerHTML=faqEditRow('','');
+  document.getElementById('e-faqs').appendChild(d.firstChild);
+}
+function collectCustomFaqs(){
+  var out=[];
+  document.querySelectorAll('.faq-edit').forEach(function(r){
+    var q=r.querySelector('.faq-eq').value.trim(), a=r.querySelector('.faq-ea').value.trim();
+    if(q) out.push({q:q, a:a});
+  });
+  return out;
+}
+async function savePublish(){
+  var st=document.getElementById('e-status'); st.innerHTML='<span class="spin"></span> Publishing…';
+  var body={ title:val('e-title'), intro:val('e-intro'), disclosure:val('e-disc'),
+    products: collectEditProducts(), customFaqs: collectCustomFaqs() };
+  try {
+    await api('PATCH','/me/pages/'+EDIT_PAGE.slug, body);
+    await api('POST','/me/pages/'+EDIT_PAGE.slug+'/publish');
+    showPublished(EDIT_PAGE.slug);
+  } catch(e){ st.innerHTML='<span class="err">'+esc(e.message)+'</span>'; }
+}
+window.addCustomFaq = addCustomFaq; window.savePublish = savePublish;
 
 function showFatal(msg){
   app.innerHTML = '<h1>Almost there</h1><div class="card" style="max-width:500px">'+

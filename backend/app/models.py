@@ -63,6 +63,9 @@ class Page(SQLModel, table=True):
     # public surfaces (feed / site / directory / reco). Defaults True so existing
     # pages and non-draft creations stay visible.
     published: bool = Field(default=True, index=True)
+    # Creator-added FAQ entries (JSON list of {"q","a"}), appended to the auto-
+    # generated FAQs. The generated ones stay read-only; these are additive.
+    custom_faqs: str = ""
     created_at: datetime = Field(default_factory=_now)
 
     @property

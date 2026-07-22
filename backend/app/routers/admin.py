@@ -8,11 +8,13 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, Header, HTTPException
 from fastapi.responses import HTMLResponse
-from sqlmodel import Session, select
+from pydantic import BaseModel
+from sqlmodel import Session, delete, select
 
 from app import admin_page, config
 from app.db import get_session
-from app.models import Creator, GenerationJob, User, _now
+from app.models import (Click, Creator, Favorite, GenerationJob, Page, PageLike,
+                        Payout, Product, Sale, SocialConnection, User, _now)
 
 router = APIRouter(tags=["admin"])
 
@@ -20,6 +22,28 @@ router = APIRouter(tags=["admin"])
 def require_admin(x_admin_token: str = Header(default="")) -> None:
     if not config.ADMIN_TOKEN or x_admin_token != config.ADMIN_TOKEN:
         raise HTTPException(status_code=401, detail="Unauthorized")
+
+
+class Wipe(BaseModel):
+    confirm: str = ""
+
+
+@router.post("/admin/wipe", dependencies=[Depends(require_admin)])
+def wipe_accounts(body: Wipe, session: Session = Depends(get_session)):
+    """Delete ALL accounts + their content — a clean slate for beta re-testing.
+    NB: this only clears Reelie's own DB. Supabase Auth users live in Supabase;
+    delete those in the Supabase dashboard (Authentication → Users) so the same
+    email can sign up fresh. Guarded by the exact confirm string."""
+    if body.confirm != "DELETE ALL":
+        raise HTTPException(400, 'To wipe, send {"confirm": "DELETE ALL"}.')
+    counts = {}
+    # children first to respect foreign keys
+    for Model in (Click, Sale, Payout, Favorite, PageLike, SocialConnection,
+                  Product, Page, GenerationJob, Creator, User):
+        counts[Model.__name__] = len(session.exec(select(Model)).all())
+        session.exec(delete(Model))
+    session.commit()
+    return {"ok": True, "deleted": counts}
 
 
 @router.get("/admin", response_class=HTMLResponse)

@@ -145,13 +145,14 @@ input[type=file]{padding:9px 12px}
 .rv-vid{width:100%;aspect-ratio:9/16;max-height:64vh;object-fit:cover;background:#0c0a05;border-radius:16px;display:block;box-shadow:0 10px 26px rgba(32,27,10,.14)}
 .rv-vidph{display:flex;align-items:center;justify-content:center;font-size:56px;background:linear-gradient(135deg,#2a2740,#171528)}
 .rv-editcol .rv-actions{margin-top:20px}
-/* iframe WYSIWYG editor */
-.ed-bar{position:sticky;top:56px;z-index:5;display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.92);
-  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:14px;
-  padding:10px 14px;margin-bottom:14px;box-shadow:0 6px 16px rgba(32,27,10,.08)}
-.ed-hint{flex:1;font-size:13px;color:var(--grey)}
+/* iframe WYSIWYG editor — full-screen, the real page edge to edge */
+.ed-frame{position:fixed;inset:0;width:100vw;height:100vh;border:0;background:#fff;z-index:200;display:block}
+.ed-fab{position:fixed;left:50%;transform:translateX(-50%);bottom:22px;z-index:201;display:flex;align-items:center;gap:12px;
+  background:rgba(255,255,255,.97);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  border:1px solid var(--line);border-radius:999px;padding:8px 10px 8px 14px;box-shadow:0 12px 34px rgba(32,27,10,.20)}
+.ed-fabhint{font-size:12.5px;color:var(--grey);white-space:nowrap}
 .ed-chip{background:var(--accent-soft);color:var(--accent-deep);padding:1px 7px;border-radius:6px;font-weight:600}
-.ed-frame{width:100%;height:calc(100vh - 150px);border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:0 6px 16px rgba(32,27,10,.06)}
+@media(max-width:560px){.ed-fabhint{display:none}}
 </style></head>
 <body>
 <div class="bar"><div class="in"><a class="brand" href="{{BASE}}">{{BRAND}}<span class="d">.</span></a>
@@ -643,13 +644,13 @@ async function showPageEditor(slug){
   var p; try { p = await api('GET','/me/pages/'+slug); } catch(e){ alert(e.message); return; }
   EDIT_PAGE = p;
   app.innerHTML =
-    '<div class="ed-bar">'+
+    '<iframe id="ed-frame" class="ed-frame" src="{{BASE}}/'+esc(p.handle)+'/'+esc(p.slug)+'?e=1"></iframe>'+
+    '<div class="ed-fab">'+
       '<button class="btn ghost sm" onclick="backToReview()">← Back</button>'+
-      '<div class="ed-hint">Tap any <span class="ed-chip">highlighted</span> text to edit it. Add your own Q&amp;A at the bottom.</div>'+
+      '<span class="ed-fabhint">Tap any <span class="ed-chip">highlighted</span> text to edit</span>'+
       '<span class="muted" id="ed-status"></span>'+
       '<button class="btn sm" id="ed-pub">Save &amp; Publish</button>'+
-    '</div>'+
-    '<iframe id="ed-frame" class="ed-frame" src="{{BASE}}/'+esc(p.handle)+'/'+esc(p.slug)+'?e=1"></iframe>';
+    '</div>';
   var fr=document.getElementById('ed-frame');
   fr.onload=function(){ try{ initEditFrame(fr); }catch(e){ console.log(e); } };
   document.getElementById('ed-pub').onclick=savePublish;

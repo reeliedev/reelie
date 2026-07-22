@@ -155,7 +155,10 @@ def transcribe(path: Path, video_id: str, cache_dir: Path,
         audio.unlink(missing_ok=True)
     else:
         model = _get_whisper(whisper_size)
-        segments, _ = model.transcribe(str(path), word_timestamps=True)
+        # We only use segment-level start/end below, so skip per-word alignment
+        # (word_timestamps was ~20-30% wasted work). vad_filter skips silence —
+        # faster and reduces hallucinated text over quiet stretches.
+        segments, _ = model.transcribe(str(path), vad_filter=True)
         segs = [{"start": s.start, "end": s.end, "text": s.text.strip()}
                 for s in segments]
 

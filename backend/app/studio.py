@@ -82,6 +82,28 @@ textarea{resize:vertical;min-height:64px}
 .sumstat{text-align:center;padding:6px 4px}
 .sumstat .sn{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:26px;color:var(--ink)}
 .sumstat .sl{font-size:12px;color:var(--grey);margin-top:2px}
+/* studio tabs */
+.stabs{display:flex;gap:8px;margin-bottom:20px}
+.stab{background:#fff;border:1.5px solid var(--line);color:var(--grey);font-weight:600;font-size:14.5px;font-family:inherit;padding:9px 18px;border-radius:999px;cursor:pointer}
+.stab.on{border-color:var(--ink);color:var(--ink);background:var(--soft)}
+/* videos grid */
+.vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+.vcell{cursor:pointer;border-radius:14px;overflow:hidden;background:#fff;border:1px solid var(--line);transition:transform .12s,box-shadow .12s}
+.vcell:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(32,27,10,.12)}
+.vthumb{position:relative;aspect-ratio:9/16;background:#0c0a05}
+.vcover{width:100%;height:100%;object-fit:cover;display:block}
+.vcover.vph{display:flex;align-items:center;justify-content:center;font-size:44px;background:linear-gradient(135deg,#2a2740,#171528)}
+.vpill{position:absolute;top:8px;left:8px;font-size:10px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:rgba(255,255,255,.92)}
+.vpill.live{color:#2C8C4A}.vpill.draft{color:#9A7A18}.vpill.arch{color:#9A6A4A}
+.vmeta{padding:10px 12px}
+.vtitle{font-weight:600;font-size:13.5px;color:var(--ink);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.vstat{font-size:11.5px;color:var(--grey);margin-top:5px}
+/* page detail */
+.pd{display:grid;grid-template-columns:minmax(200px,300px) 1fr;gap:26px;margin-top:14px;align-items:start}
+@media(max-width:640px){.pd{grid-template-columns:1fr}}
+.pd-media{border-radius:16px;overflow:hidden;aspect-ratio:9/16;background:#0c0a05;box-shadow:0 10px 26px rgba(32,27,10,.14)}
+.pd-media .vcover{width:100%;height:100%;object-fit:cover}
+.pd-actions{display:flex;flex-wrap:wrap;gap:9px}
 .pg{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0;border-top:1px solid var(--line)}
 .pg:first-child{border-top:none}
 .pg .t{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:18px}
@@ -345,30 +367,103 @@ function viewPending(){
    '<div style="height:16px"></div><button class="btn ghost sm" onclick="render()">Refresh status</button></div></div>';
 }
 
-async function viewDashboard(){
-  app.innerHTML = '<h1>Your pages</h1><p class="sub">Turn a video into a shoppable routine page, then edit or manage it.</p>'+
-   '<div id="summary"></div>'+
+// ==== creator studio: two pages (Videos grid · Earnings & stats) ==========
+function studioTabs(active){
+  return '<div class="stabs">'+
+    '<button class="stab'+(active==='videos'?' on':'')+'" onclick="viewVideos()">Your videos</button>'+
+    '<button class="stab'+(active==='earn'?' on':'')+'" onclick="viewEarnings()">Earnings &amp; stats</button>'+
+    '</div>';
+}
+
+// ---- (1) VIDEOS: create + Instagram-style grid ----
+async function viewVideos(){
+  app.innerHTML = studioTabs('videos')+
    '<div class="card"><h2>New page</h2>'+
    '<div class="tabs">'+
      '<button class="tab on" id="tab-link" onclick="pickTab(\'link\')">Paste a link</button>'+
      '<button class="tab" id="tab-upload" onclick="pickTab(\'upload\')">Upload video <span class="hint">best quality</span></button>'+
    '</div>'+
-   '<div id="pane-link">'+
-     '<input id="url" placeholder="YouTube, TikTok, Instagram, or a video URL">'+
-   '</div>'+
-   '<div id="pane-upload" class="hide">'+
-     '<input id="file" type="file" accept="video/mp4,video/quicktime,video/*">'+
-     '<div class="muted" style="margin-top:6px">MP4 or MOV, up to ~500&nbsp;MB. Uploaded straight from your browser.</div>'+
-   '</div>'+
+   '<div id="pane-link"><input id="url" placeholder="YouTube, TikTok, Instagram, or a video URL"></div>'+
+   '<div id="pane-upload" class="hide"><input id="file" type="file" accept="video/mp4,video/quicktime,video/*">'+
+     '<div class="muted" style="margin-top:6px">MP4 or MOV, up to ~500&nbsp;MB. Uploaded straight from your browser.</div></div>'+
    '<div style="height:10px"></div>'+
    '<input id="ptitle" placeholder="Page name (optional — defaults to the video title)">'+
    '<div style="height:12px"></div><button class="btn" id="gen">Make page</button>'+
    '<div class="muted" id="genstatus" style="margin-top:10px"></div></div>'+
-   '<div class="card" id="pages"><p class="muted">Loading your pages…</p></div>';
-  GENTAB = 'link';   // match the freshly-rendered default (tab-link is active)
+   '<div id="grid" class="vgrid"><p class="muted" style="padding:16px 0">Loading…</p></div>';
+  GENTAB = 'link';
   document.getElementById('gen').onclick = doGenerate;
   document.getElementById('url').addEventListener('keydown', function(e){ if(e.key==='Enter') doGenerate(); });
-  loadPages(); loadSummary();
+  loadGrid();
+}
+window.viewVideos = viewVideos;
+async function loadGrid(){
+  var box=document.getElementById('grid'); if(!box) return;
+  try {
+    var pages=await api('GET','/me/pages');
+    if(!pages.length){ box.innerHTML='<p class="muted" style="padding:16px 0">No videos yet — make your first one above ✨</p>'; return; }
+    box.innerHTML = pages.map(videoCell).join('');
+  } catch(e){ box.innerHTML='<p class="err">'+esc(e.message)+'</p>'; }
+}
+function coverHTML(p){
+  if(p.coverVideo) return '<video class="vcover" src="'+esc(p.coverVideo)+'" muted playsinline loop preload="metadata" onmouseenter="this.play&&this.play().catch(function(){})" onmouseleave="this.pause&&this.pause()"></video>';
+  if(p.cover) return '<img class="vcover" src="'+esc(p.cover)+'" alt="" loading="lazy">';
+  return '<div class="vcover vph">'+esc(p.emoji||'🎬')+'</div>';
+}
+function videoCell(p){
+  var published=(p.published!==false), archived=p.archived;
+  var badge=archived?'Archived':(published?'Live':'Draft'), stt=archived?'arch':(published?'live':'draft');
+  var s=p.stats||{humanViews:0,aiCrawls:0};
+  return '<div class="vcell" onclick="viewPageDetail(\''+esc(p.slug)+'\')">'+
+    '<div class="vthumb">'+coverHTML(p)+'<span class="vpill '+stt+'">'+badge+'</span></div>'+
+    '<div class="vmeta"><div class="vtitle">'+esc(p.title)+'</div>'+
+      '<div class="vstat">👁 '+fmtN(s.humanViews)+' · 🤖 '+fmtN(s.aiCrawls)+'</div></div>'+
+    '</div>';
+}
+async function viewPageDetail(slug){
+  var pages; try { pages=await api('GET','/me/pages'); } catch(e){ return; }
+  var p=pages.find(function(x){return x.slug===slug;}); if(!p){ viewVideos(); return; }
+  var published=(p.published!==false), archived=p.archived;
+  var stt=archived?'arch':(published?'live':'draft'), badge=archived?'Archived':(published?'Live':'Draft · review');
+  var link='{{BASE}}/'+esc(p.handle)+'/'+esc(p.slug), s=p.stats||{humanViews:0,aiCrawls:0,clicks:0};
+  var A='';
+  if(!archived&&!published) A+='<button class="btn" onclick="publish(\''+esc(slug)+'\')">Approve &amp; Publish</button>';
+  A+='<button class="btn ink" onclick="editFromDash(\''+esc(slug)+'\')">Edit &amp; Review</button>';
+  A+='<a class="btn ghost" href="'+link+'" target="_blank">'+(published?'View live ↗':'Preview ↗')+'</a>';
+  if(!archived&&published) A+='<button class="btn ghost" onclick="unpublish(\''+esc(slug)+'\')">Unpublish</button>';
+  A+='<button class="btn ghost" onclick="archive(\''+esc(slug)+'\','+(archived?'false':'true')+')">'+(archived?'Unarchive':'Archive')+'</button>';
+  A+='<button class="btn danger" onclick="del(\''+esc(slug)+'\')">Delete</button>';
+  app.innerHTML = studioTabs('videos')+
+    '<button class="btn ghost sm" onclick="viewVideos()">← Your videos</button>'+
+    '<div class="pd"><div class="pd-media">'+coverHTML(p)+'</div>'+
+    '<div class="pd-info"><h1 style="font-size:26px">'+esc(p.title)+'</h1>'+
+      '<div style="margin:6px 0 14px"><span class="pill '+stt+'">'+badge+'</span> · '+p.products.length+' products</div>'+
+      '<div class="pstat" style="margin-bottom:20px">👁 '+fmtN(s.humanViews)+' views · 🤖 '+fmtN(s.aiCrawls)+' AI crawls · 🖱 '+fmtN(s.clicks)+' clicks</div>'+
+      '<div class="pd-actions">'+A+'</div>'+
+      '<button class="btn ghost sm" style="margin-top:16px" onclick="toggleStats(\''+esc(slug)+'\')">📊 Full stats</button>'+
+      '<div class="hide" id="stats-'+esc(slug)+'" style="margin-top:12px"></div>'+
+    '</div></div>';
+}
+window.viewPageDetail = viewPageDetail;
+
+// ---- (2) EARNINGS & STATS ----
+async function viewEarnings(){
+  app.innerHTML = studioTabs('earn')+'<div id="summary"></div>'+
+    '<h2 class="eh">By page</h2><div id="pgstats" class="card"><p class="muted">Loading…</p></div>';
+  loadSummary(); loadPageStats();
+}
+window.viewEarnings = viewEarnings;
+async function loadPageStats(){
+  var box=document.getElementById('pgstats'); if(!box) return;
+  var pages; try { pages=await api('GET','/me/pages'); } catch(e){ box.innerHTML='<p class="err">'+esc(e.message)+'</p>'; return; }
+  if(!pages.length){ box.innerHTML='<p class="muted">No pages yet.</p>'; return; }
+  box.innerHTML = pages.map(function(p){
+    var s=p.stats||{};
+    return '<div class="pg"><div><div class="t">'+esc(p.title)+'</div>'+
+      '<div class="pstat">👁 '+fmtN(s.humanViews)+' views · 🤖 '+fmtN(s.aiCrawls)+' AI · 🖱 '+fmtN(s.clicks)+' clicks</div></div>'+
+      '<div class="row"><button class="btn ghost sm" onclick="toggleStats(\''+esc(p.slug)+'\')">📊 Details</button></div></div>'+
+      '<div class="hide" id="stats-'+esc(p.slug)+'"></div>';
+  }).join('');
 }
 async function loadSummary(){
   var box=document.getElementById('summary'); if(!box) return;
@@ -402,41 +497,6 @@ function resetGenInputs(){
   var t=document.getElementById('ptitle'); if(t) t.value='';
 }
 
-async function loadPages(){
-  var box = document.getElementById('pages');
-  try {
-    var pages = await api('GET','/me/pages');
-    if(!pages.length){ box.innerHTML='<h2>Pages</h2><p class="muted">No pages yet — make one from a link above.</p>'; return; }
-    box.innerHTML = '<h2>Pages ('+pages.length+')</h2>' + pages.map(pageRow).join('');
-  } catch(e){ box.innerHTML='<p class="err">'+esc(e.message)+'</p>'; }
-}
-
-function pageRow(p){
-  var archived = p.archived, published = (p.published !== false);
-  var state = archived ? 'arch' : (published ? 'live' : 'draft');
-  var badge = archived ? 'Archived' : (published ? 'Live' : 'Draft · review');
-  var link = archived ? '{{BASE}}/'+esc(p.handle)+'/'+esc(p.slug)
-                      : '{{BASE}}/'+esc(p.handle)+'/'+esc(p.slug);
-  var linkText = published ? 'reelie.io/'+esc(p.handle)+'/'+esc(p.slug)+' →' : 'Preview draft →';
-  var actions = '';
-  if(!archived && !published)
-    actions += '<button class="btn sm" onclick="publish(\''+esc(p.slug)+'\')">Approve &amp; Publish</button>';
-  actions += '<button class="btn ghost sm" onclick="editFromDash(\''+esc(p.slug)+'\')">Edit</button>';
-  if(!archived && published)
-    actions += '<button class="btn ghost sm" onclick="unpublish(\''+esc(p.slug)+'\')">Unpublish</button>';
-  actions += '<button class="btn ghost sm" onclick="toggleStats(\''+esc(p.slug)+'\')">📊 Stats</button>';
-  actions += '<button class="btn ghost sm" onclick="archive(\''+esc(p.slug)+'\','+(archived?'false':'true')+')">'+(archived?'Unarchive':'Archive')+'</button>';
-  actions += '<button class="btn danger sm" onclick="del(\''+esc(p.slug)+'\')">Delete</button>';
-  var s = p.stats || {humanViews:0, aiCrawls:0, clicks:0};
-  return '<div class="pg" id="row-'+esc(p.slug)+'"><div>'+
-    '<div class="t">'+esc(p.title)+' <span class="pill '+state+'">'+badge+'</span></div>'+
-    '<div class="l"><a href="'+link+'" target="_blank">'+linkText+'</a> · '+p.products.length+' products</div>'+
-    '<div class="pstat">👁 '+fmtN(s.humanViews)+' views · 🤖 '+fmtN(s.aiCrawls)+' AI crawls · 🖱 '+fmtN(s.clicks)+' clicks</div>'+
-    '</div><div class="row">'+ actions +
-    '</div></div>'+
-    '<div class="hide" id="edit-'+esc(p.slug)+'"></div>'+
-    '<div class="hide" id="stats-'+esc(p.slug)+'"></div>';
-}
 function fmtN(n){ n=n||0; return n>=1000 ? (n/1000).toFixed(n>=10000?0:1)+'k' : String(n); }
 function pct(a,b){ return b ? Math.round(a/b*100)+'%' : ''; }
 async function toggleStats(slug){
@@ -466,44 +526,18 @@ function statsPanel(st){
     '<div class="ai-crawls">'+ai+'</div></div>';
 }
 async function publish(slug){
-  var el=document.getElementById('row-'+slug); if(el) el.style.opacity=.5;
-  try { await api('POST','/me/pages/'+slug+'/publish'); } catch(e){ alert(e.message); }
-  loadPages();
+  try { await api('POST','/me/pages/'+slug+'/publish'); } catch(e){ alert(e.message); return; }
+  viewPageDetail(slug);
 }
 async function unpublish(slug){
   if(!confirm('Take this page offline (back to draft)? It won\'t appear publicly until you publish again.')) return;
-  await api('POST','/me/pages/'+slug+'/unpublish'); loadPages();
+  await api('POST','/me/pages/'+slug+'/unpublish'); viewPageDetail(slug);
 }
 window.publish = publish; window.unpublish = unpublish;
 
-var CACHE = {};
-async function toggleEdit(slug){
-  var box = document.getElementById('edit-'+slug);
-  if(!box.classList.contains('hide')){ box.classList.add('hide'); box.innerHTML=''; return; }
-  var pages = await api('GET','/me/pages'); var p = pages.find(function(x){return x.slug===slug;}); CACHE[slug]=p;
-  box.innerHTML =
-    '<div class="card" style="margin-top:2px">'+
-    '<label>Title</label><input id="t-'+slug+'" value="'+esc(p.title)+'">'+
-    '<label>Intro</label><textarea id="i-'+slug+'">'+esc(p.intro||'')+'</textarea>'+
-    '<label>Disclosure</label><textarea id="d-'+slug+'">'+esc(p.disclosure||'')+'</textarea>'+
-    p.products.map(function(pr){ return '<div class="prod"><div class="pn">Product '+pr.position+' — '+esc(pr.brand||'')+'</div>'+
-        '<label>Name</label><input id="pn-'+slug+'-'+pr.id+'" value="'+esc(pr.name)+'">'+
-        '<label>Note</label><input id="pnote-'+slug+'-'+pr.id+'" value="'+esc(pr.note||'')+'"></div>'; }).join('')+
-    '<div style="height:14px"></div><button class="btn" onclick="saveEdit(\''+slug+'\')">Save changes</button>'+
-    '<span class="muted" id="save-'+slug+'" style="margin-left:10px"></span></div>';
-  box.classList.remove('hide');
-}
-async function saveEdit(slug){
-  var p = CACHE[slug], st=document.getElementById('save-'+slug); st.textContent='Saving…';
-  var body = { title: val('t-'+slug), intro: val('i-'+slug), disclosure: val('d-'+slug),
-    products: p.products.map(function(pr){ return { id:pr.id, name: val('pn-'+slug+'-'+pr.id), note: val('pnote-'+slug+'-'+pr.id) }; }) };
-  try { await api('PATCH','/me/pages/'+slug, body); st.textContent='Saved ✓'; setTimeout(loadPages, 600); }
-  catch(e){ st.textContent=e.message; }
-}
-function val(id){ var el=document.getElementById(id); return el?el.value:null; }
 
-async function archive(slug, live){ await api('POST','/me/pages/'+slug+'/'+(live?'archive':'unarchive')); loadPages(); }
-async function del(slug){ if(!confirm('Delete this page? This cannot be undone.')) return; await api('DELETE','/me/pages/'+slug); loadPages(); }
+async function archive(slug, live){ await api('POST','/me/pages/'+slug+'/'+(live?'archive':'unarchive')); viewPageDetail(slug); }
+async function del(slug){ if(!confirm('Delete this page? This cannot be undone.')) return; await api('DELETE','/me/pages/'+slug); viewVideos(); }
 
 async function doGenerate(){
   var st=document.getElementById('genstatus');
@@ -619,8 +653,8 @@ function azDone(slug, received){
   var foot=document.getElementById('az-foot');
   if(foot){
     foot.innerHTML = received
-      ? '<button class="btn" onclick="viewDashboard()">Back to your pages</button>'
-      : '<button class="btn" onclick="viewDashboard()">Review &amp; publish →</button>'+
+      ? '<button class="btn" onclick="viewVideos()">Back to your pages</button>'
+      : '<button class="btn" onclick="viewVideos()">Review &amp; publish →</button>'+
         (slug?' <a class="btn ghost" href="{{BASE}}/'+esc(me.handle)+'/'+esc(slug)+'" target="_blank">Preview draft</a>':'');
   }
 }
@@ -628,9 +662,9 @@ function azError(msg){
   var sc=document.querySelector('.az-scan'); if(sc) sc.style.display='none';
   setAzLabel('That didn\'t work'); setAzSub('');
   var foot=document.getElementById('az-foot');
-  if(foot) foot.innerHTML='<div class="err" style="margin-bottom:14px">'+esc(msg)+'</div><button class="btn ghost" onclick="viewDashboard()">← Back &amp; try again</button>';
+  if(foot) foot.innerHTML='<div class="err" style="margin-bottom:14px">'+esc(msg)+'</div><button class="btn ghost" onclick="viewVideos()">← Back &amp; try again</button>';
 }
-window.viewDashboard = viewDashboard;
+window.viewDashboard = viewVideos;
 
 // --- post-analysis: review + edit products, then publish -------------------
 var REVIEW = { slug:null, page:null };
@@ -776,7 +810,7 @@ function showPublished(slug){
     '<p class="sub">Your routine page is published.</p>'+
     '<div class="rv-actions" style="justify-content:center">'+
     '<a class="btn" href="{{BASE}}/'+esc(me.handle)+'/'+esc(slug)+'" target="_blank">View live page →</a>'+
-    '<button class="btn ink" onclick="viewDashboard()">Your pages</button></div></div>';
+    '<button class="btn ink" onclick="viewVideos()">Your pages</button></div></div>';
 }
 window.showPublished = showPublished;
 
@@ -801,7 +835,7 @@ window.showPageEditor = showPageEditor;
 // Open the editable page from the dashboard (Back returns to the pages list).
 function editFromDash(slug){ REVIEW.slug = null; showPageEditor(slug); }
 window.editFromDash = editFromDash;
-function backToReview(){ if(REVIEW.slug){ showProductReview(REVIEW.slug); } else { viewDashboard(); } }
+function backToReview(){ if(REVIEW.slug){ showProductReview(REVIEW.slug); } else { viewVideos(); } }
 window.backToReview = backToReview;
 
 function initEditFrame(fr){
@@ -903,7 +937,7 @@ async function render(){
   header();
   var isCreator = (me.role==='creator' || me.role==='both') && me.handle;
   if(!isCreator){ viewApply(); }        // verified but no profile yet → step 2
-  else if(me.approved){ viewDashboard(); }
+  else if(me.approved){ viewVideos(); }
   else { viewPending(); }
 }
 window.render = render;

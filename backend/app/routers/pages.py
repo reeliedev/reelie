@@ -48,6 +48,10 @@ def my_pages(user: User = Depends(current_user), session: Session = Depends(get_
         payload["archived"] = p.archived
         payload["published"] = p.published
         payload["stats"] = analytics.page_stats_lite(session, p.handle, p.slug)
+        ordered = sorted(prods, key=lambda x: x.position)
+        payload["cover"] = next((x.clip_poster for x in ordered if x.clip_poster), "")
+        payload["coverVideo"] = next((x.clip_url for x in ordered if x.clip_url), "")
+        payload["createdAt"] = p.created_at.isoformat()
         out.append(payload)
     return out
 

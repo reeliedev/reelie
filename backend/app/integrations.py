@@ -30,6 +30,21 @@ def is_trusted_retailer(retailer: str) -> bool:
     return (retailer or "").strip().lower() in _RETAILER_SEARCH
 
 
+def retailer_for_url(url: str) -> str:
+    """Display name of a known retailer if this URL points there, else ''. Used to
+    label a direct/resolved link by where it ACTUALLY goes (not the guessed
+    retailer), so 'Shop at Sephora' can't point at a YSL page."""
+    from urllib.parse import urlparse
+    try:
+        dom = urlparse(url).netloc.lower()
+    except Exception:
+        return ""
+    for key in _RETAILER_SEARCH:                 # amazon, sephora, target, walmart
+        if key in dom:
+            return key.title()
+    return ""
+
+
 def _shopping_search(brand: str, name: str, retailer: str = "") -> str:
     """Google Shopping search for the product — finds it across all retailers, so
     it always resolves to something buyable even when the retailer guess is off."""

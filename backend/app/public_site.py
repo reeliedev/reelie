@@ -22,7 +22,7 @@ import json
 from pathlib import Path
 
 from app import config
-from app.integrations import is_trusted_retailer
+from app.integrations import is_trusted_retailer, retailer_for_url
 from app.models import Creator, Page, Product
 
 BASE = config.PUBLIC_BASE_URL
@@ -381,10 +381,15 @@ def _product_block(page: Page, p: Product, also: list[dict] | None = None) -> st
     if p.price_amount is not None:
         disp = p.price_display or _money(p.price_amount, p.currency)
         price_html = f'<div class="s-price">{_esc(disp)}{_approx(p.price_estimated)}</div>'
-    # Only claim "Shop at <retailer>" when the link actually goes there; otherwise
-    # the buy link is a Google Shopping search, so keep the label a plain "Shop".
-    buy_label = (f"Shop at {_esc(p.retailer)}"
-                 if is_trusted_retailer(p.retailer) else "Shop")
+    # The label must match where the link ACTUALLY goes. For a direct/resolved link
+    # ('own'/'auto'), name the retailer only if the URL's domain is that retailer;
+    # a brand/other domain → plain "Shop". For the search fallback ('reelie'), the
+    # trusted retailer's own search is the destination, so "Shop at <retailer>".
+    if p.link_kind in ("own", "auto") and (p.url or "").startswith("http"):
+        _dest = retailer_for_url(p.url)
+        buy_label = f"Shop at {_esc(_dest)}" if _dest else "Shop"
+    else:
+        buy_label = f"Shop at {_esc(p.retailer)}" if is_trusted_retailer(p.retailer) else "Shop"
     return f"""          <div class="s-product" data-pos="{p.position}">
             {brand}
             <h3 class="s-name"><span data-edit="name">{_esc(p.name)}</span>{variant}</h3>

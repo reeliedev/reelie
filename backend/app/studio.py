@@ -260,68 +260,54 @@ async function viewSupabaseLogin(){
 
 async function viewSignup(){
   app.innerHTML =
-   '<h1>Create your account</h1><p class="sub">Pick your handle and where you post — then verify your email to finish. We approve creators in the closed beta.</p>'+
-   '<div class="card" style="max-width:460px">'+
-   '<label>Email</label><input id="su-email" type="email" placeholder="you@example.com" autocomplete="email">'+
-   '<label>Choose your Reelie handle</label><input id="su-handle" placeholder="yourname" autocomplete="off">'+
-   '<div class="muted" style="margin:-4px 0 6px">reelie.io/<span id="su-prev">yourname</span></div>'+
-   '<label>Instagram handle</label><input id="su-ig" placeholder="@yourinsta" autocomplete="off">'+
-   '<label>YouTube handle</label><input id="su-yt" placeholder="@yourchannel" autocomplete="off">'+
-   '<div style="height:14px"></div><button class="btn" id="su-go">Send verification link</button>'+
-   '<div class="hr"><span>or continue with</span></div>'+
-   '<button class="btn oauth apple" id="su-apple"> Apple</button>'+
-   '<button class="btn oauth google" id="su-google"> Google</button>'+
-   '<div class="muted" id="su-msg" style="margin-top:12px"></div>'+
+   '<h1>Create your account</h1>'+
+   '<p class="sub"><b>Step 1 of 2 — verify your email.</b> Then you\'ll set up your creator profile.</p>'+
+   '<div class="card" style="max-width:420px">'+
+   '<button class="btn oauth apple" id="apple"> Continue with Apple</button>'+
+   '<button class="btn oauth google" id="google"> Continue with Google</button>'+
+   '<div class="hr"><span>or with email</span></div>'+
+   '<label>Email</label><input id="email" type="email" placeholder="you@example.com" autocomplete="email">'+
+   '<div style="height:12px"></div><button class="btn" id="mlink">Verify my email →</button>'+
+   '<div class="muted" id="msg" style="margin-top:12px"></div>'+
    '<div class="muted" style="margin-top:14px">Already have an account? <a href="#" id="toSignin">Sign in →</a></div></div>';
   var c = await supa();
-  document.getElementById('su-handle').addEventListener('input', function(){
-    document.getElementById('su-prev').textContent = this.value.trim().toLowerCase().replace(/[^a-z0-9-]/g,'') || 'yourname';
-  });
-  function collect(){
-    return { handle: document.getElementById('su-handle').value.trim().toLowerCase().replace(/^@/,'').replace(/[^a-z0-9-]/g,''),
-             ig: document.getElementById('su-ig').value.trim().replace(/^@/,''),
-             yt: document.getElementById('su-yt').value.trim().replace(/^@/,'') };
-  }
-  function validate(msg){
-    var s=collect();
-    if(s.handle.length<3){ msg.textContent='Pick a handle (3+ letters or numbers).'; return null; }
-    if(!s.ig && !s.yt){ msg.textContent='Add at least one Instagram or YouTube handle.'; return null; }
-    return s;
-  }
-  document.getElementById('su-go').onclick = async function(){
-    var msg=document.getElementById('su-msg');
-    var email=document.getElementById('su-email').value.trim();
+  document.getElementById('apple').onclick = function(){ c.auth.signInWithOAuth({provider:'apple', options:{redirectTo:location.href}}); };
+  document.getElementById('google').onclick = function(){ c.auth.signInWithOAuth({provider:'google', options:{redirectTo:location.href}}); };
+  document.getElementById('mlink').onclick = async function(){
+    var email=document.getElementById('email').value.trim(), msg=document.getElementById('msg');
     if(email.indexOf('@')<1){ msg.textContent='Enter a valid email.'; return; }
-    var s=validate(msg); if(!s) return;
-    localStorage.setItem('reelie.signup', JSON.stringify(s));
     msg.textContent='Sending…';
     var r = await c.auth.signInWithOtp({email:email, options:{emailRedirectTo:location.href}});
     msg.innerHTML = r.error ? '<span class="err">'+esc(r.error.message)+'</span>'
-      : 'Check your email for a verification link ✨ Click it and your account (<b>@'+esc(s.handle)+'</b>) is created.';
+      : 'Check your email for a verification link ✨ Click it to continue to step 2.';
   };
-  document.getElementById('su-apple').onclick = function(){ var s=validate(document.getElementById('su-msg')); if(!s) return; localStorage.setItem('reelie.signup', JSON.stringify(s)); c.auth.signInWithOAuth({provider:'apple', options:{redirectTo:location.href}}); };
-  document.getElementById('su-google').onclick = function(){ var s=validate(document.getElementById('su-msg')); if(!s) return; localStorage.setItem('reelie.signup', JSON.stringify(s)); c.auth.signInWithOAuth({provider:'google', options:{redirectTo:location.href}}); };
+  document.getElementById('email').addEventListener('keydown', function(e){ if(e.key==='Enter') document.getElementById('mlink').click(); });
   document.getElementById('toSignin').onclick = function(e){ e.preventDefault(); viewSupabaseLogin(); };
 }
 window.viewSignup = viewSignup;
 
 function viewApply(){
-  var pre={}; try { pre = JSON.parse(localStorage.getItem('reelie.signup')||'{}'); } catch(e){}
   app.innerHTML =
-   '<h1>Finish your account</h1><p class="sub">Pick your handle and where you post — we review creators in the closed beta and email you when you\'re in.</p>'+
+   '<h1>Set up your creator profile</h1>'+
+   '<p class="sub"><b>Step 2 of 2</b> — email verified ✓. Pick your handle and tell us where you post. '+
+   'We review creators in the closed beta and email you when you\'re in.</p>'+
    '<div class="card" style="max-width:460px">'+
-   '<label>Your Reelie handle</label><input id="handle" placeholder="yourname" autocomplete="off" value="'+esc(pre.handle||'')+'">'+
-   '<label>Instagram handle</label><input id="ig" placeholder="@yourinsta" autocomplete="off" value="'+esc(pre.ig||'')+'">'+
-   '<label>YouTube handle</label><input id="yt" placeholder="@yourchannel" autocomplete="off" value="'+esc(pre.yt||'')+'">'+
-   '<div style="height:16px"></div><button class="btn" id="go">Submit application</button>'+
+   '<label>Choose your Reelie handle</label><input id="handle" placeholder="yourname" autocomplete="off">'+
+   '<div class="muted" style="margin:-4px 0 6px">reelie.io/<span id="ap-prev">yourname</span></div>'+
+   '<label>Instagram handle</label><input id="ig" placeholder="@yourinsta" autocomplete="off">'+
+   '<label>YouTube handle</label><input id="yt" placeholder="@yourchannel" autocomplete="off">'+
+   '<div style="height:16px"></div><button class="btn" id="go">Submit for review</button>'+
    '<div class="err hide" id="err"></div></div>';
+  document.getElementById('handle').addEventListener('input', function(){
+    document.getElementById('ap-prev').textContent = this.value.trim().toLowerCase().replace(/[^a-z0-9-]/g,'') || 'yourname';
+  });
   document.getElementById('go').onclick = async function(){
     var h=document.getElementById('handle').value.trim().toLowerCase().replace(/^@/,''), err=document.getElementById('err');
     var ig=document.getElementById('ig').value.trim().replace(/^@/,''), yt=document.getElementById('yt').value.trim().replace(/^@/,'');
     if(h.length<3){ err.textContent='Pick a handle (3+ characters).'; err.classList.remove('hide'); return; }
     if(!ig && !yt){ err.textContent='Add at least one Instagram or YouTube handle.'; err.classList.remove('hide'); return; }
     err.classList.add('hide');
-    try { var u = await api('POST','/me/become-creator',{handle:h, displayName: me.displayName||h, platforms:[], instagram:ig, youtube:yt}); localStorage.removeItem('reelie.signup'); setSession(tok,u); render(); }
+    try { var u = await api('POST','/me/become-creator',{handle:h, displayName: me.displayName||h, platforms:[], instagram:ig, youtube:yt}); setSession(tok,u); render(); }
     catch(e){ err.textContent=e.message; err.classList.remove('hide'); }
   };
 }
@@ -799,27 +785,9 @@ async function render(){
   me = await r.json(); localStorage.setItem('reelie.user', JSON.stringify(me));
   header();
   var isCreator = (me.role==='creator' || me.role==='both') && me.handle;
-  if(!isCreator){ await maybeAutoApply(); }
+  if(!isCreator){ viewApply(); }        // verified but no profile yet → step 2
   else if(me.approved){ viewDashboard(); }
   else { viewPending(); }
-}
-// After sign-up auth returns, finish creating the account with the handle +
-// socials the creator chose (stored before the email/OAuth round-trip).
-async function maybeAutoApply(){
-  var raw = localStorage.getItem('reelie.signup');
-  if(!raw){ viewApply(); return; }
-  var s; try { s = JSON.parse(raw); } catch(e){ localStorage.removeItem('reelie.signup'); viewApply(); return; }
-  app.innerHTML = '<h1>Setting up your studio…</h1><div class="card" style="max-width:460px">'+
-    '<span class="spin"></span> Creating <b>@'+esc(s.handle||'')+'</b></div>';
-  try {
-    var u = await api('POST','/me/become-creator',{handle:s.handle, displayName:s.handle,
-      platforms:[], instagram:s.ig||'', youtube:s.yt||''});
-    localStorage.removeItem('reelie.signup');
-    setSession(tok, u); render();
-  } catch(e){
-    viewApply();   // e.g. handle taken — let them fix it (prefilled from storage)
-    var err=document.getElementById('err'); if(err){ err.textContent=e.message; err.classList.remove('hide'); }
-  }
 }
 window.render = render;
 render();

@@ -349,7 +349,7 @@ function pageRow(p){
   var actions = '';
   if(!archived && !published)
     actions += '<button class="btn sm" onclick="publish(\''+esc(p.slug)+'\')">Approve &amp; Publish</button>';
-  actions += '<button class="btn ghost sm" onclick="toggleEdit(\''+esc(p.slug)+'\')">Edit</button>';
+  actions += '<button class="btn ghost sm" onclick="editFromDash(\''+esc(p.slug)+'\')">Edit</button>';
   if(!archived && published)
     actions += '<button class="btn ghost sm" onclick="unpublish(\''+esc(p.slug)+'\')">Unpublish</button>';
   actions += '<button class="btn ghost sm" onclick="archive(\''+esc(p.slug)+'\','+(archived?'false':'true')+')">'+(archived?'Unarchive':'Archive')+'</button>';
@@ -655,6 +655,9 @@ async function showPageEditor(slug){
   document.getElementById('ed-pub').onclick=savePublish;
 }
 window.showPageEditor = showPageEditor;
+// Open the editable page from the dashboard (Back returns to the pages list).
+function editFromDash(slug){ REVIEW.slug = null; showPageEditor(slug); }
+window.editFromDash = editFromDash;
 function backToReview(){ if(REVIEW.slug){ showProductReview(REVIEW.slug); } else { viewDashboard(); } }
 window.backToReview = backToReview;
 

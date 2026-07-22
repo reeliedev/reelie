@@ -153,6 +153,11 @@ input[type=file]{padding:9px 12px}
 .ed-fabhint{font-size:12.5px;color:var(--grey);white-space:nowrap}
 .ed-chip{background:var(--accent-soft);color:var(--accent-deep);padding:1px 7px;border-radius:6px;font-weight:600}
 @media(max-width:560px){.ed-fabhint{display:none}}
+/* centered auth / onboarding views (sign up, sign in, profile, under review) */
+.authview{max-width:440px;margin:0 auto;text-align:center;min-height:calc(100vh - 210px);
+  display:flex;flex-direction:column;justify-content:center;padding:24px 0}
+.authview .card{text-align:left;margin:0 auto;width:100%}
+.authview .sub{margin-bottom:22px}
 </style></head>
 <body>
 <div class="bar"><div class="in"><a class="brand" href="{{BASE}}">{{BRAND}}<span class="d">.</span></a>
@@ -214,11 +219,11 @@ function header(){
 // ---- views ----
 function viewLogin(){
   app.innerHTML =
-   '<h1>Creator Studio</h1><p class="sub">Sign in to turn your videos into shoppable, AI-discoverable pages.</p>'+
+   '<div class="authview"><h1>Creator Studio</h1><p class="sub">Sign in to turn your videos into shoppable, AI-discoverable pages.</p>'+
    '<div class="card" style="max-width:440px">'+
    '<label>Email</label><input id="email" type="email" placeholder="you@example.com" autocomplete="email">'+
    '<div style="height:14px"></div><button class="btn" id="go">Continue</button>'+
-   '<div class="err hide" id="err"></div></div>';
+   '<div class="err hide" id="err"></div></div></div>';
   document.getElementById('go').onclick = doLogin;
   document.getElementById('email').addEventListener('keydown',function(e){ if(e.key==='Enter') doLogin(); });
 }
@@ -232,7 +237,7 @@ async function doLogin(){
 
 async function viewSupabaseLogin(){
   app.innerHTML =
-   '<h1>Welcome back</h1><p class="sub">Sign in to your creator studio.</p>'+
+   '<div class="authview"><h1>Welcome back</h1><p class="sub">Sign in to your creator studio.</p>'+
    '<div class="card" style="max-width:420px">'+
    '<button class="btn oauth apple" id="apple"> Continue with Apple</button>'+
    '<button class="btn oauth google" id="google"> Continue with Google</button>'+
@@ -240,7 +245,7 @@ async function viewSupabaseLogin(){
    '<label>Email</label><input id="email" type="email" placeholder="you@example.com" autocomplete="email">'+
    '<div style="height:12px"></div><button class="btn oauth" id="mlink">Email me a sign-in link</button>'+
    '<div class="muted" id="msg" style="margin-top:12px"></div>'+
-   '<div class="muted" style="margin-top:14px">New to Reelie? <a href="#" id="toSignup">Create your account →</a></div></div>';
+   '<div class="muted" style="margin-top:14px">New to Reelie? <a href="#" id="toSignup">Create your account →</a></div></div></div>';
   var hp = new URLSearchParams((INIT_HASH||'').replace(/^#/,'')), qp = new URLSearchParams(INIT_SEARCH||'');
   var authErr = hp.get('error_description') || qp.get('error_description') || hp.get('error') || qp.get('error');
   if(authErr){ document.getElementById('msg').innerHTML = '<span class="err">'+esc(decodeURIComponent(authErr))+'</span>'; }
@@ -260,7 +265,7 @@ async function viewSupabaseLogin(){
 
 async function viewSignup(){
   app.innerHTML =
-   '<h1>Create your account</h1>'+
+   '<div class="authview"><h1>Create your account</h1>'+
    '<p class="sub"><b>Step 1 of 2 — verify your email.</b> Then you\'ll set up your creator profile.</p>'+
    '<div class="card" style="max-width:420px">'+
    '<button class="btn oauth apple" id="apple"> Continue with Apple</button>'+
@@ -269,7 +274,7 @@ async function viewSignup(){
    '<label>Email</label><input id="email" type="email" placeholder="you@example.com" autocomplete="email">'+
    '<div style="height:12px"></div><button class="btn" id="mlink">Verify my email →</button>'+
    '<div class="muted" id="msg" style="margin-top:12px"></div>'+
-   '<div class="muted" style="margin-top:14px">Already have an account? <a href="#" id="toSignin">Sign in →</a></div></div>';
+   '<div class="muted" style="margin-top:14px">Already have an account? <a href="#" id="toSignin">Sign in →</a></div></div></div>';
   var c = await supa();
   document.getElementById('apple').onclick = function(){ c.auth.signInWithOAuth({provider:'apple', options:{redirectTo:location.href}}); };
   document.getElementById('google').onclick = function(){ c.auth.signInWithOAuth({provider:'google', options:{redirectTo:location.href}}); };
@@ -288,7 +293,7 @@ window.viewSignup = viewSignup;
 
 function viewApply(){
   app.innerHTML =
-   '<h1>Set up your creator profile</h1>'+
+   '<div class="authview"><h1>Set up your creator profile</h1>'+
    '<p class="sub"><b>Step 2 of 2</b> — email verified ✓. Pick your handle and tell us where you post. '+
    'We review creators in the closed beta and email you when you\'re in.</p>'+
    '<div class="card" style="max-width:460px">'+
@@ -297,7 +302,7 @@ function viewApply(){
    '<label>Instagram handle</label><input id="ig" placeholder="@yourinsta" autocomplete="off">'+
    '<label>YouTube handle</label><input id="yt" placeholder="@yourchannel" autocomplete="off">'+
    '<div style="height:16px"></div><button class="btn" id="go">Submit for review</button>'+
-   '<div class="err hide" id="err"></div></div>';
+   '<div class="err hide" id="err"></div></div></div>';
   document.getElementById('handle').addEventListener('input', function(){
     document.getElementById('ap-prev').textContent = this.value.trim().toLowerCase().replace(/[^a-z0-9-]/g,'') || 'yourname';
   });
@@ -314,13 +319,13 @@ function viewApply(){
 
 function viewPending(){
   app.innerHTML =
-   '<h1>Application received — under review</h1>'+
+   '<div class="authview"><h1>Application received — under review</h1>'+
    '<div class="card" style="max-width:520px">'+
    '<p style="font-size:16px">Thanks, <b>@'+esc(me.handle)+'</b> ✨</p>'+
    '<p style="font-size:16px;margin-top:12px"><b>Please check your Instagram DMs.</b> We\'ll notify you via email'+
    (me.email?' at <b>'+esc(me.email)+'</b>':'')+
    ' when we\'ve sent you a DM on Instagram to complete the verification process.</p>'+
-   '<div style="height:16px"></div><button class="btn ghost sm" onclick="render()">Refresh status</button></div>';
+   '<div style="height:16px"></div><button class="btn ghost sm" onclick="render()">Refresh status</button></div></div>';
 }
 
 async function viewDashboard(){

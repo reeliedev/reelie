@@ -94,6 +94,12 @@ DEFAULT_AVATAR_GRADIENT = ["#E8E4DA", "#D8D2C4"]
 # links resolve. Used to build absolute URLs in JSON-LD / sitemap / llms.txt.
 PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", os.environ.get("REELIE_SELF_URL", "http://127.0.0.1:8010")).rstrip("/")
 SUPPORT_EMAIL = os.environ.get("SUPPORT_EMAIL", "hello@reelie.io")
+# Transactional email via Resend (the reelie.io domain is already verified there).
+# Notifications no-op + log when the key is absent, so dev never sends.
+RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "").strip()
+EMAIL_FROM = os.environ.get("EMAIL_FROM", "Reelie <noreply@reelie.io>").strip()
+# Where team notifications (new creator applications) are sent.
+ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", SUPPORT_EMAIL).strip()
 # AI crawlers we explicitly invite in robots.txt.
 AI_CRAWLERS = ["GPTBot", "OAI-SearchBot", "ChatGPT-User", "ClaudeBot", "Claude-Web",
                "anthropic-ai", "PerplexityBot", "Perplexity-User", "Google-Extended",

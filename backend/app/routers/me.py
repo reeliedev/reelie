@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel
 from sqlmodel import Session, delete, select
 
-from app import config
+from app import config, notify
 from app.auth import current_user
 from app.db import get_session
 from app.models import (Click, Creator, Favorite, GenerationJob, Page, Payout,
@@ -52,7 +52,8 @@ class BecomeCreator(BaseModel):
 
 
 @router.post("/become-creator")
-def become_creator(body: BecomeCreator, user: User = Depends(current_user),
+def become_creator(body: BecomeCreator, background: BackgroundTasks,
+                   user: User = Depends(current_user),
                    session: Session = Depends(get_session)):
     """Closed-beta application. Creates the creator in 'pending' — they can sign in
     and see their account, but can't publish until an admin approves them."""
@@ -64,6 +65,7 @@ def become_creator(body: BecomeCreator, user: User = Depends(current_user),
     ig = (body.instagram or "").strip().lstrip("@")
     yt = (body.youtube or "").strip().lstrip("@")
     existing = session.get(Creator, handle)
+    is_new = existing is None
     if existing is None:
         session.add(Creator(
             handle=handle,
@@ -88,6 +90,11 @@ def become_creator(body: BecomeCreator, user: User = Depends(current_user),
     session.add(user)
     session.commit()
     session.refresh(user)
+    # Notify the team a new creator is awaiting approval (best-effort, off-request).
+    if is_new:
+        background.add_task(notify.creator_applied, handle,
+                            body.displayName or user.display_name or "",
+                            user.email or "", ig, yt)
     return user_dict(user, session)
 
 

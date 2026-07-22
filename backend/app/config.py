@@ -96,6 +96,12 @@ PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", os.environ.get("REELIE_SELF_
 SUPPORT_EMAIL = os.environ.get("SUPPORT_EMAIL", "hello@reelie.io")
 # Transactional email via Resend (the reelie.io domain is already verified there).
 # Notifications no-op + log when the key is absent, so dev never sends.
+# Product-link resolution via DataForSEO Google Shopping (direct buy links).
+# Env-gated: no creds → callers keep the Google Shopping search fallback.
+DATAFORSEO_LOGIN = os.environ.get("DATAFORSEO_LOGIN", "").strip()
+DATAFORSEO_PASSWORD = os.environ.get("DATAFORSEO_PASSWORD", "").strip()
+PRODUCT_SEARCH_ENABLED = bool(DATAFORSEO_LOGIN and DATAFORSEO_PASSWORD)
+
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "").strip()
 # Sent from (and, for team alerts, to) marketing@reelie.io by default — both on
 # the verified reelie.io domain. Override with EMAIL_FROM / ADMIN_EMAIL if needed.

@@ -52,8 +52,9 @@ def redirect(handle: str, slug: str, nn: str, request: Request,
         session=request.query_params.get("s"), user_agent=user_agent, referer=referer))
     session.commit()
 
-    # A creator-set affiliate link wins; otherwise resolve via the network stub.
-    if product.link_kind == "own" and (product.url or "").startswith("http"):
+    # A creator-set ('own') or auto-resolved ('auto') direct product link wins;
+    # otherwise fall back to the affiliate/search resolver.
+    if product.link_kind in ("own", "auto") and (product.url or "").startswith("http"):
         dest = product.url
     else:
         dest = affiliate.resolve_link(product.brand, product.name, product.retailer)["url"]

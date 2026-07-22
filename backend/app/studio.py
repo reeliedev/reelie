@@ -604,7 +604,7 @@ function renderReviewProducts(){
 }
 function productCard(p){
   var title = ((p.brand||'')+' '+(p.name||'')).trim() || 'New product';
-  var link = (p.linkKind==='own') ? (p.url||'') : '';
+  var link = (p.linkKind==='own' || p.linkKind==='auto') ? (p.url||'') : '';
   return '<details class="rv-prod" data-id="'+esc(p.id||'')+'">'+
     '<summary><span class="rv-em">'+esc(p.emoji||'🛍️')+'</span>'+
       '<span class="rv-t">'+esc(title)+'</span><span class="rv-chev">▾</span></summary>'+

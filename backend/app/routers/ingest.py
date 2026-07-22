@@ -6,14 +6,33 @@ for local dev; would be a creator-authenticated write in production.
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException
 from pydantic import BaseModel
 from sqlmodel import Session, delete, select
 
-from app import config
-from app.db import get_session
+from app import config, product_search
+from app.db import engine, get_session
 from app.models import Creator, Page, Product
 from app.serialize import normalize_product
+
+
+def _resolve_links(page_id: str) -> None:
+    """Background: turn each product's search link into a direct buy link via
+    DataForSEO (skips creator-set 'own' links). No-op without creds."""
+    if not product_search.enabled():
+        return
+    with Session(engine) as s:
+        prods = s.exec(select(Product).where(Product.page_id == page_id)).all()
+        targets = [p for p in prods if p.link_kind != "own"]
+        resolved = product_search.resolve_batch(
+            [{"id": p.id, "brand": p.brand, "name": p.name, "variant": p.variant or ""}
+             for p in targets])
+        for p in targets:
+            r = resolved.get(p.id)
+            if r:
+                p.url, p.link_kind = r["url"], "auto"
+                s.add(p)
+        s.commit()
 
 router = APIRouter(prefix="/ingest", tags=["ingest"])
 
@@ -65,7 +84,8 @@ class IngestPage(BaseModel):
 
 
 @router.post("/page", dependencies=[Depends(require_ingest_token)])
-def ingest_page(body: IngestPage, session: Session = Depends(get_session)):
+def ingest_page(body: IngestPage, background: BackgroundTasks,
+                session: Session = Depends(get_session)):
     # upsert creator
     creator = session.get(Creator, body.handle)
     if creator is None:
@@ -108,4 +128,6 @@ def ingest_page(body: IngestPage, session: Session = Depends(get_session)):
             product_key=normalize_product(p.brand, p.name)))
 
     session.commit()
+    # Upgrade search links to direct buy links off-request (draft is already saved).
+    background.add_task(_resolve_links, page.id)
     return {"ok": True, "handle": body.handle, "slug": body.slug, "products": len(body.products)}

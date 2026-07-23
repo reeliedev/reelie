@@ -1,6 +1,6 @@
 # Reelie — Progress
 
-_Last updated: 2026-07-19_
+_Last updated: 2026-07-23_
 
 **Reelie** turns a beauty/skincare creator's video into one **shoppable "routine
 page"** and publishes it for both the iOS app and an AI-discoverable public web
@@ -391,6 +391,60 @@ account-delete endpoints (backend ready).
 - APIClient: added `myPages`, `editPage` (PATCH), `setArchived`, `deletePage`,
   `payouts`, `connectPayouts`, `withdraw`, `deleteAccount` + a generic `send`
   helper; `PayoutsSummary`/`Ack` DTOs; `GeneratedPage.archived`.
+
+## Branded emails, admin delete, Retrieva cleanup, favicon (2026-07-23)
+
+Polish pass across the creator lifecycle + marketing site. All backend changes
+shipped to `main` (Render auto-deploys); Supabase-side items done in the dashboard.
+
+**Auth emails (Supabase templates + custom SMTP) — DONE in the Supabase dashboard.**
+The sign-in/magic-link email is sent by **Supabase Auth**, not this repo (Studio
+just calls `signInWithOtp`, `app/studio.py`), so its HTML lives in Supabase →
+Authentication → Emails. Both templates now use the Reelie branded card (yellow
+ground, white rounded card, wordmark, purple pill CTA):
+- **Confirm signup** — "Welcome, verify your email + provide your socials" (this is
+  the template a brand-new email hits, NOT Magic Link — the classic Supabase gotcha).
+- **Magic Link** — "Your Reelie sign-in link" (returning users).
+- **Custom SMTP → Resend** enabled (smtp.resend.com:465, user `resend`, API key),
+  sending from the verified reelie.io domain for deliverability + branded sender.
+
+**Creator lifecycle emails (`backend/app/notify.py`) — code, deployed.** Added a
+shared `_brand_email()` helper (table-based + inline CSS card, matching the Supabase
+templates) and routed the two creator-facing emails through it:
+- `creator_confirmation` — rewritten to the socials-submitted message: "you're on
+  your way — check your Instagram DMs / DM Requests to confirm your identity."
+- `creator_approved` — **new** "Congratulations — you're approved! Start posting,
+  start earning" with a Start-creating CTA. Sent as a BackgroundTask from the admin
+  approve endpoint (`routers/admin.py`), idempotent (only on a real transition into
+  approved, never re-sent on re-approve). Verified end-to-end in-process.
+
+**Admin per-creator delete (`routers/admin.py` + `admin_page.py`) — deployed.**
+New `POST /admin/applications/{handle}/delete` removes one creator + all their data
+(products/clicks/views/sales/payouts/likes/jobs/pages/connections/favorites/creator/
+user) FK-safe, children first; a red **Delete** button (confirm dialog) sits next to
+Approve/Reject on each `/admin` card. Verified scoped (deletes only that creator).
+NB: like `/admin/wipe`, this clears Reelie's DB only — the Supabase Auth user must
+still be deleted by hand (Supabase → Authentication → Users) to free the email.
+
+**Removed all "Retrieva" from the live site (`backend/app/landing/`) — deployed.**
+The served marketing page rebranded "Retrieva"→Reelie at serve time
+(`landing_page.py`) but only swapped `retrieva.com`, so the app-demo "Published"
+screen still showed `retrieva.me/maya/night-routine`. Fixed at the source
+(index.html/styles.css/main.js → Reelie / reelie.io; demo URL now
+`reelie.io/maya/night-routine`) and hardened the defensive replace to also cover
+`retrieva.me`. NB: the **non-served** root `Landing Page/` copy still contains
+"Retrieva" (harmless — production serves `backend/app/landing/`).
+
+**Reelie logo as favicon (browser-tab icon) — deployed.** Logo bundled at
+`backend/app/landing/favicon.png`, served from `/favicon.ico`, `/favicon.png`,
+`/apple-touch-icon.png` (one handler, three paths in `routers/site.py`). Browsers
+auto-request `/favicon.ico` on every page, so the whole site is covered; explicit
+`<link rel="icon">` tags added to landing, studio, admin, and public creator/discover
+heads. Source logo `LogoReelie.png` left at repo root (untracked; the served copy is
+the one that ships).
+
+Commits: `adf63f9` (emails + delete) → `3f9c8ae` (branded card) → `6d34fbe`
+(Retrieva cleanup) → `9d56f04` (favicon).
 
 ## Environment note (fixed 2026-07-18)
 

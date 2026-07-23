@@ -67,32 +67,36 @@ struct ReelsFeedView: View {
     @State private var loaded = false
 
     var body: some View {
-        ZStack {
-            Color.black.ignoresSafeArea()
+        Group {
             if items.isEmpty && loaded {
-                VStack(spacing: 8) {
-                    Text("No videos yet").font(ReelieFont.ui(16, weight: .bold)).foregroundStyle(.white)
-                    Text("Creators' clips will show up here.").font(ReelieFont.ui(13)).foregroundStyle(.white.opacity(0.6))
-                }
+                // Branded, light empty state — matches the web, not a black void.
+                EmptyDiscover()
             } else {
-                ScrollView(.vertical, showsIndicators: false) {
-                    LazyVStack(spacing: 0) {
-                        ForEach(items) { item in
-                            ReelCell(item: item, isActive: activeID == item.id)
-                                .containerRelativeFrame([.horizontal, .vertical])
-                                .id(item.id)
+                ZStack {
+                    Color.black.ignoresSafeArea()
+                    if loaded {
+                        ScrollView(.vertical, showsIndicators: false) {
+                            LazyVStack(spacing: 0) {
+                                ForEach(items) { item in
+                                    ReelCell(item: item, isActive: activeID == item.id)
+                                        .containerRelativeFrame([.horizontal, .vertical])
+                                        .id(item.id)
+                                }
+                            }
+                            .scrollTargetLayout()
                         }
+                        .scrollTargetBehavior(.paging)
+                        .scrollPosition(id: $activeID)
+                    } else {
+                        ProgressView().tint(.white)   // loading the feed
                     }
-                    .scrollTargetLayout()
                 }
-                .scrollTargetBehavior(.paging)
-                .scrollPosition(id: $activeID)
+                .overlay(alignment: .top) {
+                    Text("Reelie").font(ReelieFont.display(22)).foregroundStyle(.white)
+                        .shadow(color: .black.opacity(0.4), radius: 6)
+                        .padding(.top, 6)
+                }
             }
-        }
-        .overlay(alignment: .top) {
-            Text("Reelie").font(ReelieFont.display(22)).foregroundStyle(.white)
-                .shadow(color: .black.opacity(0.4), radius: 6)
-                .padding(.top, 6)
         }
         .task { await load() }
     }
@@ -102,6 +106,33 @@ struct ReelsFeedView: View {
         items = (try? await APIClient(baseURL: base).feed()) ?? []
         activeID = items.first?.id
         loaded = true
+    }
+}
+
+// MARK: - Branded empty state (shown when the feed has no videos)
+
+private struct EmptyDiscover: View {
+    var body: some View {
+        VStack(spacing: 0) {
+            Spacer()
+            Wordmark(size: 30)
+            Text("Every routine, shoppable")
+                .displayStyle(26).multilineTextAlignment(.center).padding(.top, 18)
+            Text("Creators' videos show up here — every product found, priced and linked, automatically.")
+                .font(ReelieFont.ui(14)).foregroundStyle(Palette.grey)
+                .multilineTextAlignment(.center).lineSpacing(2)
+                .padding(.top, 12).padding(.horizontal, 44)
+            Spacer(); Spacer()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(
+            ZStack {
+                Color.white
+                RadialGradient(colors: [Palette.sun.opacity(0.16), .clear],
+                               center: .top, startRadius: 0, endRadius: 440)
+            }
+            .ignoresSafeArea()
+        )
     }
 }
 

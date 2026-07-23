@@ -13,7 +13,7 @@ struct DiscoverView: View {
             ReelieTabBar(selection: $app.selectedTab, showsCreator: app.isCreator)
                 .background(.white)
         }
-        .background(.black)
+        .background(.white)
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
         .consumerDestinations()

@@ -80,24 +80,58 @@ def creator_applied(handle: str, display_name: str, email: str,
                reply_to=email or None)
 
 
+def _p(text: str) -> str:
+    """A body paragraph in the branded card's muted style."""
+    return f'<p style="margin:0 0 18px;font-size:15px;line-height:1.6;color:#7A6F4A">{text}</p>'
+
+
+def _brand_email(kicker: str, heading: str, body_html: str,
+                 cta: tuple[str, str] | None = None) -> str:
+    """Wrap content in Reelie's branded email card — yellow ground, white card,
+    wordmark, optional purple pill CTA (label, url), and footer. Table-based +
+    inline CSS so it renders across Gmail / Apple Mail / Outlook."""
+    button = ""
+    if cta:
+        label, url = cta
+        button = (
+            '<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:26px 0 4px">'
+            '<tr><td align="center" bgcolor="#6F5DF0" style="border-radius:999px">'
+            f'<a href="{url}" target="_blank" style="display:inline-block;padding:15px 34px;'
+            'font-size:15px;font-weight:600;color:#FFFFFF;text-decoration:none;border-radius:999px;'
+            f'background:#6F5DF0">{label}</a></td></tr></table>')
+    return (
+        '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#FFE566;margin:0;padding:0">'
+        '<tr><td align="center" style="padding:32px 16px 40px;font-family:\'Instrument Sans\',-apple-system,BlinkMacSystemFont,\'Segoe UI\',Helvetica,Arial,sans-serif">'
+        '<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="440" style="width:440px;max-width:100%">'
+        '<tr><td style="padding:4px 8px 20px;font-size:22px;font-weight:700;letter-spacing:-0.02em;color:#201B0A">Reelie</td></tr></table>'
+        '<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="440" style="width:440px;max-width:100%;background:#FFFFFF;border-radius:20px;box-shadow:0 8px 30px rgba(32,27,10,0.12)">'
+        '<tr><td style="padding:40px 36px 36px">'
+        f'<div style="font-family:\'Space Grotesk\',monospace;font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#6F5DF0;margin:0 0 14px">{kicker}</div>'
+        f'<h1 style="margin:0 0 16px;font-size:26px;line-height:1.2;font-weight:700;letter-spacing:-0.02em;color:#201B0A">{heading}</h1>'
+        f'{body_html}{button}'
+        '</td></tr></table>'
+        '<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="440" style="width:440px;max-width:100%">'
+        '<tr><td style="padding:22px 8px 0;font-size:12px;line-height:1.6;color:#7A6F4A">'
+        '<a href="https://reelie.io" style="color:#7A6F4A;text-decoration:none;font-weight:600">Reelie</a>&nbsp;·&nbsp; Turn your videos into shoppable pages<br>'
+        'Sent by Reelie · <a href="mailto:hello@reelie.io" style="color:#7A6F4A">hello@reelie.io</a>'
+        '</td></tr></table></td></tr></table>')
+
+
 def creator_approved(email: str, display_name: str, handle: str) -> None:
     """Tell the creator they're approved and can start publishing."""
     if not email:
         return
     name = _esc(display_name.split()[0]) if display_name else "there"
-    html = (
-        f'<div style="font-family:-apple-system,Segoe UI,sans-serif;color:#201B0A;max-width:520px;line-height:1.6">'
-        f'<h2 style="margin:0 0 6px">Congratulations — you’re approved! 🎉</h2>'
-        f'<p>Hi {name}, your creator account <b>@{_esc(handle)}</b> is approved. '
-        f'<b>Start posting, start earning</b> — turn any of your videos into a shoppable '
-        f'routine page in a couple of minutes.</p>'
-        f'<p style="margin:22px 0"><a href="{config.PUBLIC_BASE_URL}/studio" '
-        f'style="background:#6F5DF0;color:#fff;text-decoration:none;padding:12px 22px;'
-        f'border-radius:999px;font-weight:600;display:inline-block">Start creating →</a></p>'
-        f'<p>Sign in with the same email and you’ll land straight in. Paste a video link, '
-        f'review the products we find, and publish.</p>'
-        f'<p style="color:#7A6F4A;margin-top:22px">Questions? Just reply to this email — '
-        f'we’re here to help.<br>— The Reelie team</p></div>')
+    ink = 'color:#201B0A'
+    body = (
+        _p(f'Hi {name}, your creator account <b style="{ink}">@{_esc(handle)}</b> is approved. '
+           f'<b style="{ink}">Start posting, start earning</b> — turn any of your videos into a '
+           f'shoppable routine page in minutes.')
+        + _p('Sign in with the same email and you’ll land straight in. Paste a video link, '
+             'review the products we find, and publish.')
+        + _p('Questions? Just reply to this email — we’re here to help.'))
+    html = _brand_email("You’re approved", "Congratulations — you’re approved! 🎉", body,
+                        cta=("Start creating →", f"{config.PUBLIC_BASE_URL}/studio"))
     send_email(email, "Congratulations — you’re approved! Start posting, start earning 🎉",
                html, reply_to=config.SUPPORT_EMAIL)
 
@@ -107,16 +141,16 @@ def creator_confirmation(email: str, display_name: str, handle: str) -> None:
     if not email:
         return
     name = _esc(display_name.split()[0]) if display_name else "there"
-    html = (
-        f'<div style="font-family:-apple-system,Segoe UI,sans-serif;color:#201B0A;max-width:520px;line-height:1.6">'
-        f'<h2 style="margin:0 0 6px">Great — you’re on your way! 🚀</h2>'
-        f'<p>Hi {name}, we’ve got your details for <b>@{_esc(handle)}</b> and you’re '
-        f'on your way to being approved.</p>'
-        f'<p><b>One important step:</b> please check your <b>Instagram DMs — including '
-        f'your DM Requests</b>. Our team will message you there to confirm your identity, '
-        f'and replying is how we verify you and finish your approval.</p>'
-        f'<p>Once you’re verified and approved, you’ll be able to turn any of your videos '
-        f'into a shoppable routine page in a couple of minutes.</p>'
-        f'<p style="color:#7A6F4A;margin-top:22px">— The Reelie team</p></div>')
+    ink = 'color:#201B0A'
+    body = (
+        _p(f'Hi {name}, we’ve got your details for <b style="{ink}">@{_esc(handle)}</b> — '
+           f'you’re on your way to being approved.')
+        + _p(f'<b style="{ink}">One important step:</b> please check your '
+             f'<b style="{ink}">Instagram DMs — including your DM Requests</b>. Our team will '
+             f'message you there to confirm your identity, and replying is how we verify you '
+             f'and finish your approval.')
+        + _p('Once you’re verified and approved, you’ll be able to turn any of your videos '
+             'into a shoppable routine page in minutes.'))
+    html = _brand_email("You’re on your way", "Great — you’re on your way! 🚀", body)
     send_email(email, "You’re on your way — check your Instagram DMs 📩", html,
                reply_to=config.SUPPORT_EMAIL)

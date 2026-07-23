@@ -10,6 +10,7 @@ struct GeneratedPageView: View {
 
     @State private var editingLink = false
     @State private var showDelete = false
+    @State private var stats: PageStats?
     @FocusState private var linkFocused: Bool
 
     private var pageIndex: Int? { app.generatedPages.firstIndex { $0.id == pageID } }
@@ -69,6 +70,31 @@ struct GeneratedPageView: View {
                     header(page)
                     linkEditor(page: page, link: link)
 
+                    // Per-page analytics: views + AI answer-engine crawls + clicks.
+                    if let st = stats, (st.humanViews + st.aiCrawls + st.clicks) > 0 {
+                        SectionLabel(text: "PERFORMANCE").padding(.top, 22).padding(.bottom, 10)
+                        HStack(spacing: 10) {
+                            pageStat("\(st.humanViews)", "VIEWS")
+                            pageStat("\(st.aiCrawls)", "AI ANSWERS")
+                            pageStat("\(st.clicks)", "CLICKS")
+                        }
+                        if !st.aiByEngine.isEmpty {
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 7) {
+                                    ForEach(st.aiByEngine) { e in
+                                        HStack(spacing: 5) {
+                                            Text(e.engine).font(ReelieFont.ui(11.5, weight: .semibold))
+                                            Text("\(e.count)").font(ReelieFont.ui(11.5, weight: .bold)).foregroundStyle(Palette.grey)
+                                        }
+                                        .padding(.horizontal, 11).padding(.vertical, 6)
+                                        .background(Palette.soft, in: Capsule()).foregroundStyle(Palette.ink)
+                                    }
+                                }
+                            }
+                            .padding(.top, 9)
+                        }
+                    }
+
                     SectionLabel(text: "THE ROUTINE")
                         .padding(.top, 22).padding(.bottom, 12)
 
@@ -99,6 +125,7 @@ struct GeneratedPageView: View {
         .background(.white)
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
+        .task(id: page.slug) { stats = await app.pageStats(slug: page.slug) }
         .confirmationDialog("Delete this page?", isPresented: $showDelete, titleVisibility: .visible) {
             Button("Delete page", role: .destructive) {
                 if let idx = pageIndex {
@@ -110,6 +137,16 @@ struct GeneratedPageView: View {
         } message: {
             Text("This removes the page from Reelie. This can't be undone.")
         }
+    }
+
+    // A single performance tile (views / AI answers / clicks).
+    private func pageStat(_ num: String, _ label: String) -> some View {
+        VStack(spacing: 3) {
+            Text(num).font(ReelieFont.ui(16, weight: .bold)).foregroundStyle(Palette.ink)
+            Text(label).font(ReelieFont.ui(10, weight: .bold)).tracking(0.5).foregroundStyle(Palette.faint)
+        }
+        .frame(maxWidth: .infinity).padding(.vertical, 12)
+        .hairlineCard(cornerRadius: 14)
     }
 
     // MARK: header

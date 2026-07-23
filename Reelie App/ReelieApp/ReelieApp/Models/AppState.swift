@@ -199,6 +199,23 @@ final class AppState {
         }
     }
 
+    // Page analytics: human views + AI answer-engine crawls (GEO/AEO) + funnel.
+    var creatorStats: PageStats?
+
+    @MainActor
+    func loadStats() async {
+        guard let base = apiBaseURL, isCreator, let token = authToken else { return }
+        do { creatorStats = try await APIClient(baseURL: base).myStats(token: token) }
+        catch { print("[Reelie] loadStats: \(error)") }
+    }
+
+    /// Per-page funnel + AI-engine breakdown (loaded on demand from a page screen).
+    @MainActor
+    func pageStats(slug: String) async -> PageStats? {
+        guard let base = apiBaseURL, let token = authToken else { return nil }
+        return try? await APIClient(baseURL: base).pageStats(slug: slug, token: token)
+    }
+
     // ---- Creator auth ----------------------------------------------------
     // Consumers stay guests (no login). Auth only happens on the creator path.
     // Degrades gracefully offline (no API) so the app still works on mock data.
@@ -260,6 +277,7 @@ final class AppState {
         authToken = nil
         currentUser.role = .viewer
         earningsSummary = nil
+        creatorStats = nil
         selectedTab = .discover
     }
 

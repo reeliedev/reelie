@@ -103,6 +103,36 @@ struct EarningsView: View {
                     // Period breakdown.
                     periodBlock.padding(.top, 24)
 
+                    // Reach analytics: human views + AI answer-engine crawls, all pages.
+                    if let st = app.creatorStats {
+                        SectionLabel(text: "YOUR REACH · ALL PAGES").padding(.top, 24).padding(.bottom, 10)
+                        HStack(spacing: 10) {
+                            state("\(st.humanViews)", "VIEWS")
+                            state("\(st.aiCrawls)", "AI ANSWERS")
+                            state("\(st.clicks)", "SHOP CLICKS")
+                        }
+                        if !st.aiByEngine.isEmpty {
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 7) {
+                                    ForEach(st.aiByEngine) { e in
+                                        HStack(spacing: 5) {
+                                            Text(e.engine).font(ReelieFont.ui(12, weight: .semibold))
+                                            Text("\(e.count)").font(ReelieFont.ui(12, weight: .bold)).foregroundStyle(Palette.grey)
+                                        }
+                                        .padding(.horizontal, 12).padding(.vertical, 7)
+                                        .background(Palette.soft, in: Capsule())
+                                        .foregroundStyle(Palette.ink)
+                                    }
+                                }
+                            }
+                            .padding(.top, 10)
+                        }
+                        Text("AI answers = times ChatGPT, Claude, Perplexity and other answer engines pulled your page to cite in a reply.")
+                            .font(ReelieFont.ui(11.5)).foregroundStyle(Palette.faint)
+                            .multilineTextAlignment(.center).lineSpacing(1)
+                            .padding(.horizontal, 6).padding(.top, 10)
+                    }
+
                     // Earnings by page (per-video rollup).
                     if !byPage.isEmpty {
                         SectionLabel(text: "EARNINGS BY PAGE").padding(.top, 24).padding(.bottom, 10)
@@ -176,7 +206,7 @@ struct EarningsView: View {
         .background(.white)
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
-        .task { await app.loadEarnings(); await app.loadPayouts() }
+        .task { await app.loadEarnings(); await app.loadPayouts(); await app.loadStats() }
     }
 
     @State private var cashingOut = false

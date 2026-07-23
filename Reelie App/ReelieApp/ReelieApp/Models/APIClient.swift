@@ -120,6 +120,16 @@ struct APIClient {
         try await get("creators/\(handle)/earnings", as: EarningsSummary.self)
     }
 
+    // --- analytics: human views + AI answer-engine crawls (GEO/AEO) + funnel ---
+    /// Creator-wide totals across all pages.
+    func myStats(token: String) async throws -> PageStats {
+        try await get("me/stats", as: PageStats.self, token: token)
+    }
+    /// Funnel + AI-engine breakdown for one page.
+    func pageStats(slug: String, token: String) async throws -> PageStats {
+        try await get("me/pages/\(slug)/stats", as: PageStats.self, token: token)
+    }
+
     // --- self-serve generation ---
     func availableVideos(token: String) async throws -> [AvailableVideo] {
         try await get("me/videos", as: [AvailableVideo].self, token: token)
@@ -213,6 +223,23 @@ struct APIClient {
         }
         let (data, _) = try await URLSession.shared.data(for: req)
         return try JSONDecoder().decode(T.self, from: data)
+    }
+}
+
+// Page analytics — matches backend analytics.creator_stats / page_stats.
+// humanViews = real people; aiCrawls = times an AI answer engine (ChatGPT,
+// Claude, Perplexity, Google AI…) fetched the page; aiByEngine breaks that down.
+struct PageStats: Decodable {
+    let humanViews: Int
+    let uniqueViews: Int
+    let aiCrawls: Int
+    let aiByEngine: [EngineCount]
+    let clicks: Int
+    let sales: Int
+    let earnings: Double
+    struct EngineCount: Decodable, Identifiable {
+        let engine: String; let count: Int
+        var id: String { engine }
     }
 }
 

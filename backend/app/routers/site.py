@@ -104,6 +104,16 @@ def landing_js():
     return FileResponse(config.LANDING_DIR / "main.js", media_type="application/javascript")
 
 
+# Reelie logo as the browser-tab favicon. Browsers auto-request /favicon.ico on
+# every page, so this one file covers the whole site; the explicit <link> tags in
+# each page head pin the PNG for browsers that honor them.
+@router.get("/favicon.ico")
+@router.get("/favicon.png")
+@router.get("/apple-touch-icon.png")
+def favicon():
+    return FileResponse(config.LANDING_DIR / "favicon.png", media_type="image/png")
+
+
 # --- discover: vertical Reels/Shorts feed of creator clips ----------------
 @router.get("/discover", response_class=HTMLResponse)
 def discover(session: Session = Depends(get_session)):

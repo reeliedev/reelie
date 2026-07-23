@@ -580,7 +580,7 @@ def _list_shell(title: str, desc: str, canonical: str, hero: str, cards: str,
            f'<p class="noresults" id="noresults" hidden>No matches.</p></section>' if cards else \
            '<section class="wrap"><p style="padding:44px 0;color:#8A8A8A">No pages yet.</p></section>'
     return f"""<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="icon" type="image/png" href="/favicon.png">
 <title>{_esc(title)}</title><meta name="description" content="{_esc(desc)}">
 <link rel="canonical" href="{_esc(canonical)}">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -654,7 +654,7 @@ LEGAL_UPDATED = "20 July 2026"
 def _legal_html(title: str, blocks: list[tuple[str, str]], canonical: str) -> str:
     body = "".join(f"<h2>{_esc(h)}</h2>{c}" for h, c in blocks)
     return f"""<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="icon" type="image/png" href="/favicon.png">
 <title>{_esc(title)} · {config.BRAND}</title>
 <meta name="description" content="{_esc(title)} for {config.BRAND}.">
 <link rel="canonical" href="{_esc(canonical)}">
@@ -933,7 +933,7 @@ def discover_feed_html(items: list[dict]) -> str:
             '<section class="reel"><div class="empty">No clips yet — check back soon.</div></section>'
     hint = '<div class="hint" id="hint">scroll for more ↓</div>' if len(items) > 1 else ""
     return f"""<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><link rel="icon" type="image/png" href="/favicon.png">
 <title>Discover · {config.BRAND}</title>
 <meta name="description" content="Scroll creators' videos and shop every product.">
 <meta name="theme-color" content="#FFE566">
@@ -1003,7 +1003,7 @@ def discover_feed_html(items: list[dict]) -> str:
 
 def _list_shell_custom(title: str, desc: str, canonical: str, hero: str, body: str, script: str) -> str:
     return f"""<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="icon" type="image/png" href="/favicon.png">
 <title>{_esc(title)}</title><meta name="description" content="{_esc(desc)}">
 <link rel="canonical" href="{_esc(canonical)}">
 <meta name="robots" content="index, follow, max-image-preview:large">

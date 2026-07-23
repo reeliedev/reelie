@@ -446,6 +446,48 @@ the one that ships).
 Commits: `adf63f9` (emails + delete) → `3f9c8ae` (branded card) → `6d34fbe`
 (Retrieva cleanup) → `9d56f04` (favicon).
 
+## iOS ↔ web parity: typography + feature parity (2026-07-24)
+
+Bringing the SwiftUI app (`Reelie App/ReelieApp/`) in line with the web app —
+same text style and (progressively) the same functionality. All verified by
+building for the iPhone 17 Pro simulator (Xcode 26.5); design changes also
+screenshotted. iOS is not deployed via Render, so these are repo commits only.
+
+**Design/typography (chosen direction: fonts + warm colors, keep white canvas +
+yellow accent).** The app *intended* Fraunces + DM Sans but bundled neither, so
+it silently rendered system faces. Now bundles the web brand fonts as static
+weight files (generated from the OFL variable fonts with fonttools) in
+`ReelieApp/Resources/Fonts/` — Instrument Sans 400/500/600/700 + Space Grotesk
+500/600/700 — registered via `Info.plist` UIAppFonts (merged; the synchronized
+group auto-bundles the files). `DesignSystem/Theme.swift`: display → Space
+Grotesk, UI/body → Instrument Sans (weight→file map), palette warmed to the web
+tokens (ink #201B0A, muted #7A6F4A, warm hairlines/fills). Commit `ff8ee1c`.
+
+**Feature parity (Phase B).** All wired to the existing backend (camelCase DTOs
+decode 1:1); sections are guarded so they populate once a real approved creator
+has data.
+- **Page analytics** (`18d83e2`): human views + AI answer-engine crawls (GEO/AEO)
+  + funnel. `PageStats` DTO (matches analytics.creator_stats/page_stats),
+  `/me/stats` + `/me/pages/{slug}/stats`. "YOUR REACH" in Earnings + per-page
+  PERFORMANCE block, with per-engine chips (ChatGPT/Claude/Perplexity…).
+- **Review → publish** (`7bd680b`): the Publish button now actually calls
+  `/me/pages/{slug}/publish` (was a no-op `dismiss()`); LIVE/DRAFT/ARCHIVED
+  states + Unpublish. `GeneratedPage` carries `published`.
+- **Shop links** (`0a1af27`): consumer Shop buttons open the real
+  `/r/{handle}/{slug}/{position}` affiliate redirect (click log → 302).
+- **Gating + favorites** (`b4f3b94`): pending creators see an "under review —
+  check your Instagram DMs" state and can't generate until approved (nil status
+  in dev = approved). Favorites sync to `/me/favorites` when signed in (guests
+  stay device-local).
+- **Custom FAQ editing** (`0fd0052`): the page editor loads/edits/saves
+  creator-authored FAQs via `PATCH …/{slug} {customFaqs}`.
+
+**Still TODO — real auth (Phase B.4).** The app signs in via email dev-login
+only; Apple/Google are "coming soon" stubs. Web uses Supabase (Apple / Google /
+magic link). Needs the Supabase iOS SDK (Swift Package) + Apple "Sign in with
+Apple" capability + Google/Apple client IDs configured in Supabase — external
+setup required before it can be built.
+
 ## Environment note (fixed 2026-07-18)
 
 - `video-llm/.venv` had died: its `python3 → python3.14` symlink pointed at

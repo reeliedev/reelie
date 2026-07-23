@@ -2,17 +2,18 @@ import SwiftUI
 
 // MARK: - Palette
 //
-// Design register: minimal, fully centered, white canvas.
-// Sun is used as an accent / punctuation only.
+// Design register: minimal, fully centered, white canvas, yellow accent.
+// Warm ink/muted/neutrals match the web app (studio): warm near-black text on
+// warm off-whites. Sun (yellow) stays the accent / punctuation.
 enum Palette {
-    static let sun     = Color(hex: 0xFFD60A)   // accent
+    static let sun     = Color(hex: 0xFFD60A)   // accent (yellow)
     static let sunDeep = Color(hex: 0xEFC400)
-    static let ink     = Color(hex: 0x141414)   // primary text
-    static let grey    = Color(hex: 0x9A9A9A)   // secondary text
-    static let line    = Color(hex: 0xEDEDED)   // hairline borders
-    static let soft     = Color(hex: 0xF7F7F7)  // soft fills
-    static let faint    = Color(hex: 0xC9C9C9)  // labels / disabled
-    static let fainter  = Color(hex: 0xBDBDBD)
+    static let ink     = Color(hex: 0x201B0A)   // primary text (warm near-black — web --ink)
+    static let grey    = Color(hex: 0x7A6F4A)   // secondary text (warm tan — web --grey)
+    static let line    = Color(hex: 0xE9E4D8)   // hairline borders (warm)
+    static let soft     = Color(hex: 0xF7F4EC)  // soft fills (warm off-white)
+    static let faint    = Color(hex: 0xB4A98A)  // labels / disabled (warm — web --faint)
+    static let fainter  = Color(hex: 0xC7BEA8)
     static let ok       = Color(hex: 0x1DB954)
 }
 
@@ -30,38 +31,54 @@ extension Color {
 
 // MARK: - Typography
 //
-// Display: Fraunces italic (falls back to system serif italic if the font
-//          isn't installed — drop Fraunces .ttf into the target and add it to
-//          Info.plist "Fonts provided by application" to get the real face).
-// UI:      DM Sans (falls back to the system sans font).
+// Matches the web app exactly:
+//   Display / headings / wordmark / big numbers = Space Grotesk
+//   UI / body                                    = Instrument Sans
+// Static weight files are bundled in Resources/Fonts and registered via
+// Info.plist UIAppFonts. Each weight is its own file (referenced by PostScript
+// name) so weights render crisply instead of being synthesized. Falls back to
+// the system font if the faces somehow fail to load.
 enum ReelieFont {
-    private static let displayName = "Fraunces-Italic"
-    private static let uiName = "DMSans-Regular"
+    static let hasBrandFonts = UIFont(name: "InstrumentSans-Regular", size: 12) != nil
+                            && UIFont(name: "SpaceGrotesk-Bold", size: 12) != nil
 
-    private static let hasDisplay = UIFont(name: displayName, size: 12) != nil
-    private static let hasUI = UIFont(name: uiName, size: 12) != nil
-
-    /// Fraunces-style italic display face used for wordmarks and headlines.
-    static func display(_ size: CGFloat) -> Font {
-        hasDisplay
-            ? .custom(displayName, size: size)
-            : .system(size: size, weight: .bold, design: .serif).italic()
+    /// Instrument Sans file for a given weight.
+    private static func instrument(_ weight: Font.Weight) -> String {
+        switch weight {
+        case .medium:                 return "InstrumentSans-Medium"
+        case .semibold:               return "InstrumentSans-SemiBold"
+        case .bold, .heavy, .black:   return "InstrumentSans-Bold"
+        default:                      return "InstrumentSans-Regular"
+        }
     }
 
-    /// DM Sans-style UI face.
-    static func ui(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
-        if hasUI {
-            // DM Sans ships weight-named files; Font.custom + weight is close enough.
-            return .custom(uiName, size: size).weight(weight)
+    /// Space Grotesk file for a given weight (ships Medium/SemiBold/Bold).
+    private static func grotesk(_ weight: Font.Weight) -> String {
+        switch weight {
+        case .thin, .ultraLight, .light, .regular, .medium: return "SpaceGrotesk-Medium"
+        case .semibold:                                     return "SpaceGrotesk-SemiBold"
+        default:                                            return "SpaceGrotesk-Bold"
         }
-        return .system(size: size, weight: weight, design: .default)
+    }
+
+    /// Space Grotesk display face — wordmarks, headlines, big numbers.
+    static func display(_ size: CGFloat, weight: Font.Weight = .bold) -> Font {
+        hasBrandFonts
+            ? .custom(grotesk(weight), size: size)
+            : .system(size: size, weight: .bold, design: .default)
+    }
+
+    /// Instrument Sans UI / body face.
+    static func ui(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
+        hasBrandFonts
+            ? .custom(instrument(weight), size: size)
+            : .system(size: size, weight: weight, design: .default)
     }
 }
 
 // MARK: - Reusable view modifiers
 
-/// Applies the display face and, when falling back to the system serif,
-/// keeps the italic slant.
+/// Applies the Space Grotesk display face + ink color.
 struct DisplayText: ViewModifier {
     let size: CGFloat
     func body(content: Content) -> some View {

@@ -9,6 +9,19 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<!-- Brand fonts (matching the web: Instrument Sans body + Space Grotesk display).
+	     Files live in Resources/Fonts/ and are auto-bundled via the synchronized group;
+	     UIAppFonts registers them so UIFont/Font.custom can resolve their PostScript names. -->
+	<key>UIAppFonts</key>
+	<array>
+		<string>InstrumentSans-Regular.ttf</string>
+		<string>InstrumentSans-Medium.ttf</string>
+		<string>InstrumentSans-SemiBold.ttf</string>
+		<string>InstrumentSans-Bold.ttf</string>
+		<string>SpaceGrotesk-Medium.ttf</string>
+		<string>SpaceGrotesk-SemiBold.ttf</string>
+		<string>SpaceGrotesk-Bold.ttf</string>
+	</array>
 	<!-- Custom URL scheme the OAuth callback redirects to, so the web-auth session
 	     hands control back to the app after a creator connects YouTube/Instagram. -->
 	<key>CFBundleURLTypes</key>

@@ -13,8 +13,10 @@ from app import config
 
 def home_html() -> str:
     s = (config.LANDING_DIR / "index.html").read_text()
-    # rebrand (the static file predates the Reelie rename); nav + CTAs already
-    # point at /discover and /studio in the source.
-    s = s.replace("Retrieva", config.BRAND).replace("retrieva.com", "reelie.io")
+    # The source now says Reelie/reelie.io directly. These stay as a defensive
+    # net in case a stray "Retrieva" is ever re-synced in from the old page copy.
+    s = (s.replace("Retrieva", config.BRAND)
+          .replace("retrieva.me", "reelie.io")
+          .replace("retrieva.com", "reelie.io"))
     s = s.replace('href="/try"', 'href="/studio"')   # safety net for any stray link
     return s

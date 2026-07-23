@@ -12,23 +12,27 @@ struct HomeView: View {
                 Wordmark(size: 24)
                 HStack {
                     Spacer()
-                    NavigationLink(value: AppRoute.pickVideo) {
-                        HStack(spacing: 4) {
-                            Image(systemName: "plus").font(.system(size: 13, weight: .bold))
-                            Text("New").font(ReelieFont.ui(13.5, weight: .bold))
+                    if app.creatorApproved {
+                        NavigationLink(value: AppRoute.pickVideo) {
+                            HStack(spacing: 4) {
+                                Image(systemName: "plus").font(.system(size: 13, weight: .bold))
+                                Text("New").font(ReelieFont.ui(13.5, weight: .bold))
+                            }
+                            .foregroundStyle(Palette.ink)
+                            .padding(.horizontal, 13).padding(.vertical, 7)
+                            .background(Palette.sun, in: Capsule())
                         }
-                        .foregroundStyle(Palette.ink)
-                        .padding(.horizontal, 13).padding(.vertical, 7)
-                        .background(Palette.sun, in: Capsule())
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
                 }
                 .padding(.horizontal, 28)
             }
             .padding(.top, 14)
             .padding(.bottom, 4)
 
-            if (app.showingAPIPages ? app.generatedPages.isEmpty : app.pages.isEmpty) {
+            if app.isPendingCreator {
+                PendingReviewState()
+            } else if (app.showingAPIPages ? app.generatedPages.isEmpty : app.pages.isEmpty) {
                 HomeEmptyState()
             } else {
                 HomeList()
@@ -60,6 +64,37 @@ struct HomeView: View {
 }
 
 // MARK: - Empty state (screen 05)
+
+/// Shown to a creator whose application is still under review — they can't
+/// generate pages until an admin approves them (the server also 403s until then).
+private struct PendingReviewState: View {
+    @Environment(AppState.self) private var app
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Spacer()
+            Text("⏳").font(.system(size: 44))
+            Text("You're on your way!")
+                .displayStyle(26).multilineTextAlignment(.center).padding(.top, 14)
+            Text("We're verifying you. Check your Instagram DMs — our team will message you there to confirm your identity and finish your approval.")
+                .font(ReelieFont.ui(14)).foregroundStyle(Palette.grey)
+                .multilineTextAlignment(.center).lineSpacing(2)
+                .padding(.top, 10).padding(.horizontal, 36)
+            Button {
+                Task { await app.restoreSession() }
+            } label: {
+                Text("Refresh status")
+                    .font(ReelieFont.ui(14, weight: .bold)).foregroundStyle(Palette.ink)
+                    .padding(.horizontal, 20).padding(.vertical, 11)
+                    .background(Palette.soft, in: Capsule())
+            }
+            .buttonStyle(PressableStyle())
+            .padding(.top, 22)
+            Spacer(); Spacer()
+        }
+        .frame(maxWidth: .infinity)
+    }
+}
 
 private struct HomeEmptyState: View {
     @Environment(AppState.self) private var app

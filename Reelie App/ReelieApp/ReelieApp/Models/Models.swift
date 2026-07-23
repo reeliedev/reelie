@@ -185,6 +185,7 @@ struct User {
     var handle: String
     var avatarGradient: [Color]
     var role: Role = .viewer
+    var creatorStatus: String? = nil   // "pending" | "approved" | "rejected" | nil (dev)
 }
 
 // MARK: - Creators (the browsable corpus)

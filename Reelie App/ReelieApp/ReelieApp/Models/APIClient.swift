@@ -61,10 +61,13 @@ struct UserDTO: Decodable {
     let handle: String?
     let avatarGradient: [String]
     let role: String
+    let creatorStatus: String?
     func toUser() -> User {
-        User(email: email, displayName: displayName, handle: handle ?? "",
-             avatarGradient: avatarGradient.map { Color(hexString: $0) },
-             role: Role.from(role))
+        var u = User(email: email, displayName: displayName, handle: handle ?? "",
+                     avatarGradient: avatarGradient.map { Color(hexString: $0) },
+                     role: Role.from(role))
+        u.creatorStatus = creatorStatus
+        return u
     }
 }
 struct AuthResult: Decodable { let token: String; let user: UserDTO }
@@ -214,6 +217,17 @@ struct APIClient {
         _ = try await send("DELETE", "me", body: nil, as: Ack.self, token: token)
     }
 
+    // --- account-scoped favorites (saved pages + creators) ---
+    func favorites(token: String) async throws -> FavoritesDTO {
+        try await get("me/favorites", as: FavoritesDTO.self, token: token)
+    }
+    func addFavorite(kind: String, ref: String, token: String) async throws {
+        _ = try await post("me/favorites", body: ["kind": kind, "ref": ref], as: Ack.self, token: token)
+    }
+    func removeFavorite(kind: String, ref: String, token: String) async throws {
+        _ = try await send("DELETE", "me/favorites", body: ["kind": kind, "ref": ref], as: Ack.self, token: token)
+    }
+
     /// Generic mutation with an optional JSON body.
     private func send<T: Decodable>(_ method: String, _ path: String, body: [String: Any]?,
                                     as type: T.Type, token: String?) async throws -> T {
@@ -244,6 +258,12 @@ struct PageStats: Decodable {
         let engine: String; let count: Int
         var id: String { engine }
     }
+}
+
+// Account-scoped saves (mirror /me/favorites). pageKeys are "handle/slug".
+struct FavoritesDTO: Decodable {
+    let pageKeys: [String]
+    let creatorHandles: [String]
 }
 
 struct Ack: Decodable { let ok: Bool }

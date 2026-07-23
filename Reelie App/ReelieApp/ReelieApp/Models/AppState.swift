@@ -55,16 +55,48 @@ final class AppState {
 
     func isFavorite(_ page: GeneratedPage) -> Bool { favorites.contains(page.key) }
     func toggleFavorite(_ page: GeneratedPage) {
-        if favorites.contains(page.key) { favorites.remove(page.key) }
-        else { favorites.insert(page.key) }
+        let adding = !favorites.contains(page.key)
+        if adding { favorites.insert(page.key) } else { favorites.remove(page.key) }
         FavoritesStore.savePages(favorites)
+        syncFavorite(kind: "page", ref: page.key, adding: adding)
     }
     func isFavorite(creator handle: String) -> Bool { favoriteCreators.contains(handle) }
     func toggleFavorite(creator handle: String) {
-        if favoriteCreators.contains(handle) { favoriteCreators.remove(handle) }
-        else { favoriteCreators.insert(handle) }
+        let adding = !favoriteCreators.contains(handle)
+        if adding { favoriteCreators.insert(handle) } else { favoriteCreators.remove(handle) }
         FavoritesStore.saveCreators(favoriteCreators)
+        syncFavorite(kind: "creator", ref: handle, adding: adding)
     }
+
+    /// Mirror a save to the account when signed in (guests stay device-local).
+    private func syncFavorite(kind: String, ref: String, adding: Bool) {
+        guard let base = apiBaseURL, let token = authToken else { return }
+        Task {
+            do {
+                let c = APIClient(baseURL: base)
+                if adding { try await c.addFavorite(kind: kind, ref: ref, token: token) }
+                else { try await c.removeFavorite(kind: kind, ref: ref, token: token) }
+            } catch { print("[Reelie] syncFavorite: \(error)") }
+        }
+    }
+
+    /// Merge the account's saved pages/creators into the local sets on sign-in/refresh.
+    @MainActor
+    func loadFavorites() async {
+        guard let base = apiBaseURL, let token = authToken else { return }
+        do {
+            let f = try await APIClient(baseURL: base).favorites(token: token)
+            favorites.formUnion(f.pageKeys)
+            favoriteCreators.formUnion(f.creatorHandles)
+            FavoritesStore.savePages(favorites)
+            FavoritesStore.saveCreators(favoriteCreators)
+        } catch { print("[Reelie] loadFavorites: \(error)") }
+    }
+
+    // Creator application state (from /me). Absent (nil) in dev/offline → treated
+    // as approved so local testing isn't blocked.
+    var isPendingCreator: Bool { isCreator && currentUser.creatorStatus == "pending" }
+    var creatorApproved: Bool { currentUser.creatorStatus == nil || currentUser.creatorStatus == "approved" }
 
     var favoritePages: [GeneratedPage] { catalog.filter { favorites.contains($0.key) } }
     var favoriteCreatorList: [Creator] { creators.filter { favoriteCreators.contains($0.handle) } }
@@ -100,6 +132,7 @@ final class AppState {
             if !routines.isEmpty { self.catalog = routines }
             backendConnected = true
             print("[Reelie] refreshFromAPI: OK — \(creators.count) creators, \(routines.count) routines")
+            if authToken != nil { await loadFavorites() }
             if isCreator { await loadMyPages() }
         } catch {
             backendConnected = false   // keep the mock corpus
@@ -247,6 +280,7 @@ final class AppState {
         if !u.handle.isEmpty { currentUser.handle = u.handle }
         if !u.avatarGradient.isEmpty { currentUser.avatarGradient = u.avatarGradient }
         currentUser.role = u.role
+        currentUser.creatorStatus = u.creatorStatus
     }
 
     @MainActor

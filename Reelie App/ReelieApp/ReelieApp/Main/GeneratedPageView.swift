@@ -11,6 +11,7 @@ struct GeneratedPageView: View {
     @State private var editingLink = false
     @State private var showDelete = false
     @State private var stats: PageStats?
+    @State private var publishing = false
     @FocusState private var linkFocused: Bool
 
     private var pageIndex: Int? { app.generatedPages.firstIndex { $0.id == pageID } }
@@ -60,7 +61,10 @@ struct GeneratedPageView: View {
                         }
                     }
                 }
-                StepLabel(text: pageIndex.flatMap { app.generatedPages[$0].archived ? "ARCHIVED" : nil } ?? "YOUR PAGE")
+                StepLabel(text: pageIndex.flatMap {
+                    let p = app.generatedPages[$0]
+                    return p.archived ? "ARCHIVED" : (p.published ? "LIVE" : "DRAFT")
+                } ?? "YOUR PAGE")
             }
             .frame(height: 44)
             .padding(.horizontal, 28)
@@ -111,14 +115,34 @@ struct GeneratedPageView: View {
                 .padding(.bottom, 16)
             }
 
-            // Bottom publish
+            // Bottom publish / unpublish
             VStack(spacing: 12) {
                 Rectangle().fill(Palette.line).frame(height: 1.5)
-                BigButton(title: "Publish page", style: .sun) { dismiss() }
+                if page.published {
+                    BigButton(title: publishing ? "…" : "Unpublish", style: .outline) {
+                        guard !publishing else { return }
+                        publishing = true
+                        Task { await app.setPublished(page, published: false); publishing = false; dismiss() }
+                    }
                     .padding(.horizontal, 28)
-                Button("Not now") { dismiss() }
-                    .font(ReelieFont.ui(14, weight: .medium)).foregroundStyle(Palette.grey)
-                    .buttonStyle(.plain)
+                    Text("Live at \(page.publicURL)")
+                        .font(ReelieFont.ui(12, weight: .medium)).foregroundStyle(Palette.grey)
+                } else {
+                    BigButton(title: publishing ? "…" : "Publish page", style: .sun) {
+                        guard !publishing else { return }
+                        publishing = true
+                        Task {
+                            // Real API pages go live via the backend; mock/offline just closes.
+                            if app.showingAPIPages { await app.setPublished(page, published: true) }
+                            publishing = false
+                            dismiss()
+                        }
+                    }
+                    .padding(.horizontal, 28)
+                    Button("Not now") { dismiss() }
+                        .font(ReelieFont.ui(14, weight: .medium)).foregroundStyle(Palette.grey)
+                        .buttonStyle(.plain)
+                }
             }
             .padding(.bottom, 8)
         }

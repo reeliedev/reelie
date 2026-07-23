@@ -22,6 +22,7 @@ struct GeneratedPage: Identifiable {
     var disclosure: String
     var products: [Product]
     var archived: Bool = false
+    var published: Bool = false      // live on the web vs draft awaiting review
 
     /// The slug actually used in the public URL — the creator's custom link wins.
     var pathSlug: String {
@@ -52,6 +53,7 @@ struct GeneratedPageDTO: Decodable {
     let platforms: [String]
     let disclosure: String
     let archived: Bool?
+    let published: Bool?
     let products: [GeneratedProductDTO]
 
     struct GeneratedProductDTO: Decodable {
@@ -89,7 +91,8 @@ extension GeneratedPageDTO {
             platforms: platforms,
             disclosure: disclosure,
             products: products.enumerated().map { idx, p in p.toProduct() },
-            archived: archived ?? false
+            archived: archived ?? false,
+            published: published ?? false
         )
     }
 }

@@ -155,6 +155,17 @@ final class AppState {
         catch { print("[Reelie] deletePage: \(error)") }
     }
 
+    /// Publish (go live) or unpublish (back to draft) a generated page.
+    @MainActor @discardableResult
+    func setPublished(_ page: GeneratedPage, published: Bool) async -> Bool {
+        guard let base = apiBaseURL, let token = authToken else { return false }
+        do {
+            try await APIClient(baseURL: base).setPublished(slug: page.slug, published: published, token: token)
+            await loadMyPages()
+            return true
+        } catch { print("[Reelie] setPublished: \(error)"); return false }
+    }
+
     // ---- Payouts ----------------------------------------------------------
     var payoutsSummary: PayoutsSummary?
 

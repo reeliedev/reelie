@@ -191,6 +191,9 @@ struct APIClient {
     func setArchived(slug: String, archived: Bool, token: String) async throws {
         _ = try await send("POST", "me/pages/\(slug)/\(archived ? "archive" : "unarchive")", body: [:], as: Ack.self, token: token)
     }
+    func setPublished(slug: String, published: Bool, token: String) async throws {
+        _ = try await send("POST", "me/pages/\(slug)/\(published ? "publish" : "unpublish")", body: [:], as: Ack.self, token: token)
+    }
     func deletePage(slug: String, token: String) async throws {
         _ = try await send("DELETE", "me/pages/\(slug)", body: nil, as: Ack.self, token: token)
     }

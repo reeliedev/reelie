@@ -8,6 +8,10 @@ struct PageEditorView: View {
     @Environment(\.dismiss) private var dismiss
     let pageID: UUID
 
+    struct EditableFAQ: Identifiable { let id = UUID(); var q: String; var a: String }
+    @State private var faqs: [EditableFAQ] = []
+    @State private var faqsLoaded = false
+
     private var idx: Int? { app.generatedPages.firstIndex { $0.id == pageID } }
 
     var body: some View {
@@ -36,6 +40,8 @@ struct PageEditorView: View {
                         ForEach(app.generatedPages[idx].products.indices, id: \.self) { i in
                             productEditor(pageIndex: idx, productIndex: i)
                         }
+
+                        faqSection
                     }
                     .padding(.horizontal, 28).padding(.top, 8).padding(.bottom, 16)
                 }
@@ -44,7 +50,12 @@ struct PageEditorView: View {
                     Rectangle().fill(Palette.line).frame(height: 1.5)
                     BigButton(title: "Save changes", style: .sun) {
                         let page = app.generatedPages[idx]
-                        Task { await app.savePageEdits(page); dismiss() }
+                        // Only send FAQs once loaded, so we never wipe existing ones.
+                        let faqPayload: [[String: String]]? = faqsLoaded
+                            ? faqs.filter { !$0.q.trimmingCharacters(in: .whitespaces).isEmpty }
+                                  .map { ["q": $0.q, "a": $0.a] }
+                            : nil
+                        Task { await app.savePageEdits(page, customFaqs: faqPayload); dismiss() }
                     }
                     .padding(.horizontal, 28).padding(.top, 12)
                 }
@@ -53,9 +64,58 @@ struct PageEditorView: View {
             .background(.white)
             .navigationBarBackButtonHidden(true)
             .toolbar(.hidden, for: .navigationBar)
+            .task {
+                guard !faqsLoaded else { return }
+                faqs = (await app.loadCustomFaqs(slug: app.generatedPages[idx].slug))
+                    .map { EditableFAQ(q: $0.q, a: $0.a) }
+                faqsLoaded = true
+            }
         } else {
             Text("Page not found").font(ReelieFont.ui(15)).foregroundStyle(Palette.grey)
         }
+    }
+
+    // MARK: custom FAQ builder
+
+    @ViewBuilder private var faqSection: some View {
+        SectionLabel(text: "QUESTIONS & ANSWERS").padding(.top, 24).padding(.bottom, 4)
+        Text("Add your own Q&A — great for AI answer engines and shoppers.")
+            .font(ReelieFont.ui(11.5)).foregroundStyle(Palette.faint).padding(.bottom, 10)
+
+        ForEach($faqs) { $faq in
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text("QUESTION").font(ReelieFont.ui(10, weight: .bold)).tracking(0.6).foregroundStyle(Palette.grey)
+                    Spacer()
+                    Button {
+                        faqs.removeAll { $0.id == faq.id }
+                    } label: {
+                        Image(systemName: "trash").font(.system(size: 13, weight: .bold)).foregroundStyle(Palette.grey)
+                    }
+                    .buttonStyle(.plain)
+                }
+                TextField("e.g. Is this good for oily skin?", text: $faq.q, axis: .vertical)
+                    .lineLimit(1...3).font(ReelieFont.ui(14, weight: .medium)).foregroundStyle(Palette.ink)
+                    .padding(.horizontal, 12).padding(.vertical, 10).hairlineCard(cornerRadius: 12)
+                TextField("Your answer", text: $faq.a, axis: .vertical)
+                    .lineLimit(2...5).font(ReelieFont.ui(13)).foregroundStyle(Palette.ink)
+                    .padding(.horizontal, 12).padding(.vertical, 10).hairlineCard(cornerRadius: 12)
+            }
+            .padding(14).hairlineCard(cornerRadius: 16).padding(.bottom, 11)
+        }
+
+        Button {
+            faqs.append(EditableFAQ(q: "", a: ""))
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: "plus").font(.system(size: 13, weight: .bold))
+                Text("Add a question").font(ReelieFont.ui(13.5, weight: .bold))
+            }
+            .foregroundStyle(Palette.ink)
+            .frame(maxWidth: .infinity).padding(.vertical, 13)
+            .hairlineCard(cornerRadius: 14, color: Palette.line)
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: field builders

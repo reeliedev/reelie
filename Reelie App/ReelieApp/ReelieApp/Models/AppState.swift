@@ -153,9 +153,18 @@ final class AppState {
         } catch { print("[Reelie] loadMyPages: \(error)") }
     }
 
-    /// Persist creator text edits to the backend (PATCH). Offline → local overrides.
+    /// Load the creator-authored FAQs for a page so the editor can edit them.
     @MainActor
-    func savePageEdits(_ page: GeneratedPage) async {
+    func loadCustomFaqs(slug: String) async -> [(q: String, a: String)] {
+        guard let base = apiBaseURL, let token = authToken else { return [] }
+        do { return try await APIClient(baseURL: base).customFaqs(slug: slug, token: token).map { ($0.q, $0.a) } }
+        catch { print("[Reelie] loadCustomFaqs: \(error)"); return [] }
+    }
+
+    /// Save edits. `customFaqs` (when non-nil) REPLACES the page's custom-FAQ list;
+    /// pass nil to leave FAQs untouched (the editor only sends them once loaded).
+    @MainActor
+    func savePageEdits(_ page: GeneratedPage, customFaqs: [[String: String]]? = nil) async {
         guard let base = apiBaseURL, let token = authToken else {
             OverridesStore.save(page); return
         }
@@ -168,6 +177,7 @@ final class AppState {
             return d
         }
         if !products.isEmpty { fields["products"] = products }
+        if let customFaqs { fields["customFaqs"] = customFaqs }
         do {
             _ = try await APIClient(baseURL: base).editPage(slug: page.slug, fields: fields, token: token)
             await loadMyPages()

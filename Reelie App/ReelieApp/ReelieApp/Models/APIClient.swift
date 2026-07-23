@@ -191,6 +191,11 @@ struct APIClient {
     func editPage(slug: String, fields: [String: Any], token: String) async throws -> GeneratedPage {
         try await send("PATCH", "me/pages/\(slug)", body: fields, as: GeneratedPageDTO.self, token: token).toGeneratedPage()
     }
+    /// The page's custom (creator-authored) FAQs, from the full page detail.
+    func customFaqs(slug: String, token: String) async throws -> [PageFAQ] {
+        let detail = try await get("me/pages/\(slug)", as: PageDetailDTO.self, token: token)
+        return (detail.faqs ?? []).filter { $0.custom }
+    }
     func setArchived(slug: String, archived: Bool, token: String) async throws {
         _ = try await send("POST", "me/pages/\(slug)/\(archived ? "archive" : "unarchive")", body: [:], as: Ack.self, token: token)
     }
@@ -265,6 +270,11 @@ struct FavoritesDTO: Decodable {
     let pageKeys: [String]
     let creatorHandles: [String]
 }
+
+// Page FAQ (matches pages._page_faqs): auto-generated ones have custom=false,
+// creator-authored ones custom=true. Only custom ones are editable.
+struct PageFAQ: Decodable { let q: String; let a: String; let custom: Bool }
+private struct PageDetailDTO: Decodable { let faqs: [PageFAQ]? }
 
 struct Ack: Decodable { let ok: Bool }
 private struct ConnectResp: Decodable { let url: String }

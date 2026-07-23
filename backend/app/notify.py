@@ -80,19 +80,43 @@ def creator_applied(handle: str, display_name: str, email: str,
                reply_to=email or None)
 
 
-def creator_confirmation(email: str, display_name: str, handle: str) -> None:
-    """Reassure the creator we received their closed-beta application."""
+def creator_approved(email: str, display_name: str, handle: str) -> None:
+    """Tell the creator they're approved and can start publishing."""
     if not email:
         return
     name = _esc(display_name.split()[0]) if display_name else "there"
     html = (
         f'<div style="font-family:-apple-system,Segoe UI,sans-serif;color:#201B0A;max-width:520px;line-height:1.6">'
-        f'<h2 style="margin:0 0 6px">You’re on the list ✨</h2>'
-        f'<p>Hi {name}, thanks for applying to <b>Reelie</b> — we’ve got your application '
-        f'for <b>@{_esc(handle)}</b> and you’re in the review queue.</p>'
-        f'<p>We’re in closed beta and approve creators in small batches. '
-        f'<b>Keep an eye on your Instagram DMs</b> — that’s how we verify you and send your invite.</p>'
-        f'<p>Once you’re in, you’ll be able to turn any of your videos into a shoppable '
+        f'<h2 style="margin:0 0 6px">Congratulations — you’re approved! 🎉</h2>'
+        f'<p>Hi {name}, your creator account <b>@{_esc(handle)}</b> is approved. '
+        f'<b>Start posting, start earning</b> — turn any of your videos into a shoppable '
         f'routine page in a couple of minutes.</p>'
+        f'<p style="margin:22px 0"><a href="{config.PUBLIC_BASE_URL}/studio" '
+        f'style="background:#6F5DF0;color:#fff;text-decoration:none;padding:12px 22px;'
+        f'border-radius:999px;font-weight:600;display:inline-block">Start creating →</a></p>'
+        f'<p>Sign in with the same email and you’ll land straight in. Paste a video link, '
+        f'review the products we find, and publish.</p>'
+        f'<p style="color:#7A6F4A;margin-top:22px">Questions? Just reply to this email — '
+        f'we’re here to help.<br>— The Reelie team</p></div>')
+    send_email(email, "Congratulations — you’re approved! Start posting, start earning 🎉",
+               html, reply_to=config.SUPPORT_EMAIL)
+
+
+def creator_confirmation(email: str, display_name: str, handle: str) -> None:
+    """Confirm we got their socials and tell them to watch their Instagram DMs."""
+    if not email:
+        return
+    name = _esc(display_name.split()[0]) if display_name else "there"
+    html = (
+        f'<div style="font-family:-apple-system,Segoe UI,sans-serif;color:#201B0A;max-width:520px;line-height:1.6">'
+        f'<h2 style="margin:0 0 6px">Great — you’re on your way! 🚀</h2>'
+        f'<p>Hi {name}, we’ve got your details for <b>@{_esc(handle)}</b> and you’re '
+        f'on your way to being approved.</p>'
+        f'<p><b>One important step:</b> please check your <b>Instagram DMs — including '
+        f'your DM Requests</b>. Our team will message you there to confirm your identity, '
+        f'and replying is how we verify you and finish your approval.</p>'
+        f'<p>Once you’re verified and approved, you’ll be able to turn any of your videos '
+        f'into a shoppable routine page in a couple of minutes.</p>'
         f'<p style="color:#7A6F4A;margin-top:22px">— The Reelie team</p></div>')
-    send_email(email, "Your Reelie application is in ✨", html, reply_to=config.ADMIN_EMAIL)
+    send_email(email, "You’re on your way — check your Instagram DMs 📩", html,
+               reply_to=config.SUPPORT_EMAIL)

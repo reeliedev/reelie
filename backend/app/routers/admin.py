@@ -6,15 +6,15 @@ page whose JS prompts for the token and calls these endpoints.
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from sqlmodel import Session, delete, select
 
-from app import admin_page, config
+from app import admin_page, config, notify
 from app.db import get_session
 from app.models import (Click, Creator, Favorite, GenerationJob, Page, PageLike,
-                        Payout, Product, Sale, SocialConnection, User, _now)
+                        PageView, Payout, Product, Sale, SocialConnection, User, _now)
 
 router = APIRouter(tags=["admin"])
 
@@ -81,13 +81,64 @@ def _set_status(handle: str, status: str, session: Session) -> dict:
 
 
 @router.post("/admin/applications/{handle}/approve", dependencies=[Depends(require_admin)])
-def approve(handle: str, session: Session = Depends(get_session)):
-    return _set_status(handle, "approved", session)
+def approve(handle: str, background: BackgroundTasks, session: Session = Depends(get_session)):
+    c = session.get(Creator, handle)
+    was_approved = bool(c and c.status == "approved")
+    result = _set_status(handle, "approved", session)
+    # Only email on a real pending/rejected → approved transition, so re-clicking
+    # approve on an already-approved creator doesn't re-send the welcome.
+    if not was_approved:
+        user = session.exec(select(User).where(User.handle == handle)).first()
+        if user and user.email:
+            background.add_task(notify.creator_approved, user.email, c.display_name, handle)
+    return result
 
 
 @router.post("/admin/applications/{handle}/reject", dependencies=[Depends(require_admin)])
 def reject(handle: str, session: Session = Depends(get_session)):
     return _set_status(handle, "rejected", session)
+
+
+@router.post("/admin/applications/{handle}/delete", dependencies=[Depends(require_admin)])
+def delete_creator(handle: str, session: Session = Depends(get_session)):
+    """Permanently remove one creator and all their data — for beta cleanup.
+    NB: like /admin/wipe, this only clears Reelie's DB. The Supabase Auth user
+    still exists; delete it in Supabase (Authentication → Users) to free the
+    email for a fresh signup."""
+    c = session.get(Creator, handle)
+    if not c:
+        raise HTTPException(404, "No such creator")
+    page_ids = [p.id for p in session.exec(select(Page).where(Page.handle == handle)).all()]
+    user = session.exec(select(User).where(User.handle == handle)).first()
+    deleted: dict[str, int] = {}
+
+    def _del(model, clause) -> None:
+        rows = session.exec(select(model).where(clause)).all()
+        for r in rows:
+            session.delete(r)
+        if rows:
+            deleted[model.__name__] = len(rows)
+
+    # children first to respect foreign keys
+    if page_ids:
+        _del(Product, Product.page_id.in_(page_ids))
+    _del(Click, Click.handle == handle)
+    _del(PageView, PageView.handle == handle)
+    _del(Sale, Sale.handle == handle)
+    _del(Payout, Payout.handle == handle)
+    _del(PageLike, PageLike.handle == handle)
+    _del(GenerationJob, GenerationJob.handle == handle)
+    _del(Page, Page.handle == handle)
+    if user:
+        _del(SocialConnection, SocialConnection.user_id == user.id)
+        _del(Favorite, Favorite.user_id == user.id)
+    session.delete(c)
+    deleted["Creator"] = 1
+    if user:
+        session.delete(user)
+        deleted["User"] = 1
+    session.commit()
+    return {"ok": True, "handle": handle, "deleted": deleted}
 
 
 @router.get("/admin/requests", dependencies=[Depends(require_admin)])

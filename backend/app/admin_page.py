@@ -26,7 +26,7 @@ input{width:100%;font:inherit;font-size:15px;padding:13px 15px;border:1px solid 
 input:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(111,93,240,.16)}
 .btn{border:none;cursor:pointer;font:inherit;font-weight:700;font-size:14px;padding:10px 16px;border-radius:999px;background:var(--accent);color:#fff}
 .btn.sm{padding:8px 14px;font-size:13px}
-.btn.ok{background:var(--green)}.btn.no{background:#fff;color:var(--red);border:1.5px solid var(--line)}
+.btn.ok{background:var(--green)}.btn.no{background:#fff;color:var(--red);border:1.5px solid var(--line)}.btn.danger{background:var(--red);color:#fff}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin-bottom:12px;box-shadow:0 6px 16px rgba(32,27,10,.06)}
 .app{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .app .n{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:17px}
@@ -90,6 +90,7 @@ function render(rows, reqs){
       '<div class="acts">'+
         (a.status!=='approved'?'<button class="btn ok sm" onclick="act(\''+esc(a.handle)+'\',\'approve\')">Approve</button>':'')+
         (a.status!=='rejected'?'<button class="btn no sm" onclick="act(\''+esc(a.handle)+'\',\'reject\')">Reject</button>':'')+
+        '<button class="btn danger sm" onclick="removeCreator(\''+esc(a.handle)+'\')">Delete</button>'+
       '</div></div></div>';
   });
   app.innerHTML=html;
@@ -98,6 +99,11 @@ async function act(handle, what){
   await fetch('/admin/applications/'+handle+'/'+what,{method:'POST',headers:{'X-Admin-Token':TOK}});
   load();
 }
-window.act=act;
+async function removeCreator(handle){
+  if(!confirm('Permanently delete @'+handle+' and ALL their data (pages, products, sales)?\n\nThis cannot be undone. To free their email for re-signup, also delete them in Supabase → Authentication → Users.')) return;
+  await fetch('/admin/applications/'+handle+'/delete',{method:'POST',headers:{'X-Admin-Token':TOK}});
+  load();
+}
+window.act=act; window.removeCreator=removeCreator;
 load();
 </script></body></html>"""

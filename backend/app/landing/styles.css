@@ -898,6 +898,18 @@ h1 {
   .chip-2 { right: -4%; }
 }
 
+/* nav: stack the links under the wordmark so they don't cram on phones */
+@media (max-width: 640px) {
+  .nav { flex-wrap: wrap; padding: 0.8rem 1rem; row-gap: 0.65rem; }
+  .wordmark { font-size: 1.2rem; }
+  .nav-links { width: 100%; flex-wrap: wrap; justify-content: flex-start;
+               align-items: center; gap: 0.55rem 1.1rem; }
+  .nav-try { font-size: 0.85rem; padding: 0.2rem 0; }
+  .nav-links .btn-small { margin-left: auto; padding: 0.5rem 0.95rem; font-size: 0.83rem; }
+  h1 { font-size: clamp(1.7rem, 8.5vw, 2.3rem); line-height: 1.12; }
+  .eyebrow { font-size: 0.66rem; }
+}
+
 @media (max-width: 480px) {
   .signup input { flex-basis: 100%; }
   .signup .btn { flex-basis: 100%; }

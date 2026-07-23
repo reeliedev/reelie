@@ -99,31 +99,6 @@
 
   if (scenes.length) showScene(0);
 
-  /* ---------- countdown ---------- */
-  // TODO: set your real pilot launch date
-  var LAUNCH = new Date("2026-08-15T09:00:00");
-
-  var elDays = document.getElementById("cd-days");
-  var elHours = document.getElementById("cd-hours");
-  var elMins = document.getElementById("cd-mins");
-
-  function pad(n) { return n < 10 ? "0" + n : "" + n; }
-
-  function tick() {
-    if (!elDays) return;
-    var diff = LAUNCH - new Date();
-    if (diff < 0) diff = 0;
-    var mins = Math.floor(diff / 60000);
-    var days = Math.floor(mins / 1440);
-    var hours = Math.floor((mins % 1440) / 60);
-    elDays.textContent = pad(days);
-    elHours.textContent = pad(hours);
-    elMins.textContent = pad(mins % 60);
-  }
-
-  tick();
-  setInterval(tick, 30000);
-
   /* ---------- nav CTA focuses the form ---------- */
   var navCta = document.getElementById("nav-cta");
   if (navCta) {

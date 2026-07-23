@@ -18,7 +18,8 @@ struct RoutineView: View {
                         header(page)
                         SectionLabel(text: "THE ROUTINE").padding(.top, 24).padding(.bottom, 12)
                         ForEach(Array(page.products.enumerated()), id: \.element.id) { i, product in
-                            ProductRow(number: i + 1, product: product, pageHandle: page.handle)
+                            ProductRow(number: i + 1, product: product,
+                                       pageHandle: page.handle, pageSlug: page.pathSlug)
                                 .padding(.bottom, 11)
                         }
                         Text(page.disclosure)
@@ -84,9 +85,17 @@ private struct ProductRow: View {
     let number: Int
     let product: Product
     let pageHandle: String
+    let pageSlug: String
 
     private var alsoUsedBy: [Creator] {
         app.creatorsUsing(brand: product.brand, name: product.name, excluding: pageHandle)
+    }
+
+    /// The affiliate redirect that logs a click and 302s to the retailer,
+    /// exactly like the web page's Shop buttons (`/r/{handle}/{slug}/{position}`).
+    private var shopURL: URL? {
+        let base = app.apiBaseURL ?? URL(string: "https://reelie.io")
+        return base?.appendingPathComponent("r/\(pageHandle)/\(pageSlug)/\(number)")
     }
 
     var body: some View {
@@ -127,7 +136,15 @@ private struct ProductRow: View {
         .hairlineCard()
     }
 
-    private var shopButton: some View {
+    @ViewBuilder private var shopButton: some View {
+        if let url = shopURL {
+            Link(destination: url) { shopButtonLabel }.buttonStyle(.plain)
+        } else {
+            shopButtonLabel
+        }
+    }
+
+    private var shopButtonLabel: some View {
         VStack(spacing: 3) {
             Text("Shop").font(ReelieFont.ui(13, weight: .bold)).foregroundStyle(Palette.ink)
             if let retailer = product.retailer, !retailer.isEmpty {

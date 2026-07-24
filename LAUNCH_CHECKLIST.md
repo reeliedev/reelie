@@ -99,7 +99,10 @@ Legend: 🔴 blocker · 🟡 soon-after · ✅ done · 🚧 in progress
 - [ ] 🔴 8.3 **Real auth** (Supabase Apple/Google/magic link) — dev-login can't ship;
       **Sign in with Apple required** (Guideline 4.8) since Google is offered.
 - [ ] 🔴 8.4 **Apple Developer Program** + set `DEVELOPMENT_TEAM` + register app.
-- [ ] 🔴 8.5 **UGC safeguards** (Guideline 1.2) — report/flag content + block users.
+- [x] ✅ 8.5 **UGC safeguards** (Guideline 1.2) — Report (reason picker → stored +
+      emails the team) + Block a creator (device-local, hides their content;
+      unblock in Profile) on reels/routines/creator profiles. Published contact:
+      hello@reelie.io.
 - [ ] 🔴 8.6 App Store Connect listing + App Privacy label + screenshots + age rating.
 
 ## 6. Content & polish

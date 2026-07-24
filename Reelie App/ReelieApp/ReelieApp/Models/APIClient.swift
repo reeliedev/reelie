@@ -72,6 +72,13 @@ struct UserDTO: Decodable {
 }
 struct AuthResult: Decodable { let token: String; let user: UserDTO }
 
+// Which login the app should render (mirrors backend /auth/config).
+struct AuthConfigDTO: Decodable {
+    let provider: String                 // "supabase" | "dev"
+    let supabaseUrl: String?
+    let supabaseAnonKey: String?
+}
+
 struct APIClient {
     let baseURL: URL
 
@@ -94,6 +101,9 @@ struct APIClient {
     }
 
     // --- auth ---
+    func authConfig() async throws -> AuthConfigDTO {
+        try await get("auth/config", as: AuthConfigDTO.self)
+    }
     func devLogin(email: String) async throws -> AuthResult {
         try await post("auth/dev-login", body: ["email": email], as: AuthResult.self)
     }

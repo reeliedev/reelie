@@ -334,6 +334,68 @@ final class AppState {
         } catch { print("[Reelie] signIn: FAILED — \(error)"); return false }
     }
 
+    // ---- Real auth (Supabase: Apple / Google / email OTP) -------------------
+    // The backend tells us which provider to use via /auth/config. When it's
+    // "supabase" the app authenticates directly with Supabase and uses the
+    // returned access token as the Reelie API Bearer (backend verifies via JWKS).
+    var authConfig: AuthConfigDTO?
+    var usesSupabaseAuth: Bool { authConfig?.provider == "supabase" }
+
+    @MainActor
+    func loadAuthConfig() async {
+        guard let base = apiBaseURL else { return }
+        authConfig = try? await APIClient(baseURL: base).authConfig()
+    }
+
+    private func supabase() -> SupabaseAuth? {
+        guard let c = authConfig, c.provider == "supabase",
+              let u = c.supabaseUrl.flatMap(URL.init(string:)), let key = c.supabaseAnonKey
+        else { return nil }
+        return SupabaseAuth(url: u, anonKey: key)
+    }
+
+    /// Adopt a Supabase access token as the session and load /me (the backend
+    /// provisions/links the account by verifying the token).
+    @MainActor @discardableResult
+    func adoptSupabaseSession(_ token: String) async -> Bool {
+        guard let base = apiBaseURL else { return false }
+        authToken = token
+        do { applyUser(try await APIClient(baseURL: base).me(token: token).toUser()); return true }
+        catch { authToken = nil; print("[Reelie] adoptSupabaseSession: \(error)"); return false }
+    }
+
+    @MainActor @discardableResult
+    func startEmailOTP(_ email: String) async -> Bool {
+        currentUser.email = email
+        guard let sb = supabase() else { return await signIn(email: email) }  // dev fallback
+        do { try await sb.sendEmailOTP(email); return true }
+        catch { print("[Reelie] sendEmailOTP: \(error)"); return false }
+    }
+
+    @MainActor @discardableResult
+    func verifyEmailOTP(email: String, code: String) async -> Bool {
+        guard let sb = supabase() else { return false }
+        do { return await adoptSupabaseSession(try await sb.verifyEmailOTP(email: email, code: code)) }
+        catch { print("[Reelie] verifyEmailOTP: \(error)"); return false }
+    }
+
+    @MainActor @discardableResult
+    func signInWithApple(idToken: String, rawNonce: String) async -> Bool {
+        guard let sb = supabase() else { return false }
+        do { return await adoptSupabaseSession(try await sb.signInWithApple(idToken: idToken, rawNonce: rawNonce)) }
+        catch { print("[Reelie] signInWithApple: \(error)"); return false }
+    }
+
+    @MainActor @discardableResult
+    func signInWithGoogle() async -> Bool {
+        guard let sb = supabase() else { return false }
+        let coordinator = WebAuthCoordinator()
+        guard let cb = await coordinator.run(url: sb.googleAuthorizeURL(redirect: "reelie://auth-callback"),
+                                             callbackScheme: "reelie"),
+              let token = SupabaseAuth.accessToken(fromCallback: cb) else { return false }
+        return await adoptSupabaseSession(token)
+    }
+
     @MainActor @discardableResult
     func becomeCreatorAPI(handle: String) async -> Bool {
         let h = handle.trimmingCharacters(in: .whitespaces).lowercased()

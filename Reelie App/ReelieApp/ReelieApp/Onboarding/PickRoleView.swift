@@ -1,4 +1,5 @@
 import SwiftUI
+import AuthenticationServices
 
 /// The fork right after login: browse as a viewer (default) or set up as a creator.
 struct PickRoleView: View {
@@ -83,6 +84,8 @@ struct BecomeCreatorView: View {
     @State private var handle = ""
     @State private var busy = false
     @State private var error: String?
+    @State private var showEmail = false
+    @State private var appleNonce = ""
 
     var body: some View {
         VStack(spacing: 0) {
@@ -110,18 +113,53 @@ struct BecomeCreatorView: View {
             }
             Spacer()
             VStack(spacing: 12) {
-                TextField("you@email.com", text: $email)
-                    .font(ReelieFont.ui(16, weight: .medium)).foregroundStyle(Palette.ink)
-                    .textInputAutocapitalization(.never).autocorrectionDisabled()
-                    .keyboardType(.emailAddress)
-                    .padding(.horizontal, 16).frame(height: 58)
-                    .hairlineCard(cornerRadius: 16, color: Palette.ink)
-                if let error { Text(error).font(ReelieFont.ui(12.5)).foregroundStyle(.red) }
-                BigButton(title: busy ? "…" : "Continue", style: .sun) { Task { await doSignIn() } }
+                BigButton(title: "Continue with email", style: .sun) { showEmail = true }
+
+                SignInWithAppleButton(.signIn) { request in
+                    appleNonce = AppleNonce.make()
+                    request.requestedScopes = [.fullName, .email]
+                    request.nonce = AppleNonce.sha256(appleNonce)
+                } onCompletion: { handleApple($0) }
+                .signInWithAppleButtonStyle(.black)
+                .frame(height: 54).clipShape(Capsule())
+
+                BigButton(title: busy ? "…" : "Continue with Google", style: .outline,
+                          icon: Image(systemName: "g.circle.fill")) {
+                    Task {
+                        busy = true
+                        let ok = await app.signInWithGoogle()
+                        busy = false
+                        if ok { afterSignedIn() } else { error = "Google sign-in didn't complete." }
+                    }
+                }
+                if let error { Text(error).font(ReelieFont.ui(12.5)).foregroundStyle(.red).multilineTextAlignment(.center) }
             }
             .padding(.bottom, 24)
         }
         .padding(.horizontal, 28)
+        .task { await app.loadAuthConfig() }
+        .sheet(isPresented: $showEmail) {
+            EmailSignInSheet { showEmail = false; afterSignedIn() }
+                .presentationDetents([.height(360)])
+        }
+    }
+
+    private func afterSignedIn() {
+        handle = app.handle
+        step = .claim
+    }
+
+    private func handleApple(_ result: Result<ASAuthorization, Error>) {
+        guard case .success(let auth) = result,
+              let cred = auth.credential as? ASAuthorizationAppleIDCredential,
+              let data = cred.identityToken,
+              let idToken = String(data: data, encoding: .utf8) else {
+            error = "Apple sign-in was cancelled."; return
+        }
+        Task {
+            if await app.signInWithApple(idToken: idToken, rawNonce: appleNonce) { afterSignedIn() }
+            else { error = "Apple sign-in failed. Please try again." }
+        }
     }
 
     private var claimStep: some View {
@@ -179,14 +217,6 @@ struct BecomeCreatorView: View {
     private func finish() {
         app.selectedTab = .pages
         dismiss()
-    }
-
-    private func doSignIn() async {
-        guard email.contains("@") else { error = "Enter a valid email"; return }
-        busy = true; error = nil
-        let ok = await app.signIn(email: email)
-        busy = false
-        if ok { handle = app.handle; step = .claim } else { error = "Couldn't sign in — is the API running?" }
     }
 
     private func doClaim() async {

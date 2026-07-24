@@ -43,7 +43,7 @@ input:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(111,93,240,.16)
 <div class="wrap" id="app"><p class="muted">Loading…</p></div>
 <script>
 var TOK = localStorage.getItem('reelie.admin')||'', app=document.getElementById('app'), FILTER='pending';
-function esc(s){ return (s||'').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+function esc(s){ return (s||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
 async function api(method, path){
   var r = await fetch(path,{method:method,headers:{'X-Admin-Token':TOK}});
   if(r.status===401){ TOK=''; localStorage.removeItem('reelie.admin'); throw new Error('Bad token'); }

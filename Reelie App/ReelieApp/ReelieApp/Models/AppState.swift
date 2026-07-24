@@ -244,9 +244,9 @@ final class AppState {
 
     @MainActor
     func loadEarnings() async {
-        guard let base = apiBaseURL, isCreator else { return }
+        guard let base = apiBaseURL, isCreator, let token = authToken else { return }
         do {
-            earningsSummary = try await APIClient(baseURL: base).earnings(handle: handle)
+            earningsSummary = try await APIClient(baseURL: base).earnings(handle: handle, token: token)
             backendConnected = true
         } catch {
             print("[Reelie] loadEarnings: FAILED — \(error)")

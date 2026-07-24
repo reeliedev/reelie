@@ -7,6 +7,7 @@ Call these from a BackgroundTask so the response isn't blocked.
 
 from __future__ import annotations
 
+import html
 import json
 import ssl
 import urllib.error
@@ -26,7 +27,8 @@ except Exception:  # noqa: BLE001
 
 
 def _esc(s: str) -> str:
-    return (s or "").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+    # quote=True also escapes " and ' so values are safe inside HTML attributes.
+    return html.escape(s or "", quote=True)
 
 
 def send_email(to: str | list[str], subject: str, html: str, reply_to: str | None = None) -> bool:

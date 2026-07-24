@@ -36,7 +36,9 @@ def dev_login(body: DevLogin, session: Session = Depends(get_session)):
     """Create or fetch a viewer account for this email, return a bearer token.
     Dev provider only — with a managed provider (AUTH_PROVIDER=oidc) the client
     sends the provider's token directly and the server verifies it via JWKS."""
-    if config.AUTH_PROVIDER != "dev":
+    # Fail-closed: dev-login is a password-less token mint. It must NEVER be
+    # reachable in production, even if AUTH_PROVIDER were somehow misconfigured.
+    if config.IS_PROD or config.AUTH_PROVIDER != "dev":
         raise HTTPException(404, "dev-login is disabled; use the configured auth provider.")
     user = session.exec(select(User).where(User.email == body.email.lower())).first()
     if not user:

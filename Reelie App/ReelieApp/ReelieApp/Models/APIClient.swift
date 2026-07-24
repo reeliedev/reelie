@@ -119,8 +119,8 @@ struct APIClient {
         try await get("creators/\(handle)/routines", as: [GeneratedPageDTO].self).map { $0.toGeneratedPage() }
     }
 
-    func earnings(handle: String) async throws -> EarningsSummary {
-        try await get("creators/\(handle)/earnings", as: EarningsSummary.self)
+    func earnings(handle: String, token: String) async throws -> EarningsSummary {
+        try await get("creators/\(handle)/earnings", as: EarningsSummary.self, token: token)
     }
 
     // --- analytics: human views + AI answer-engine crawls (GEO/AEO) + funnel ---

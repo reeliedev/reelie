@@ -86,9 +86,19 @@ class OIDCAuthProvider:
             return user
         # First sign-in with this provider identity → provision a viewer account.
         email = (payload.get("email") or f"{sub}@users.reelie.io").lower()
-        user = session.exec(select(User).where(User.email == email)).first()
-        if user:                       # link an existing email-based account
-            user.external_id = sub
+        # Only auto-link to an existing email-based account when the provider has
+        # VERIFIED the email AND that account isn't already bound to another
+        # identity. Otherwise an unverified-email signup could take over an account.
+        email_verified = payload.get("email_verified") is True
+        existing = session.exec(select(User).where(User.email == email)).first()
+        if existing and email_verified and not existing.external_id:
+            existing.external_id = sub   # safe first-time link
+            user = existing
+        elif existing and existing.external_id and existing.external_id != sub:
+            # Email already belongs to a different identity — refuse to hijack it.
+            return None
+        elif existing:
+            user = existing
         else:
             user = User(email=email, external_id=sub,
                         display_name=payload.get("name") or email.split("@")[0].title(),

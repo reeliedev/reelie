@@ -7,17 +7,22 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, func, select
 
+from app.auth import current_user
 from app.db import get_session
-from app.models import Click, Page, Sale
+from app.models import Click, Page, Sale, User
 
 router = APIRouter(prefix="/creators", tags=["earnings"])
 
 
 @router.get("/{handle}/earnings")
-def earnings(handle: str, session: Session = Depends(get_session)):
+def earnings(handle: str, user: User = Depends(current_user),
+             session: Session = Depends(get_session)):
+    # Financials are private: a creator can only read their OWN earnings.
+    if not user.handle or handle != user.handle:
+        raise HTTPException(status_code=403, detail="Not your earnings.")
     sales = session.exec(select(Sale).where(Sale.handle == handle)).all()
     now = datetime.now(timezone.utc)
 

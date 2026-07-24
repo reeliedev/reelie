@@ -514,7 +514,10 @@ def page_html(page: Page, creator: Creator, products: list[Product],
         "PLATFORMS": _esc(" & ".join(creator.platforms)) if creator.platforms else "",
         "META": _esc(page.meta), "INTRO": _esc(page.intro), "DISCLOSURE": _esc(page.disclosure),
         "GRAD0": grad0, "GRAD1": grad1,
-        "JSONLD": json.dumps(page_graph(page, creator, products), indent=2, ensure_ascii=False),
+        # Escape <, >, & so creator-controlled fields can't break out of the
+        # <script type="application/ld+json"> block (stored XSS). Stays valid JSON-LD.
+        "JSONLD": (json.dumps(page_graph(page, creator, products), indent=2, ensure_ascii=False)
+                   .replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026")),
         "STEPS": _steps_html(page, products, also),
         "FAQ": _faq_html(page, creator, products),
         "SIMILAR_MODULE": _similar_module(similar or []),

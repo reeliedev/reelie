@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import re
+
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel
 from sqlmodel import Session, delete, select
@@ -69,10 +71,15 @@ def become_creator(body: BecomeCreator, background: BackgroundTasks,
     handle = body.handle.strip().lower().lstrip("@")
     if not handle:
         raise HTTPException(400, "A handle is required.")
+    # Strict charset: a handle appears in URLs and is rendered into the admin
+    # console / public pages — anything outside [a-z0-9_-] would enable injection.
+    if not re.fullmatch(r"[a-z0-9][a-z0-9_-]{2,29}", handle):
+        raise HTTPException(400, "Handles are 3–30 characters: letters, numbers, - or _.")
     if handle in config.RESERVED_HANDLES or "/" in handle:
         raise HTTPException(409, "That handle isn't available.")
-    ig = (body.instagram or "").strip().lstrip("@")
-    yt = (body.youtube or "").strip().lstrip("@")
+    # Social handles are also rendered — keep them to a safe charset.
+    ig = re.sub(r"[^A-Za-z0-9._-]", "", (body.instagram or "").strip().lstrip("@"))[:30]
+    yt = re.sub(r"[^A-Za-z0-9._-]", "", (body.youtube or "").strip().lstrip("@"))[:40]
     existing = session.get(Creator, handle)
     is_new = existing is None
     if existing is None:

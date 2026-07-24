@@ -66,20 +66,24 @@ if SUPABASE_URL:
 REELIE_ROLE = os.environ.get("REELIE_ROLE", "api").strip().lower()
 IS_API = REELIE_ROLE != "worker"
 
-JWT_SECRET = os.environ.get("JWT_SECRET") or ("dev-only-secret-do-not-use-in-prod" if not IS_PROD else "")
+JWT_SECRET = (os.environ.get("JWT_SECRET") or ("dev-only-secret-do-not-use-in-prod" if not IS_PROD else "")).strip()
 if IS_PROD and IS_API and not JWT_SECRET:
     raise RuntimeError("JWT_SECRET must be set when REELIE_ENV=prod")
+# Fail-closed: the password-less dev auth provider must never run in production.
+if IS_PROD and AUTH_PROVIDER == "dev":
+    raise RuntimeError("AUTH_PROVIDER must be 'oidc' in prod — set SUPABASE_URL. "
+                       "Refusing to boot with the dev (password-less) provider.")
 
 # Internal service token: gates the /ingest write (the generator/worker → API) so
 # it's not an open endpoint. Needed by BOTH: the API passes it to the generator
 # subprocess, and the worker uses it to publish finished pages back to /ingest.
-INGEST_TOKEN = os.environ.get("INGEST_TOKEN") or ("dev-ingest-token" if not IS_PROD else "")
+INGEST_TOKEN = (os.environ.get("INGEST_TOKEN") or ("dev-ingest-token" if not IS_PROD else "")).strip()
 if IS_PROD and not INGEST_TOKEN:
     raise RuntimeError("INGEST_TOKEN must be set when REELIE_ENV=prod")
 
 # Admin token: gates the closed-beta review console (/admin) — approve/reject
 # creator applications. Keep it secret; anyone with it can approve creators. API-only.
-ADMIN_TOKEN = os.environ.get("ADMIN_TOKEN") or ("dev-admin-token" if not IS_PROD else "")
+ADMIN_TOKEN = (os.environ.get("ADMIN_TOKEN") or ("dev-admin-token" if not IS_PROD else "")).strip()
 if IS_PROD and IS_API and not ADMIN_TOKEN:
     raise RuntimeError("ADMIN_TOKEN must be set when REELIE_ENV=prod")
 JWT_ALGORITHM = "HS256"

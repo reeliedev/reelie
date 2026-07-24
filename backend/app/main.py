@@ -21,6 +21,21 @@ app.add_middleware(
     allow_headers=["*"], allow_credentials=False,
 )
 
+
+@app.middleware("http")
+async def security_headers(request, call_next):
+    """Baseline hardening headers on every response. SAMEORIGIN (not DENY) so the
+    studio's own edit-preview iframe of a public page keeps working. HSTS only in
+    prod (dev is http). No CSP yet — the server-rendered pages use inline styles,
+    so a strict CSP needs nonces (tracked as a follow-up)."""
+    resp = await call_next(request)
+    resp.headers.setdefault("X-Content-Type-Options", "nosniff")
+    resp.headers.setdefault("X-Frame-Options", "SAMEORIGIN")
+    resp.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    if config.IS_PROD:
+        resp.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+    return resp
+
 app.include_router(auth.router)
 app.include_router(me.router)
 app.include_router(catalog.router)

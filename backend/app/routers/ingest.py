@@ -6,6 +6,8 @@ for local dev; would be a creator-authenticated write in production.
 
 from __future__ import annotations
 
+import hmac
+
 from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException
 from pydantic import BaseModel
 from sqlmodel import Session, delete, select
@@ -39,7 +41,7 @@ router = APIRouter(prefix="/ingest", tags=["ingest"])
 
 def require_ingest_token(x_ingest_token: str = Header(default="")) -> None:
     """Only the generator/worker (which holds INGEST_TOKEN) may publish pages."""
-    if not config.INGEST_TOKEN or x_ingest_token != config.INGEST_TOKEN:
+    if not config.INGEST_TOKEN or not hmac.compare_digest(x_ingest_token, config.INGEST_TOKEN):
         raise HTTPException(status_code=401, detail="Unauthorized")
 
 

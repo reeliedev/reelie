@@ -6,6 +6,8 @@ page whose JS prompts for the token and calls these endpoints.
 
 from __future__ import annotations
 
+import hmac
+
 from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
@@ -20,7 +22,7 @@ router = APIRouter(tags=["admin"])
 
 
 def require_admin(x_admin_token: str = Header(default="")) -> None:
-    if not config.ADMIN_TOKEN or x_admin_token != config.ADMIN_TOKEN:
+    if not config.ADMIN_TOKEN or not hmac.compare_digest(x_admin_token, config.ADMIN_TOKEN):
         raise HTTPException(status_code=401, detail="Unauthorized")
 
 

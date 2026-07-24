@@ -69,14 +69,16 @@ IS_API = REELIE_ROLE != "worker"
 JWT_SECRET = (os.environ.get("JWT_SECRET") or ("dev-only-secret-do-not-use-in-prod" if not IS_PROD else "")).strip()
 if IS_PROD and IS_API and not JWT_SECRET:
     raise RuntimeError("JWT_SECRET must be set when REELIE_ENV=prod")
-# The dev (password-less) auth provider is unsafe for real users. In prod it is
-# refused UNLESS explicitly acknowledged with ALLOW_DEV_AUTH=1 — a closed-beta
-# stopgap until Supabase is configured. Default = fail-closed.
+# The dev (password-less) auth provider is unsafe for real users. Rather than
+# crash the whole service, we BOOT but keep the dev-login endpoint disabled in
+# prod unless explicitly acknowledged with ALLOW_DEV_AUTH=1 (a closed-beta
+# stopgap until Supabase is configured). Public pages keep working either way;
+# only password-less creator sign-in is gated. Set SUPABASE_URL for real auth.
 ALLOW_DEV_AUTH = os.environ.get("ALLOW_DEV_AUTH", "").strip() == "1"
 if IS_PROD and AUTH_PROVIDER == "dev" and not ALLOW_DEV_AUTH:
-    raise RuntimeError(
-        "AUTH_PROVIDER is 'dev' in prod. Set SUPABASE_URL for real auth, or set "
-        "ALLOW_DEV_AUTH=1 to knowingly run the password-less dev provider (closed beta only).")
+    print("[config] WARNING: prod is running the dev auth provider with dev-login "
+          "DISABLED (no password-less sign-in). Set SUPABASE_URL for real auth, or "
+          "ALLOW_DEV_AUTH=1 to enable dev-login for the closed beta.", flush=True)
 
 # Internal service token: gates the /ingest write (the generator/worker → API) so
 # it's not an open endpoint. Needed by BOTH: the API passes it to the generator

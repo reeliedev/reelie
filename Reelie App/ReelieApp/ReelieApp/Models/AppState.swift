@@ -385,8 +385,9 @@ final class AppState {
         do { applyUser(try await APIClient(baseURL: base).me(token: session.access_token).toUser()); return true }
         catch {
             authToken = nil
-            lastAuthError = "account load failed — \(error.localizedDescription) || token \(JWTInspect.describe(session.access_token))"
-            print("[Reelie] adoptSupabaseSession: \(error)"); return false
+            let backend = await APIClient(baseURL: base).debugToken(session.access_token)
+            lastAuthError = "\(backend) — \(error.localizedDescription)"
+            print("[Reelie] adoptSupabaseSession: \(error) | \(backend)"); return false
         }
     }
 

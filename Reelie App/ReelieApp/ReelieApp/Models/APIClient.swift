@@ -112,6 +112,14 @@ struct APIClient {
     func authConfig() async throws -> AuthConfigDTO {
         try await get("auth/config", as: AuthConfigDTO.self)
     }
+    /// TEMP diagnostic: ask the backend exactly why a token verifies or not.
+    func debugToken(_ token: String) async -> String {
+        struct R: Decodable { let ok: Bool; let reason: String?; let sub: String? }
+        do {
+            let r = try await post("auth/debug-token", body: ["token": token], as: R.self)
+            return r.ok ? "backend OK (sub=\(r.sub ?? "?"))" : "backend FAIL: \(r.reason ?? "?")"
+        } catch { return "debug call error: \(error.localizedDescription)" }
+    }
     func devLogin(email: String) async throws -> AuthResult {
         try await post("auth/dev-login", body: ["email": email], as: AuthResult.self)
     }

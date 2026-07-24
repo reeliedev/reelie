@@ -77,7 +77,7 @@ struct ReelsFeedView: View {
                     if loaded {
                         ScrollView(.vertical, showsIndicators: false) {
                             LazyVStack(spacing: 0) {
-                                ForEach(items) { item in
+                                ForEach(items.filter { !app.isBlocked(creator: $0.handle) }) { item in
                                     ReelCell(item: item, isActive: activeID == item.id)
                                         .containerRelativeFrame([.horizontal, .vertical])
                                         .id(item.id)
@@ -257,6 +257,8 @@ struct ReelCell: View {
                 .font(.system(size: 17)).foregroundStyle(.white.opacity(0.9))
                 .padding(.top, 14)
                 .onTapGesture { toggleMute() }
+            UGCMenu(kind: "page", ref: item.likeKey, handle: item.handle, tint: .white)
+                .padding(.top, 8)
         }
         .padding(.bottom, 4)
     }

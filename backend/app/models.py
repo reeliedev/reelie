@@ -178,6 +178,21 @@ class PageLike(SQLModel, table=True):
     created_at: datetime = Field(default_factory=_now)
 
 
+class Report(SQLModel, table=True):
+    """A user report of objectionable content (App Store UGC requirement). Guest-
+    friendly: `reporter_client` is the browser/device id; `reporter_user` is set
+    when signed in. `kind` = page|creator; `ref` = 'handle/slug' or a handle."""
+    id: str = Field(default_factory=_uuid, primary_key=True)
+    kind: str = Field(default="page", index=True)          # page | creator
+    ref: str = Field(index=True)                           # handle/slug or handle
+    reason: str = ""                                       # spam | offensive | ...
+    detail: str = ""                                       # optional free text
+    reporter_client: str = ""
+    reporter_user: str | None = None
+    handled: bool = Field(default=False, index=True)
+    created_at: datetime = Field(default_factory=_now, index=True)
+
+
 class SocialConnection(SQLModel, table=True):
     """A creator's linked platform account (YouTube / Instagram), established via
     OAuth. Stores the tokens we use to list their videos. One row per (user,

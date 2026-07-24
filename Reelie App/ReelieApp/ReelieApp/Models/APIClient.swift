@@ -217,6 +217,15 @@ struct APIClient {
         _ = try await send("POST", "me/payouts/withdraw", body: [:], as: Ack.self, token: token)
     }
 
+    // --- content reports (UGC moderation) ---
+    func report(kind: String, ref: String, reason: String, detail: String,
+                clientId: String, token: String?) async throws {
+        _ = try await post("reports",
+                           body: ["kind": kind, "ref": ref, "reason": reason,
+                                  "detail": detail, "clientId": clientId],
+                           as: Ack.self, token: token)
+    }
+
     // --- account ---
     func deleteAccount(token: String) async throws {
         _ = try await send("DELETE", "me", body: nil, as: Ack.self, token: token)

@@ -60,6 +60,28 @@ final class AppState {
         FavoritesStore.savePages(favorites)
         syncFavorite(kind: "page", ref: page.key, adding: adding)
     }
+    // ---- UGC safety: block a creator (device-local) + report content ---------
+    var blockedCreators: Set<String> = FavoritesStore.loadBlocked()
+
+    func isBlocked(creator handle: String) -> Bool { blockedCreators.contains(handle) }
+    func blockCreator(_ handle: String) {
+        blockedCreators.insert(handle)
+        FavoritesStore.saveBlocked(blockedCreators)
+    }
+    func unblockCreator(_ handle: String) {
+        blockedCreators.remove(handle)
+        FavoritesStore.saveBlocked(blockedCreators)
+    }
+
+    /// Flag a routine ("page") or a creator to the team. Best-effort; guest-ok.
+    @MainActor
+    func report(kind: String, ref: String, reason: String, detail: String = "") async {
+        guard let base = apiBaseURL else { return }
+        try? await APIClient(baseURL: base).report(
+            kind: kind, ref: ref, reason: reason, detail: detail,
+            clientId: LikeStore.clientId, token: authToken)
+    }
+
     func isFavorite(creator handle: String) -> Bool { favoriteCreators.contains(handle) }
     func toggleFavorite(creator handle: String) {
         let adding = !favoriteCreators.contains(handle)

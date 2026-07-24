@@ -12,7 +12,11 @@ struct CreatorProfileView: View {
         VStack(spacing: 0) {
             // Nav bar
             ZStack {
-                HStack { BackButton { dismiss() }; Spacer() }
+                HStack {
+                    BackButton { dismiss() }
+                    Spacer()
+                    UGCMenu(kind: "creator", ref: handle, handle: handle) { dismiss() }
+                }
                 StepLabel(text: "CREATOR")
             }
             .frame(height: 44).padding(.horizontal, 28)

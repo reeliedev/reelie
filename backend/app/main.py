@@ -14,7 +14,7 @@ from app import config
 from app.db import init_db
 from app.routers import (admin, auth, catalog, connections, earnings, feed,
                          generate, ingest, likes, me, pages, payouts, recommend,
-                         redirect, site)
+                         redirect, reports, site)
 from app.seed import seed_if_empty
 
 app = FastAPI(title="Reelie API", version="0.1.0")
@@ -62,6 +62,7 @@ app.include_router(pages.router)
 app.include_router(payouts.router)
 app.include_router(connections.router)
 app.include_router(likes.router)
+app.include_router(reports.router)
 app.include_router(admin.router)
 app.include_router(feed.router)
 

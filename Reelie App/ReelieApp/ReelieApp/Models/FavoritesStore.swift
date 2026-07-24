@@ -20,4 +20,13 @@ enum FavoritesStore {
     static func saveCreators(_ set: Set<String>) {
         UserDefaults.standard.set(Array(set), forKey: creatorsKey)
     }
+
+    // Blocked creators (UGC safety) — their content is hidden from this device.
+    private static let blockedKey = "reelie.blocked.creators"
+    static func loadBlocked() -> Set<String> {
+        Set(UserDefaults.standard.stringArray(forKey: blockedKey) ?? [])
+    }
+    static func saveBlocked(_ set: Set<String>) {
+        UserDefaults.standard.set(Array(set), forKey: blockedKey)
+    }
 }

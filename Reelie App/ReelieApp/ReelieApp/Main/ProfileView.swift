@@ -28,6 +28,23 @@ struct ProfileView: View {
                         SettingsRow(icon: "📄", title: "Terms & privacy", subtitle: nil)
                     }
 
+                    // Blocked accounts (UGC safety) — undo a block.
+                    if !app.blockedCreators.isEmpty {
+                        SectionLabel(text: "BLOCKED ACCOUNTS").padding(.top, 22).padding(.bottom, 10)
+                        SettingsGroup {
+                            ForEach(Array(app.blockedCreators).sorted(), id: \.self) { h in
+                                HStack {
+                                    Text("@\(h)").font(ReelieFont.ui(14.5, weight: .medium)).foregroundStyle(Palette.ink)
+                                    Spacer()
+                                    Button("Unblock") { app.unblockCreator(h) }
+                                        .font(ReelieFont.ui(13, weight: .bold)).foregroundStyle(Palette.ink)
+                                        .buttonStyle(.plain)
+                                }
+                                .padding(.horizontal, 15).padding(.vertical, 13)
+                            }
+                        }
+                    }
+
                     if app.isCreator {
                         Button("Sign out") { app.signOut() }
                             .font(ReelieFont.ui(14, weight: .medium)).foregroundStyle(Palette.fainter)

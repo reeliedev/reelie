@@ -54,6 +54,7 @@ struct RoutineView: View {
                             .foregroundStyle(app.isFavorite(page) ? Palette.sun : Palette.ink)
                     }
                     .buttonStyle(.plain)
+                    UGCMenu(kind: "page", ref: page.key, handle: page.handle) { dismiss() }
                 }
             }
             StepLabel(text: "ROUTINE")

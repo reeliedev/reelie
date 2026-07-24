@@ -58,6 +58,26 @@ def send_email(to: str | list[str], subject: str, html: str, reply_to: str | Non
     return False
 
 
+def content_reported(kind: str, ref: str, reason: str, detail: str, reporter: str) -> None:
+    """Alert the team that a viewer reported content (UGC moderation)."""
+    link = f"{config.PUBLIC_BASE_URL}/{ref}" if kind == "page" else f"{config.PUBLIC_BASE_URL}/{ref}"
+    rows = "".join(
+        f'<tr><td style="padding:4px 14px 4px 0;color:#7A6F4A">{k}</td>'
+        f'<td style="padding:4px 0"><b>{v}</b></td></tr>'
+        for k, v in [("Type", _esc(kind)), ("Target", _esc(ref)),
+                     ("Reason", _esc(reason)), ("Reported by", _esc(reporter))])
+    html = (
+        f'<div style="font-family:-apple-system,Segoe UI,sans-serif;color:#201B0A;max-width:520px">'
+        f'<h2 style="margin:0 0 4px">Content reported 🚩</h2>'
+        f'<p style="color:#7A6F4A;margin:0 0 16px">Review and action if needed.</p>'
+        f'<table style="border-collapse:collapse;font-size:15px">{rows}</table>'
+        + (f'<p style="margin:14px 0 0"><b>Detail:</b> {_esc(detail)}</p>' if detail else "")
+        + f'<p style="margin:22px 0 0"><a href="{_esc(link)}" '
+        f'style="background:#6F5DF0;color:#fff;text-decoration:none;padding:10px 18px;'
+        f'border-radius:999px;font-weight:600">View the content →</a></p></div>')
+    send_email(config.ADMIN_EMAIL, f"Reported: {kind} {ref}", html)
+
+
 def creator_applied(handle: str, display_name: str, email: str,
                     instagram: str, youtube: str) -> None:
     """Tell the team a creator applied to the closed beta and awaits approval."""

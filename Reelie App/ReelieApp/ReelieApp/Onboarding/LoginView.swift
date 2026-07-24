@@ -76,7 +76,7 @@ struct LoginView: View {
         }
         Task {
             if await app.signInWithApple(idToken: idToken, rawNonce: appleNonce) { onContinue() }
-            else { authError = "Apple sign-in failed. Please try again." }
+            else { authError = app.lastAuthError ?? "Apple sign-in failed. Please try again." }
         }
     }
 

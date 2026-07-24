@@ -158,7 +158,7 @@ struct BecomeCreatorView: View {
         }
         Task {
             if await app.signInWithApple(idToken: idToken, rawNonce: appleNonce) { afterSignedIn() }
-            else { error = "Apple sign-in failed. Please try again." }
+            else { error = app.lastAuthError ?? "Apple sign-in failed. Please try again." }
         }
     }
 

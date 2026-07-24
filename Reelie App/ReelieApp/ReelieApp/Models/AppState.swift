@@ -360,6 +360,7 @@ final class AppState {
     // returned access token as the Reelie API Bearer (backend verifies via JWKS).
     var authConfig: AuthConfigDTO?
     var usesSupabaseAuth: Bool { authConfig?.provider == "supabase" }
+    var lastAuthError: String?   // surfaced in the UI so sign-in failures are debuggable
 
     @MainActor
     func loadAuthConfig() async {
@@ -382,7 +383,11 @@ final class AppState {
         authToken = session.access_token
         if let rt = session.refresh_token { refreshToken = rt }
         do { applyUser(try await APIClient(baseURL: base).me(token: session.access_token).toUser()); return true }
-        catch { authToken = nil; print("[Reelie] adoptSupabaseSession: \(error)"); return false }
+        catch {
+            authToken = nil
+            lastAuthError = "Signed in, but loading your account failed: \(error.localizedDescription)"
+            print("[Reelie] adoptSupabaseSession: \(error)"); return false
+        }
     }
 
     @MainActor @discardableResult
@@ -402,9 +407,12 @@ final class AppState {
 
     @MainActor @discardableResult
     func signInWithApple(idToken: String, rawNonce: String) async -> Bool {
-        guard let sb = supabase() else { return false }
+        guard let sb = supabase() else { lastAuthError = "Auth isn't configured (no Supabase)."; return false }
         do { return await adoptSupabaseSession(try await sb.signInWithApple(idToken: idToken, rawNonce: rawNonce)) }
-        catch { print("[Reelie] signInWithApple: \(error)"); return false }
+        catch {
+            lastAuthError = (error as? SupabaseAuth.AuthError)?.errorDescription ?? error.localizedDescription
+            print("[Reelie] signInWithApple: \(error)"); return false
+        }
     }
 
     @MainActor @discardableResult

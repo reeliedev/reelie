@@ -2,8 +2,15 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<!-- Allow the app to reach the local dev API over http (localhost/loopback).
-	     Merged with the generated Info.plist. Remove for production. -->
+	<!-- Export compliance: the app uses only standard HTTPS/TLS, which is exempt
+	     encryption. Setting this to false skips the encryption question on every
+	     App Store / TestFlight upload. -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<!-- Local-networking exception ONLY (loopback/private hosts) so a debug build
+	     can hit a local dev API over http. This is an Apple-sanctioned exception —
+	     it does NOT weaken TLS for production traffic to reelie.io, which stays
+	     HTTPS-enforced. It is not NSAllowsArbitraryLoads. -->
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsLocalNetworking</key>

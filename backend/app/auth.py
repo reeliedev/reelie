@@ -12,12 +12,22 @@ User keyed by the provider 'sub' (external_id).
 
 from __future__ import annotations
 
+import ssl
 import time
 from typing import Protocol
 
 import jwt
 from fastapi import Depends, Header, HTTPException
 from sqlmodel import Session, select
+
+# Verify JWKS HTTPS against certifi's CA bundle. Slim containers (and this env)
+# lack the system CA store, so PyJWKClient's default urllib fetch fails with
+# CERTIFICATE_VERIFY_FAILED → no signing key → every token 401s. Same fix notify.py uses.
+try:
+    import certifi
+    _SSL_CTX: ssl.SSLContext | None = ssl.create_default_context(cafile=certifi.where())
+except Exception:  # noqa: BLE001
+    _SSL_CTX = None
 
 from app import config
 from app.db import get_session
@@ -51,8 +61,9 @@ class OIDCAuthProvider:
     def __init__(self) -> None:
         if not config.OIDC_JWKS_URL:
             raise RuntimeError("OIDC_JWKS_URL must be set when AUTH_PROVIDER=oidc")
-        # Lazy JWKS client (caches keys, refetches on rotation).
-        self._jwks = jwt.PyJWKClient(config.OIDC_JWKS_URL)
+        # Lazy JWKS client (caches keys, refetches on rotation). certifi CA bundle
+        # so the HTTPS fetch to the provider's JWKS actually verifies.
+        self._jwks = jwt.PyJWKClient(config.OIDC_JWKS_URL, ssl_context=_SSL_CTX)
 
     def issue_token(self, user_id: str) -> str:  # pragma: no cover
         raise NotImplementedError("OIDC tokens are issued by the provider, not us.")
@@ -77,7 +88,7 @@ class OIDCAuthProvider:
         # a fresh client so a new key is picked up without a redeploy.
         for attempt in range(2):
             try:
-                client = self._jwks if attempt == 0 else jwt.PyJWKClient(config.OIDC_JWKS_URL)
+                client = self._jwks if attempt == 0 else jwt.PyJWKClient(config.OIDC_JWKS_URL, ssl_context=_SSL_CTX)
                 key = client.get_signing_key_from_jwt(token).key
                 payload = jwt.decode(token, key, options=opts, **kwargs)
                 if attempt == 1:

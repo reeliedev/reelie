@@ -46,6 +46,22 @@ def debug_token(body: DebugToken):
     }
 
 
+@router.get("/debug-jwks")
+def debug_jwks():
+    """TEMP diagnostic — what signing keys the backend can actually fetch from the
+    configured JWKS (confirms reachability + the ES256 key is visible). Remove after."""
+    import jwt as _jwt
+    from app.auth import _SSL_CTX
+    try:
+        s = _jwt.PyJWKClient(config.OIDC_JWKS_URL, ssl_context=_SSL_CTX).get_jwk_set()
+        return {"jwksUrl": config.OIDC_JWKS_URL,
+                "keys": [{"kid": k.key_id,
+                          "kty": k._jwk_data.get("kty"),
+                          "alg": k._jwk_data.get("alg")} for k in s.keys]}
+    except Exception as e:  # noqa: BLE001
+        return {"jwksUrl": config.OIDC_JWKS_URL, "error": f"{type(e).__name__}: {e}"}
+
+
 class DevLogin(BaseModel):
     email: str
     displayName: str | None = None

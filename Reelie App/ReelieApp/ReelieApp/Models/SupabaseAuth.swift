@@ -12,7 +12,10 @@ struct SupabaseAuth {
     let anonKey: String
 
     private func request(_ path: String, body: [String: Any]) -> URLRequest {
-        var req = URLRequest(url: url.appendingPathComponent(path))
+        // Build by string so a query (e.g. "auth/v1/token?grant_type=id_token") is
+        // preserved — appendingPathComponent would percent-encode the "?" → 404.
+        let full = URL(string: url.absoluteString + "/" + path) ?? url
+        var req = URLRequest(url: full)
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         req.setValue(anonKey, forHTTPHeaderField: "apikey")

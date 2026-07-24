@@ -82,10 +82,18 @@ struct AuthConfigDTO: Decodable {
 struct APIClient {
     let baseURL: URL
 
+    struct APIError: LocalizedError {
+        let status: Int; let body: String
+        var errorDescription: String? { "HTTP \(status): \(body.prefix(160))" }
+    }
+
     func get<T: Decodable>(_ path: String, as type: T.Type, token: String? = nil) async throws -> T {
         var req = URLRequest(url: baseURL.appendingPathComponent(path))
         if let token { req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization") }
-        let (data, _) = try await URLSession.shared.data(for: req)
+        let (data, resp) = try await URLSession.shared.data(for: req)
+        if let http = resp as? HTTPURLResponse, !(200...299).contains(http.statusCode) {
+            throw APIError(status: http.statusCode, body: String(data: data, encoding: .utf8) ?? "")
+        }
         return try JSONDecoder().decode(T.self, from: data)
     }
 

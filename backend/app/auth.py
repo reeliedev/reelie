@@ -57,22 +57,44 @@ class OIDCAuthProvider:
     def issue_token(self, user_id: str) -> str:  # pragma: no cover
         raise NotImplementedError("OIDC tokens are issued by the provider, not us.")
 
+    last_error: str = ""
+
     def verify(self, token: str) -> dict | None:
-        try:
-            key = self._jwks.get_signing_key_from_jwt(token).key
-            opts = {}
-            # Accept both common asymmetric families: RS256 (Clerk/Auth0/Apple) and
-            # ES256 (Supabase's default signing key).
-            kwargs: dict = {"algorithms": ["RS256", "ES256"]}
-            if config.OIDC_AUDIENCE:
-                kwargs["audience"] = config.OIDC_AUDIENCE
-            else:
-                opts["verify_aud"] = False
-            if config.OIDC_ISSUER:
-                kwargs["issuer"] = config.OIDC_ISSUER
-            return jwt.decode(token, key, options=opts, **kwargs)
-        except jwt.PyJWTError:
-            return None
+        opts: dict = {}
+        # Accept both common asymmetric families: RS256 (Clerk/Auth0/Apple) and
+        # ES256 (Supabase's default signing key).
+        kwargs: dict = {"algorithms": ["RS256", "ES256"]}
+        if config.OIDC_AUDIENCE:
+            kwargs["audience"] = config.OIDC_AUDIENCE
+        else:
+            opts["verify_aud"] = False
+        if config.OIDC_ISSUER:
+            kwargs["issuer"] = config.OIDC_ISSUER
+
+        last = ""
+        # Attempt 0 uses the cached JWKS client; if the signing key isn't found
+        # (stale cache after a Supabase key add/rotation), attempt 1 refetches with
+        # a fresh client so a new key is picked up without a redeploy.
+        for attempt in range(2):
+            try:
+                client = self._jwks if attempt == 0 else jwt.PyJWKClient(config.OIDC_JWKS_URL)
+                key = client.get_signing_key_from_jwt(token).key
+                payload = jwt.decode(token, key, options=opts, **kwargs)
+                if attempt == 1:
+                    self._jwks = client          # replace the stale client
+                return payload
+            except jwt.exceptions.PyJWKClientError as e:
+                last = f"jwks: {e}"               # key-fetch/cache issue → retry fresh
+                continue
+            except jwt.PyJWTError as e:
+                last = f"jwt: {type(e).__name__}: {e}"   # real verification failure
+                break
+            except Exception as e:               # noqa: BLE001 — network/TLS to JWKS, etc.
+                last = f"other: {type(e).__name__}: {e}"
+                break
+        OIDCAuthProvider.last_error = last or "unknown"
+        print(f"[auth] OIDC verify failed — {OIDCAuthProvider.last_error}", flush=True)
+        return None
 
     def resolve_user(self, session: Session, token: str) -> User | None:
         payload = self.verify(token)

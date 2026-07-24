@@ -26,6 +26,26 @@ def auth_config():
     return {"provider": "dev"}
 
 
+class DebugToken(BaseModel):
+    token: str
+
+
+@router.post("/debug-token")
+def debug_token(body: DebugToken):
+    """TEMP diagnostic — reports whether a provider token verifies and, if not, the
+    exact reason, plus the issuer/audience/JWKS the backend expects. No secrets."""
+    payload = provider.verify(body.token) if hasattr(provider, "verify") else None
+    return {
+        "provider": config.AUTH_PROVIDER,
+        "ok": payload is not None,
+        "reason": "" if payload else getattr(type(provider), "last_error", ""),
+        "sub": (payload or {}).get("sub"),
+        "expectedIssuer": getattr(config, "OIDC_ISSUER", None),
+        "expectedAudience": getattr(config, "OIDC_AUDIENCE", None),
+        "jwksUrl": getattr(config, "OIDC_JWKS_URL", None),
+    }
+
+
 class DevLogin(BaseModel):
     email: str
     displayName: str | None = None

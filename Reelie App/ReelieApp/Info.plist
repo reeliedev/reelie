@@ -7,6 +7,14 @@
 	     App Store / TestFlight upload. -->
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<!-- Branded launch screen: the Reelie logo centered on the system background. -->
+	<key>UILaunchScreen</key>
+	<dict>
+		<key>UIImageName</key>
+		<string>LaunchLogo</string>
+		<key>UIImageRespectsSafeAreaInsets</key>
+		<true/>
+	</dict>
 	<!-- Local-networking exception ONLY (loopback/private hosts) so a debug build
 	     can hit a local dev API over http. This is an Apple-sanctioned exception —
 	     it does NOT weaken TLS for production traffic to reelie.io, which stays

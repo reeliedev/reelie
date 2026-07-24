@@ -296,6 +296,7 @@ final class AppState {
     // Consumers stay guests (no login). Auth only happens on the creator path.
     // Degrades gracefully offline (no API) so the app still works on mock data.
     private static let tokenKey = "reelie.authToken"
+    private static let refreshKey = "reelie.refreshToken"
     // Stored in the Keychain (encrypted), not UserDefaults. One-time migration of
     // any token previously written to UserDefaults.
     var authToken: String? = (KeychainStore.get(account: AppState.tokenKey)
@@ -304,6 +305,10 @@ final class AppState {
             KeychainStore.set(authToken, account: AppState.tokenKey)
             UserDefaults.standard.removeObject(forKey: AppState.tokenKey)   // clear legacy
         }
+    }
+    // Supabase refresh token — renews the short-lived access token so sign-in persists.
+    var refreshToken: String? = KeychainStore.get(account: AppState.refreshKey) {
+        didSet { KeychainStore.set(refreshToken, account: AppState.refreshKey) }
     }
 
     private func applyUser(_ u: User) {
@@ -318,8 +323,23 @@ final class AppState {
     @MainActor
     func restoreSession() async {
         guard let base = apiBaseURL, let token = authToken else { return }
+        if authConfig == nil { await loadAuthConfig() }   // needed for refresh below
         do { applyUser(try await APIClient(baseURL: base).me(token: token).toUser()) }
-        catch { authToken = nil }   // token invalid/expired → back to guest
+        catch {
+            // Access token likely expired — try a Supabase refresh before giving up.
+            if await refreshSupabaseSession() { return }
+            authToken = nil; refreshToken = nil   // truly invalid → back to guest
+        }
+    }
+
+    /// Renew an expired Supabase access token using the stored refresh token.
+    @MainActor @discardableResult
+    func refreshSupabaseSession() async -> Bool {
+        guard let sb = supabase(), let rt = refreshToken else { return false }
+        do {
+            let session = try await sb.refresh(refreshToken: rt)
+            return await adoptSupabaseSession(session)
+        } catch { print("[Reelie] refreshSupabaseSession: \(error)"); return false }
     }
 
     @MainActor @discardableResult
@@ -354,13 +374,14 @@ final class AppState {
         return SupabaseAuth(url: u, anonKey: key)
     }
 
-    /// Adopt a Supabase access token as the session and load /me (the backend
+    /// Adopt a Supabase session (access + refresh) and load /me (the backend
     /// provisions/links the account by verifying the token).
     @MainActor @discardableResult
-    func adoptSupabaseSession(_ token: String) async -> Bool {
+    func adoptSupabaseSession(_ session: SupabaseAuth.Session) async -> Bool {
         guard let base = apiBaseURL else { return false }
-        authToken = token
-        do { applyUser(try await APIClient(baseURL: base).me(token: token).toUser()); return true }
+        authToken = session.access_token
+        if let rt = session.refresh_token { refreshToken = rt }
+        do { applyUser(try await APIClient(baseURL: base).me(token: session.access_token).toUser()); return true }
         catch { authToken = nil; print("[Reelie] adoptSupabaseSession: \(error)"); return false }
     }
 
@@ -392,8 +413,8 @@ final class AppState {
         let coordinator = WebAuthCoordinator()
         guard let cb = await coordinator.run(url: sb.googleAuthorizeURL(redirect: "reelie://auth-callback"),
                                              callbackScheme: "reelie"),
-              let token = SupabaseAuth.accessToken(fromCallback: cb) else { return false }
-        return await adoptSupabaseSession(token)
+              let session = SupabaseAuth.session(fromCallback: cb) else { return false }
+        return await adoptSupabaseSession(session)
     }
 
     @MainActor @discardableResult
@@ -414,6 +435,7 @@ final class AppState {
 
     func signOut() {
         authToken = nil
+        refreshToken = nil
         currentUser.role = .viewer
         earningsSummary = nil
         creatorStats = nil

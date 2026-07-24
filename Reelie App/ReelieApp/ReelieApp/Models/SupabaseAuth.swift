@@ -21,14 +21,22 @@ struct SupabaseAuth {
         return req
     }
 
-    private struct Session: Decodable { let access_token: String }
+    /// A Supabase session — the short-lived access token plus the refresh token
+    /// used to renew it (so the user stays signed in past the ~1h expiry).
+    struct Session: Decodable { let access_token: String; let refresh_token: String? }
 
-    private func send(_ req: URLRequest) async throws -> String {
+    private func send(_ req: URLRequest) async throws -> Session {
         let (data, resp) = try await URLSession.shared.data(for: req)
         guard let http = resp as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
             throw AuthError.server(String(data: data, encoding: .utf8) ?? "Sign-in failed.")
         }
-        return try JSONDecoder().decode(Session.self, from: data).access_token
+        return try JSONDecoder().decode(Session.self, from: data)
+    }
+
+    /// Exchange a refresh token for a fresh session.
+    func refresh(refreshToken: String) async throws -> Session {
+        try await send(request("auth/v1/token?grant_type=refresh_token",
+                               body: ["refresh_token": refreshToken]))
     }
 
     enum AuthError: LocalizedError {
@@ -49,8 +57,8 @@ struct SupabaseAuth {
         }
     }
 
-    /// Verify the emailed code → Supabase access token.
-    func verifyEmailOTP(email: String, code: String) async throws -> String {
+    /// Verify the emailed code → Supabase session.
+    func verifyEmailOTP(email: String, code: String) async throws -> Session {
         try await send(request("auth/v1/verify",
                                body: ["type": "email", "email": email, "token": code]))
     }
@@ -58,7 +66,7 @@ struct SupabaseAuth {
     // MARK: Sign in with Apple (native)
 
     /// Exchange Apple's identity token for a Supabase session.
-    func signInWithApple(idToken: String, rawNonce: String) async throws -> String {
+    func signInWithApple(idToken: String, rawNonce: String) async throws -> Session {
         try await send(request("auth/v1/token?grant_type=id_token",
                                body: ["provider": "apple", "id_token": idToken, "nonce": rawNonce]))
     }
@@ -74,17 +82,16 @@ struct SupabaseAuth {
         return c.url!
     }
 
-    /// Pull the access token out of the `reelie://auth-callback#access_token=…` redirect.
-    static func accessToken(fromCallback callback: URL) -> String? {
-        // Supabase returns tokens in the URL fragment.
+    /// Pull the session out of the `reelie://auth-callback#access_token=…&refresh_token=…` redirect.
+    static func session(fromCallback callback: URL) -> Session? {
         guard let frag = URLComponents(url: callback, resolvingAgainstBaseURL: false)?.fragment else { return nil }
+        var params: [String: String] = [:]
         for pair in frag.split(separator: "&") {
             let kv = pair.split(separator: "=", maxSplits: 1)
-            if kv.count == 2, kv[0] == "access_token" {
-                return kv[1].removingPercentEncoding
-            }
+            if kv.count == 2 { params[String(kv[0])] = kv[1].removingPercentEncoding }
         }
-        return nil
+        guard let access = params["access_token"] else { return nil }
+        return Session(access_token: access, refresh_token: params["refresh_token"])
     }
 }
 

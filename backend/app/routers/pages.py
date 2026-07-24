@@ -6,6 +6,7 @@ these were local-only in the app; now they persist server-side.
 from __future__ import annotations
 
 import json
+from urllib.parse import urlparse
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -94,6 +95,11 @@ def _apply_link(prod: Product, url: str | None) -> None:
         return
     url = url.strip()
     if url:
+        # Only real http(s) links — blocks javascript:/data: and keeps the /r
+        # redirect from bouncing to non-web schemes.
+        p = urlparse(url)
+        if p.scheme not in ("http", "https") or not p.netloc:
+            raise HTTPException(400, "Affiliate links must start with http:// or https://.")
         prod.url = url
         prod.link_kind = "own"
     else:

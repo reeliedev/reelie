@@ -5,6 +5,10 @@ from __future__ import annotations
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
+from slowapi.util import get_remote_address
 
 from app import config
 from app.db import init_db
@@ -14,6 +18,16 @@ from app.routers import (admin, auth, catalog, connections, earnings, feed,
 from app.seed import seed_if_empty
 
 app = FastAPI(title="Reelie API", version="0.1.0")
+
+# Baseline per-IP rate limiting (flood backstop). Client IP is taken from the
+# proxy's X-Forwarded-For (uvicorn is run with FORWARDED_ALLOW_IPS so it trusts
+# Render's proxy). In-memory per worker — a Redis storage_uri can be added later
+# for cross-worker accuracy. The per-creator generation quota (routers/generate)
+# is the primary cost-DoS defense.
+limiter = Limiter(key_func=get_remote_address, default_limits=["300/minute"])
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
 
 # CORS: "*" in dev; a real allow-list in prod (ALLOWED_ORIGINS).
 app.add_middleware(

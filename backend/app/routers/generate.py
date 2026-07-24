@@ -11,13 +11,17 @@ Where it runs:
 
 from __future__ import annotations
 
+import ipaddress
 import json
 import re
+import socket
 import uuid
+from datetime import datetime, timedelta
+from urllib.parse import urlparse
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel
-from sqlmodel import Session
+from sqlmodel import Session, func, select
 
 from app import config, pipeline_runner, storage
 from app.auth import current_user
@@ -25,6 +29,46 @@ from app.db import get_session
 from app.models import Creator, GenerationJob, User
 
 router = APIRouter(prefix="/me", tags=["generate"])
+
+# Per-creator generation limits — the pipeline is expensive (yt-dlp + Whisper +
+# an LLM call), so cap it to prevent a single account running up compute bills.
+_DAILY_GENERATION_CAP = 25
+_INFLIGHT_GENERATION_CAP = 3
+_ALLOWED_UPLOAD_TYPES = {"video/mp4", "video/quicktime"}
+
+
+def _validate_source_url(url: str) -> None:
+    """Block SSRF: the server fetches this URL, so only allow real, public
+    http(s) hosts — reject private / loopback / link-local / metadata targets."""
+    try:
+        p = urlparse(url)
+    except Exception:
+        raise HTTPException(400, "Enter a valid video link.")
+    if p.scheme not in ("http", "https") or not p.hostname:
+        raise HTTPException(400, "Enter a valid video link (http/https).")
+    try:
+        infos = socket.getaddrinfo(p.hostname, None)
+    except Exception:
+        raise HTTPException(400, "Couldn't resolve that link.")
+    for info in infos:
+        ip = ipaddress.ip_address(info[4][0])
+        if (ip.is_private or ip.is_loopback or ip.is_link_local
+                or ip.is_reserved or ip.is_multicast or ip.is_unspecified):
+            raise HTTPException(400, "That link isn't allowed.")
+
+
+def _enforce_generation_quota(user: User, session: Session) -> None:
+    since = datetime.utcnow() - timedelta(hours=24)
+    recent = session.exec(select(func.count()).select_from(GenerationJob)
+                          .where(GenerationJob.handle == user.handle,
+                                 GenerationJob.created_at >= since)).one()
+    if recent >= _DAILY_GENERATION_CAP:
+        raise HTTPException(429, "Daily generation limit reached — try again tomorrow.")
+    inflight = session.exec(select(func.count()).select_from(GenerationJob)
+                            .where(GenerationJob.handle == user.handle,
+                                   GenerationJob.status.in_(["queued", "running"]))).one()
+    if inflight >= _INFLIGHT_GENERATION_CAP:
+        raise HTTPException(429, "You already have videos building — let those finish first.")
 
 
 def _require_creator(user: User, session: Session) -> None:
@@ -73,10 +117,14 @@ def presign_upload(body: PresignBody, user: User = Depends(current_user),
     _require_creator(user, session)
     if not storage.enabled():
         raise HTTPException(503, "Video upload isn't enabled on this deployment yet.")
+    # Only allow real video uploads — an arbitrary content-type (e.g. text/html)
+    # could be served as active content from the media domain.
+    ctype = (body.contentType or "video/mp4").strip().lower()
+    if ctype not in _ALLOWED_UPLOAD_TYPES:
+        raise HTTPException(400, "Only .mp4 or .mov video uploads are allowed.")
     safe = re.sub(r"[^A-Za-z0-9._-]", "_", body.filename)[-60:] or "video.mp4"
     key = f"uploads/{user.handle}/{uuid.uuid4().hex}-{safe}"
-    return {"uploadUrl": storage.presign_put(key, content_type=body.contentType or "video/mp4"),
-            "key": key}
+    return {"uploadUrl": storage.presign_put(key, content_type=ctype), "key": key}
 
 
 # --- generation ------------------------------------------------------------
@@ -92,10 +140,11 @@ def start_generation(body: GenerateBody, background: BackgroundTasks,
                      user: User = Depends(current_user),
                      session: Session = Depends(get_session)):
     _require_creator(user, session)
+    _enforce_generation_quota(user, session)
     url = (body.url or "").strip()
     upload_key = (body.uploadKey or "").strip()
-    if url and not url.startswith("http"):
-        raise HTTPException(400, "Enter a valid video link.")
+    if url:
+        _validate_source_url(url)   # SSRF guard on the server-fetched link
     if not (url or upload_key or body.videoId):
         raise HTTPException(400, "Provide a video link, upload a video, or pick one.")
     if body.videoId and config.PIPELINE_AVAILABLE and not config.WORKER_ENABLED:

@@ -19,4 +19,6 @@ COPY alembic.ini ./alembic.ini
 
 EXPOSE 8000
 # Run migrations, then serve. $PORT is provided by most hosts; default 8000.
-CMD ["sh", "-c", "alembic upgrade head && gunicorn app.main:app -k uvicorn.workers.UvicornWorker -b 0.0.0.0:${PORT:-8000} --workers ${WEB_CONCURRENCY:-2} --timeout 120"]
+# FORWARDED_ALLOW_IPS lets uvicorn trust the host's proxy X-Forwarded-For so the
+# real client IP reaches rate limiting (Render terminates TLS at its proxy).
+CMD ["sh", "-c", "alembic upgrade head && FORWARDED_ALLOW_IPS='*' gunicorn app.main:app -k uvicorn.workers.UvicornWorker -b 0.0.0.0:${PORT:-8000} --workers ${WEB_CONCURRENCY:-2} --timeout 120"]

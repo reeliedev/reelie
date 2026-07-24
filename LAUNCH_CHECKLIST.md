@@ -79,10 +79,34 @@ Legend: 🔴 blocker · 🟡 soon-after · ✅ done · 🚧 in progress
 - [ ] 🟡 5.5 Email compliance (CAN-SPAM: unsubscribe + physical address).
 - [ ] 🟡 5.6 Creator agreement (rights to video/likeness, commission & payout terms).
 
+## 7. Security (audit 2026-07-24 — see SECURITY.md)
+- [x] ✅ 7.1 **Critical XSS fixed** — stored XSS via JSON-LD (public pages) and via
+      a crafted handle (admin-console `ADMIN_TOKEN` theft) both closed.
+- [x] ✅ 7.2 **Auth hardening** — earnings endpoint now authed (was a public
+      revenue leak); dev-login fail-closed in prod; OIDC email-link takeover fixed;
+      constant-time token compares; secrets stripped; security headers.
+- [x] ✅ 7.3 **Abuse/DoS** — per-creator generation quota + per-IP rate limit;
+      SSRF allowlist on the fetched URL; upload content-type restricted; affiliate
+      URL scheme validated (open-redirect guard).
+- [ ] 🟡 7.4 **Remaining** — `/r/postback` signed verification (real affiliate);
+      Redis-backed rate limiting at scale; CSP (needs nonces); encrypt stored OAuth
+      tokens; generic pipeline errors; trim `/health`. (Tracked in SECURITY.md.)
+
+## 8. App Store (iOS submission)
+- [x] ✅ 8.1 App icon, privacy manifest (`PrivacyInfo.xcprivacy`), version 1.0.0,
+      export-compliance flag, debug hooks `#if DEBUG`.
+- [x] ✅ 8.2 Account deletion in-app (`DELETE /me`).
+- [ ] 🔴 8.3 **Real auth** (Supabase Apple/Google/magic link) — dev-login can't ship;
+      **Sign in with Apple required** (Guideline 4.8) since Google is offered.
+- [ ] 🔴 8.4 **Apple Developer Program** + set `DEVELOPMENT_TEAM` + register app.
+- [ ] 🔴 8.5 **UGC safeguards** (Guideline 1.2) — report/flag content + block users.
+- [ ] 🔴 8.6 App Store Connect listing + App Privacy label + screenshots + age rating.
+
 ## 6. Content & polish
 - [ ] 🟡 6.1 Real content beyond the 5-creator mock corpus; all cross-page links resolve.
 - [ ] 🟡 6.2 Loading / empty / error / offline states (graceful when API is down).
-- [ ] 🟡 6.3 Real fonts (Fraunces/DM Sans), app icon, launch screen.
+- [~] 🟡 6.3 Brand fonts (Instrument Sans + Space Grotesk, matching web) ✅ +
+      app icon ✅ bundled in iOS; **launch screen** still generated (a branded one TODO).
 - [ ] 🟡 6.4 Mobile-web perf/accessibility (lazy/poster-first clips).
 - [ ] 🟡 6.5 Content moderation / reporting if creators self-publish.
 

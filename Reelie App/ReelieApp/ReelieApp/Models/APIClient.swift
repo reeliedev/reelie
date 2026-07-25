@@ -127,9 +127,10 @@ struct APIClient {
         try await get("me", as: UserDTO.self, token: token)
     }
     func becomeCreator(handle: String, displayName: String, platforms: [String],
-                       token: String) async throws -> UserDTO {
+                       instagram: String, youtube: String, token: String) async throws -> UserDTO {
         try await post("me/become-creator",
-                       body: ["handle": handle, "displayName": displayName, "platforms": platforms],
+                       body: ["handle": handle, "displayName": displayName, "platforms": platforms,
+                              "instagram": instagram, "youtube": youtube],
                        as: UserDTO.self, token: token)
     }
 

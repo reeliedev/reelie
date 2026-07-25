@@ -427,7 +427,7 @@ final class AppState {
     }
 
     @MainActor @discardableResult
-    func becomeCreatorAPI(handle: String) async -> Bool {
+    func becomeCreatorAPI(handle: String, instagram: String = "", youtube: String = "") async -> Bool {
         let h = handle.trimmingCharacters(in: .whitespaces).lowercased()
         currentUser.handle = h
         guard let base = apiBaseURL, let token = authToken else {
@@ -436,7 +436,8 @@ final class AppState {
         }
         do {
             let u = try await APIClient(baseURL: base)
-                .becomeCreator(handle: h, displayName: currentUser.displayName, platforms: [], token: token)
+                .becomeCreator(handle: h, displayName: currentUser.displayName, platforms: [],
+                               instagram: instagram, youtube: youtube, token: token)
             applyUser(u.toUser())
             return true
         } catch { print("[Reelie] becomeCreator: FAILED — \(error)"); return false }

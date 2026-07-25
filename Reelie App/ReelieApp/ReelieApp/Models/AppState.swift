@@ -385,9 +385,8 @@ final class AppState {
         do { applyUser(try await APIClient(baseURL: base).me(token: session.access_token).toUser()); return true }
         catch {
             authToken = nil
-            let backend = await APIClient(baseURL: base).debugToken(session.access_token)
-            lastAuthError = "\(backend) — \(error.localizedDescription)"
-            print("[Reelie] adoptSupabaseSession: \(error) | \(backend)"); return false
+            lastAuthError = "Signed in, but we couldn't load your account. Please try again."
+            print("[Reelie] adoptSupabaseSession: \(error)"); return false
         }
     }
 

@@ -98,29 +98,6 @@ struct SupabaseAuth {
     }
 }
 
-// MARK: - JWT inspection (diagnostics)
-
-enum JWTInspect {
-    /// Human-readable "alg=… kid=… iss=… aud=…" from a JWT's header+payload.
-    static func describe(_ jwt: String) -> String {
-        let parts = jwt.split(separator: ".")
-        guard parts.count >= 2 else { return "not a JWT" }
-        func json(_ s: Substring) -> [String: Any] {
-            var b = String(s); b += String(repeating: "=", count: (4 - b.count % 4) % 4)
-            b = b.replacingOccurrences(of: "-", with: "+").replacingOccurrences(of: "_", with: "/")
-            guard let d = Data(base64Encoded: b),
-                  let o = try? JSONSerialization.jsonObject(with: d) as? [String: Any] else { return [:] }
-            return o
-        }
-        let h = json(parts[0]); let p = json(parts[1])
-        let alg = h["alg"] as? String ?? "?"
-        let kid = (h["kid"] as? String).map { String($0.prefix(8)) } ?? "none"
-        let iss = p["iss"] as? String ?? "?"
-        let aud = (p["aud"] as? String) ?? "?"
-        return "alg=\(alg) kid=\(kid) iss=\(iss) aud=\(aud)"
-    }
-}
-
 // MARK: - Apple nonce helpers
 
 enum AppleNonce {

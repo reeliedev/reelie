@@ -127,6 +127,22 @@ final class AppState {
     func routines(for handle: String) -> [GeneratedPage] { catalog.filter { $0.handle == handle } }
     func page(withKey key: String) -> GeneratedPage? { catalog.first { $0.key == key } }
 
+    /// Resolve a routine by key ("handle/slug"): return the local one if loaded,
+    /// otherwise fetch it from the API (reels come from /feed, which can include
+    /// routines not in the loaded /routines catalog) and cache it.
+    @MainActor
+    func fetchRoutine(key: String) async -> GeneratedPage? {
+        if let p = page(withKey: key) { return p }
+        guard let base = apiBaseURL else { return nil }
+        let parts = key.split(separator: "/", maxSplits: 1).map(String.init)
+        guard parts.count == 2 else { return nil }
+        do {
+            let p = try await APIClient(baseURL: base).routine(handle: parts[0], slug: parts[1])
+            if !catalog.contains(where: { $0.key == p.key }) { catalog.append(p) }
+            return p
+        } catch { print("[Reelie] fetchRoutine: \(error)"); return nil }
+    }
+
     // ---- Backend (optional) ----------------------------------------------
     // When REELIE_API_URL is set, load creators/routines from the API; otherwise
     // the seeded mock corpus is used. Failures fall back silently to the mock.

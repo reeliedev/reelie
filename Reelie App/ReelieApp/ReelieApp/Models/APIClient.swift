@@ -134,6 +134,11 @@ struct APIClient {
         try await get("routines", as: [GeneratedPageDTO].self).map { $0.toGeneratedPage() }
     }
 
+    /// One routine by handle/slug — used when a tapped reel isn't in the loaded catalog.
+    func routine(handle: String, slug: String) async throws -> GeneratedPage {
+        try await get("routines/\(handle)/\(slug)", as: GeneratedPageDTO.self).toGeneratedPage()
+    }
+
     func myRoutines(handle: String) async throws -> [GeneratedPage] {
         try await get("creators/\(handle)/routines", as: [GeneratedPageDTO].self).map { $0.toGeneratedPage() }
     }

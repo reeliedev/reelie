@@ -7,7 +7,9 @@ struct RoutineView: View {
     @Environment(\.dismiss) private var dismiss
     let pageKey: String
 
-    private var page: GeneratedPage? { app.page(withKey: pageKey) }
+    @State private var fetched: GeneratedPage?
+    @State private var didLoad = false
+    private var page: GeneratedPage? { app.page(withKey: pageKey) ?? fetched }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -33,9 +35,15 @@ struct RoutineView: View {
                     }
                     .padding(.horizontal, 28).padding(.bottom, 24)
                 }
+            } else if !didLoad {
+                Spacer(); ProgressView().tint(Palette.ink); Spacer()
             } else {
                 Spacer(); Text("Routine not found").font(ReelieFont.ui(15)).foregroundStyle(Palette.grey); Spacer()
             }
+        }
+        .task(id: pageKey) {
+            if app.page(withKey: pageKey) == nil { fetched = await app.fetchRoutine(key: pageKey) }
+            didLoad = true
         }
         .background(.white)
         .navigationBarBackButtonHidden(true)

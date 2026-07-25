@@ -3,7 +3,7 @@ import AVKit
 
 // MARK: - Feed models (decoded from GET /feed)
 
-struct ReelItem: Decodable, Identifiable {
+struct ReelItem: Codable, Identifiable {
     let clipUrl: String
     let poster: String
     let creator: ReelCreator
@@ -17,13 +17,13 @@ struct ReelItem: Decodable, Identifiable {
     var id: String { likeKey }
 }
 
-struct ReelCreator: Decodable {
+struct ReelCreator: Codable {
     let name: String
     let handle: String
     let avatarGradient: [String]
 }
 
-struct ReelProduct: Decodable, Identifiable {
+struct ReelProduct: Codable, Identifiable {
     let brand: String
     let name: String
     let emoji: String
@@ -65,46 +65,65 @@ struct ReelsFeedView: View {
     @State private var items: [ReelItem] = []
     @State private var activeID: String?
     @State private var loaded = false
+    @State private var refreshed = false
 
     var body: some View {
         Group {
-            if items.isEmpty && loaded {
-                // Branded, light empty state — matches the web, not a black void.
-                EmptyDiscover()
-            } else {
+            if !items.isEmpty {
                 ZStack {
                     Color.black.ignoresSafeArea()
-                    if loaded {
-                        ScrollView(.vertical, showsIndicators: false) {
-                            LazyVStack(spacing: 0) {
-                                ForEach(items.filter { !app.isBlocked(creator: $0.handle) }) { item in
-                                    ReelCell(item: item, isActive: activeID == item.id)
-                                        .containerRelativeFrame([.horizontal, .vertical])
-                                        .id(item.id)
-                                }
+                    ScrollView(.vertical, showsIndicators: false) {
+                        LazyVStack(spacing: 0) {
+                            ForEach(items.filter { !app.isBlocked(creator: $0.handle) }) { item in
+                                ReelCell(item: item, isActive: activeID == item.id)
+                                    .containerRelativeFrame([.horizontal, .vertical])
+                                    .id(item.id)
                             }
-                            .scrollTargetLayout()
                         }
-                        .scrollTargetBehavior(.paging)
-                        .scrollPosition(id: $activeID)
-                    } else {
-                        ProgressView().tint(.white)   // loading the feed
+                        .scrollTargetLayout()
                     }
+                    .scrollTargetBehavior(.paging)
+                    .scrollPosition(id: $activeID)
                 }
                 .overlay(alignment: .top) {
                     Text("Reelie").font(ReelieFont.display(22)).foregroundStyle(.white)
                         .shadow(color: .black.opacity(0.4), radius: 6)
                         .padding(.top, 6)
                 }
+            } else if loaded {
+                EmptyDiscover()                 // no videos — branded light state
+            } else {
+                LoadingDiscover()               // first load — branded light, not a black void
             }
         }
         .task { await load() }
     }
 
+    // Persist the last feed so reopening the app paints instantly instead of waiting.
+    private static let cacheKey = "reelie.feed.v1"
+    private static func cachedFeed() -> [ReelItem]? {
+        guard let d = UserDefaults.standard.data(forKey: cacheKey) else { return nil }
+        return try? JSONDecoder().decode([ReelItem].self, from: d)
+    }
+    private static func cacheFeed(_ items: [ReelItem]) {
+        if let d = try? JSONEncoder().encode(items) { UserDefaults.standard.set(d, forKey: cacheKey) }
+    }
+
     private func load() async {
-        guard !loaded, let base = app.apiBaseURL else { loaded = true; return }
-        items = (try? await APIClient(baseURL: base).feed()) ?? []
-        activeID = items.first?.id
+        // 1) instant paint from the cached feed
+        if items.isEmpty, let cached = Self.cachedFeed(), !cached.isEmpty {
+            items = cached; activeID = cached.first?.id; loaded = true
+        }
+        // 2) refresh from the API once
+        guard !refreshed else { return }
+        refreshed = true
+        guard let base = app.apiBaseURL else { loaded = true; return }
+        let fresh = (try? await APIClient(baseURL: base).feed()) ?? []
+        if !fresh.isEmpty {
+            items = fresh
+            if activeID == nil || !fresh.contains(where: { $0.id == activeID }) { activeID = fresh.first?.id }
+            Self.cacheFeed(fresh)
+        }
         loaded = true
     }
 }
@@ -136,6 +155,28 @@ private struct EmptyDiscover: View {
     }
 }
 
+// MARK: - Branded loading (first launch, while the feed fetches)
+
+private struct LoadingDiscover: View {
+    var body: some View {
+        VStack(spacing: 18) {
+            Spacer()
+            Wordmark(size: 30)
+            ProgressView().tint(Palette.ink)
+            Spacer()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(
+            ZStack {
+                Color.white
+                RadialGradient(colors: [Palette.sun.opacity(0.16), .clear],
+                               center: .top, startRadius: 0, endRadius: 440)
+            }
+            .ignoresSafeArea()
+        )
+    }
+}
+
 // MARK: - One reel
 
 struct ReelCell: View {
@@ -149,11 +190,24 @@ struct ReelCell: View {
     @State private var liked = false
     @State private var likeCount = 0
     @State private var showHeart = false
+    @State private var timeObserver: Any?
 
     var body: some View {
         ZStack {
             Color.black
             PlayerLayerView(player: player).ignoresSafeArea()
+
+            // Poster frame covers the (black) player until the video renders its
+            // first frame — so you see the video instantly, never a black void.
+            if !item.poster.isEmpty, let purl = URL(string: item.poster) {
+                AsyncImage(url: purl) { img in
+                    img.resizable().aspectRatio(contentMode: .fill)
+                } placeholder: { Color.black }
+                    .ignoresSafeArea()
+                    .allowsHitTesting(false)
+                    .opacity(ready ? 0 : 1)
+                    .animation(.easeOut(duration: 0.25), value: ready)
+            }
 
             // dim gradient so overlay text is legible
             LinearGradient(colors: [.clear, .clear, .black.opacity(0.7)],
@@ -167,7 +221,10 @@ struct ReelCell: View {
             overlay
         }
         .onAppear { setup() }
-        .onDisappear { player.pause() }
+        .onDisappear {
+            player.pause()
+            if let o = timeObserver { player.removeTimeObserver(o); timeObserver = nil }
+        }
         .onChange(of: isActive) { _, active in active ? play() : player.pause() }
         .onReceive(NotificationCenter.default.publisher(for: .AVPlayerItemDidPlayToEndTime)) { note in
             if let it = note.object as? AVPlayerItem, it == player.currentItem {
@@ -270,6 +327,13 @@ struct ReelCell: View {
             player.replaceCurrentItem(with: AVPlayerItem(url: url))
             player.isMuted = true
             player.actionAtItemEnd = .none
+        }
+        // Reveal the video (fade out the poster) once it actually starts rendering.
+        if timeObserver == nil {
+            timeObserver = player.addPeriodicTimeObserver(
+                forInterval: CMTime(seconds: 0.1, preferredTimescale: 600), queue: .main) { t in
+                    if t.seconds > 0.05 { ready = true }
+                }
         }
         likeCount = item.likes
         liked = LikeStore.contains(item.likeKey)

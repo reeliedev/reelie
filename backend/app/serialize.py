@@ -8,6 +8,14 @@ from __future__ import annotations
 from app.integrations import effective_retailer, money
 from app.models import Creator, Page, Product, User
 
+# Appended to a routine's disclosure so every client shows the price disclaimer the
+# web page always shows (templates/public_page.html keeps the matching copy).
+PRICE_DISCLAIMER = "Prices are approximate and refreshed regularly."
+
+
+def _full_disclosure(page: Page) -> str:
+    return " ".join(x for x in [(page.disclosure or "").strip(), PRICE_DISCLAIMER] if x)
+
 
 def user_dict(u: User, session=None) -> dict:
     # Closed beta: expose the creator's review status so the UI can gate posting.
@@ -85,7 +93,7 @@ def page_app(page: Page, products: list[Product], creator: Creator) -> dict:
         "handle": page.handle,
         "creatorName": creator.display_name if creator else page.handle,
         "platforms": creator.platforms if creator else [],
-        "disclosure": page.disclosure,
+        "disclosure": _full_disclosure(page),
         "publicURL": f"reelie.io/{page.handle}/{page.slug}",
         "products": [product_app(p) for p in sorted(products, key=lambda x: x.position)],
     }

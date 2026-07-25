@@ -16,7 +16,7 @@ struct RoutineView: View {
             navBar
             if let page {
                 ScrollView(showsIndicators: false) {
-                    VStack(spacing: 0) {
+                    LazyVStack(spacing: 0) {
                         header(page)
                         if !page.intro.isEmpty {
                             Text(page.intro)
@@ -160,25 +160,21 @@ private struct ProductRow: View {
         return base?.appendingPathComponent("r/\(pageHandle)/\(pageSlug)/\(number)")
     }
 
-    /// The clip's poster frame (a real still from the video), absolute-ized.
-    private var posterURL: URL? {
-        guard let p = product.clipPoster, !p.isEmpty else { return nil }
-        if p.hasPrefix("http") { return URL(string: p) }
-        return (app.apiBaseURL ?? URL(string: "https://reelie.io"))?.appendingPathComponent(p)
+    /// The per-step video clip, absolute-ized.
+    private var clipURL: URL? {
+        guard let c = product.clipUrl, !c.isEmpty else { return nil }
+        if c.hasPrefix("http") { return URL(string: c) }
+        return (app.apiBaseURL ?? URL(string: "https://reelie.io"))?.appendingPathComponent(c)
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Real video still (a moment from the source video) when we have one.
-            if let poster = posterURL {
-                AsyncImage(url: poster) { img in
-                    img.resizable().aspectRatio(contentMode: .fill)
-                } placeholder: {
-                    GradientPoster(corner: 0).overlay(Text(product.emoji).font(.system(size: 34)))
-                }
-                .frame(maxWidth: .infinity).frame(height: 200).clipped()
-                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                .padding(.bottom, 12)
+            // The actual clip playing (muted, looping) — same as the web guide.
+            if let clip = clipURL {
+                ClipPlayerView(url: clip)
+                    .frame(maxWidth: .infinity).frame(height: 300)
+                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .padding(.bottom, 12)
             }
 
             // Step + timestamp, and the evidence tag.
@@ -197,7 +193,7 @@ private struct ProductRow: View {
             .padding(.bottom, 8)
 
             HStack(alignment: .top, spacing: 12) {
-                if posterURL == nil { EmojiThumb(emoji: product.emoji, size: 46) }
+                if clipURL == nil { EmojiThumb(emoji: product.emoji, size: 46) }
                 VStack(alignment: .leading, spacing: 3) {
                     if !product.brand.isEmpty {
                         Text(product.brand.uppercased())

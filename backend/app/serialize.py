@@ -5,6 +5,7 @@ Response builders — camelCase dicts that decode 1:1 into the iOS models
 
 from __future__ import annotations
 
+from app import public_site
 from app.integrations import effective_retailer, money
 from app.models import Creator, Page, Product, User
 
@@ -82,6 +83,12 @@ def product_app(p: Product) -> dict:
 
 def page_app(page: Page, products: list[Product], creator: Creator) -> dict:
     """GeneratedPageDTO-compatible payload for a routine."""
+    ordered = sorted(products, key=lambda x: x.position)
+    t = public_site._totals(ordered)
+    # Auto-generated + custom FAQs (the same Q&A the web page shows), and the
+    # "shop the whole routine" kit totals — so the app can show both like the web.
+    faqs = ([{"q": q, "a": a} for q, a, _custom in public_site.faqs(page, creator, ordered)]
+            if creator else [])
     return {
         "id": page.id,
         "title": page.title,
@@ -95,5 +102,9 @@ def page_app(page: Page, products: list[Product], creator: Creator) -> dict:
         "platforms": creator.platforms if creator else [],
         "disclosure": _full_disclosure(page),
         "publicURL": f"reelie.io/{page.handle}/{page.slug}",
-        "products": [product_app(p) for p in sorted(products, key=lambda x: x.position)],
+        "products": [product_app(p) for p in ordered],
+        "faqs": faqs,
+        "totals": {"count": t["count"], "totalDisplay": t["total_display"],
+                   "rangeDisplay": t["range_display"], "anyEstimated": t["any_estimated"],
+                   "retailers": t["retailers"]},
     }

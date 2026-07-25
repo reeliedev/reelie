@@ -18,16 +18,20 @@ struct RoutineView: View {
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 0) {
                         header(page)
+                        if let t = page.totals, !t.totalDisplay.isEmpty { totalsCard(t) }
                         SectionLabel(text: "THE ROUTINE").padding(.top, 24).padding(.bottom, 12)
                         ForEach(Array(page.products.enumerated()), id: \.element.id) { i, product in
                             ProductRow(number: i + 1, product: product,
                                        pageHandle: page.handle, pageSlug: page.pathSlug)
                                 .padding(.bottom, 11)
                         }
+
+                        if !page.faqs.isEmpty { faqSection(page.faqs).padding(.top, 26) }
+
                         Text(page.disclosure)
                             .font(ReelieFont.ui(11.5)).foregroundStyle(Palette.faint)
                             .multilineTextAlignment(.center)
-                            .padding(.top, 6).padding(.horizontal, 16)
+                            .padding(.top, 20).padding(.horizontal, 16)
 
                         RecoRail(title: "SIMILAR CREATORS",
                                  items: app.similarCreators(to: page.handle))
@@ -84,6 +88,49 @@ struct RoutineView: View {
             }
             .buttonStyle(.plain)
             .padding(.top, 8)
+        }
+    }
+
+    // "Shop the whole routine" kit — matches the web's summary card.
+    private func totalsCard(_ t: RoutineTotals) -> some View {
+        VStack(spacing: 8) {
+            Text("SHOP THE WHOLE ROUTINE")
+                .font(ReelieFont.ui(10.5, weight: .bold)).tracking(1).foregroundStyle(Palette.grey)
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Text(t.totalDisplay).displayStyle(32)
+                if t.anyEstimated { Text("approx.").font(ReelieFont.ui(12)).foregroundStyle(Palette.faint) }
+            }
+            Text("\(t.count) products" + (t.rangeDisplay != "—" ? " · \(t.rangeDisplay)" : ""))
+                .font(ReelieFont.ui(12.5)).foregroundStyle(Palette.grey)
+            if !t.retailers.isEmpty {
+                HStack(spacing: 6) {
+                    ForEach(t.retailers.prefix(4), id: \.self) { r in
+                        Text(r).font(ReelieFont.ui(11, weight: .semibold)).foregroundStyle(Palette.ink)
+                            .padding(.horizontal, 10).padding(.vertical, 5)
+                            .background(.white, in: Capsule())
+                            .overlay(Capsule().strokeBorder(Palette.line, lineWidth: 1))
+                    }
+                }
+                .padding(.top, 4)
+            }
+        }
+        .frame(maxWidth: .infinity).padding(.vertical, 18).padding(.horizontal, 16)
+        .background(Palette.soft, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .padding(.top, 18)
+    }
+
+    // Auto-generated + custom Q&A — the same block the web routine page shows.
+    private func faqSection(_ faqs: [RoutineFAQ]) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            SectionLabel(text: "QUESTIONS & ANSWERS")
+            ForEach(faqs) { f in
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(f.q).font(ReelieFont.ui(14, weight: .semibold)).foregroundStyle(Palette.ink)
+                    Text(f.a).font(ReelieFont.ui(13)).foregroundStyle(Palette.grey).lineSpacing(2)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(14).hairlineCard(cornerRadius: 14)
+            }
         }
     }
 }

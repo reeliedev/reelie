@@ -23,6 +23,8 @@ struct GeneratedPage: Identifiable {
     var products: [Product]
     var archived: Bool = false
     var published: Bool = false      // live on the web vs draft awaiting review
+    var faqs: [RoutineFAQ] = []      // auto-generated + custom Q&A (same as web)
+    var totals: RoutineTotals? = nil // "shop the whole routine" kit
 
     /// The slug actually used in the public URL — the creator's custom link wins.
     var pathSlug: String {
@@ -39,9 +41,27 @@ struct GeneratedPage: Identifiable {
     var key: String { "\(handle)/\(slug)" }
 }
 
+// MARK: - Routine FAQ + totals (match the web's Q&A block + kit)
+
+struct RoutineFAQ: Identifiable, Equatable {
+    let id = UUID(); var q: String; var a: String
+}
+struct RoutineTotals: Equatable {
+    var count: Int
+    var totalDisplay: String   // "$36"
+    var rangeDisplay: String   // "$12–$24"
+    var anyEstimated: Bool
+    var retailers: [String]
+}
+
 // MARK: - Decodable DTO (mirrors render/app_json.py output, camelCase)
 
 struct GeneratedPageDTO: Decodable {
+    struct FAQDTO: Decodable { let q: String; let a: String }
+    struct TotalsDTO: Decodable {
+        let count: Int; let totalDisplay: String; let rangeDisplay: String
+        let anyEstimated: Bool; let retailers: [String]
+    }
     let title: String
     let emoji: String
     let slug: String
@@ -55,6 +75,8 @@ struct GeneratedPageDTO: Decodable {
     let archived: Bool?
     let published: Bool?
     let products: [GeneratedProductDTO]
+    let faqs: [FAQDTO]?
+    let totals: TotalsDTO?
 
     struct GeneratedProductDTO: Decodable {
         let id: String?
@@ -92,7 +114,13 @@ extension GeneratedPageDTO {
             disclosure: disclosure,
             products: products.enumerated().map { idx, p in p.toProduct() },
             archived: archived ?? false,
-            published: published ?? false
+            published: published ?? false,
+            faqs: (faqs ?? []).map { RoutineFAQ(q: $0.q, a: $0.a) },
+            totals: totals.map {
+                RoutineTotals(count: $0.count, totalDisplay: $0.totalDisplay,
+                              rangeDisplay: $0.rangeDisplay, anyEstimated: $0.anyEstimated,
+                              retailers: $0.retailers)
+            }
         )
     }
 }

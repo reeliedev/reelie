@@ -1,6 +1,7 @@
 import SwiftUI
 import UniformTypeIdentifiers
 import PhotosUI
+import AVFoundation
 
 /// A video picked from the Photos library, copied into our sandbox as a temp file.
 struct PickedMovie: Transferable {
@@ -73,20 +74,41 @@ struct PickVideoView: View {
         }
     }
 
-    /// Load the picked camera-roll video into a temp file, then upload + generate.
+    /// Load the picked camera-roll video, normalize it to a standard H.264 MP4
+    /// (camera-roll videos are often HEVC/HDR, which the pipeline can't process),
+    /// then upload + generate — so it works just like a computer upload.
     private func uploadFromPhotos(_ item: PhotosPickerItem) async {
-        phase = .generating; stage = "Loading your video…"
+        phase = .generating; stage = "Preparing your video…"
         defer { photoItem = nil }
-        do {
-            guard let movie = try await item.loadTransferable(type: PickedMovie.self) else { phase = .failed; return }
-            stage = "Uploading your video…"
-            let slug = await app.generatePage(uploadFileURL: movie.url) { stage = $0 }
-            try? FileManager.default.removeItem(at: movie.url)
-            if let slug {
-                newTitle = app.catalog.first { $0.handle == app.handle && $0.slug == slug }?.title ?? "Your new page"
-                phase = .done
-            } else { phase = .failed }
-        } catch { phase = .failed }
+        guard let movie = try? await item.loadTransferable(type: PickedMovie.self) else { phase = .failed; return }
+        let toUpload = await exportToMP4(movie.url) ?? movie.url   // fall back to original if export fails
+        stage = "Uploading your video…"
+        let slug = await app.generatePage(uploadFileURL: toUpload) { stage = $0 }
+        try? FileManager.default.removeItem(at: movie.url)
+        if toUpload != movie.url { try? FileManager.default.removeItem(at: toUpload) }
+        if let slug {
+            newTitle = app.catalog.first { $0.handle == app.handle && $0.slug == slug }?.title ?? "Your new page"
+            phase = .done
+        } else { phase = .failed }
+    }
+
+    /// Re-encode to H.264/AAC MP4. The resolution presets output H.264 (not HEVC),
+    /// so an iPhone HEVC/HDR clip becomes a standard MP4 the backend can process.
+    private func exportToMP4(_ src: URL) async -> URL? {
+        let asset = AVURLAsset(url: src)
+        let dst = FileManager.default.temporaryDirectory
+            .appendingPathComponent("export-\(UUID().uuidString).mp4")
+        try? FileManager.default.removeItem(at: dst)
+        let preset = AVAssetExportPreset1920x1080
+        guard AVAssetExportSession.exportPresets(compatibleWith: asset).contains(preset),
+              let export = AVAssetExportSession(asset: asset, presetName: preset) else { return nil }
+        export.outputURL = dst
+        export.outputFileType = .mp4
+        export.shouldOptimizeForNetworkUse = true
+        await withCheckedContinuation { (cont: CheckedContinuation<Void, Never>) in
+            export.exportAsynchronously { cont.resume() }
+        }
+        return export.status == .completed ? dst : nil
     }
 
     /// Copy the picked file into our sandbox (security-scoped access ends when the

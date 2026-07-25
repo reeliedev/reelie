@@ -23,6 +23,29 @@ final class AppState {
     )
     var isCreator: Bool { currentUser.role.isCreator }
 
+    // Last-known role/creator-status, persisted so the tab bar shows the right
+    // tabs from the first frame (no 3→5 flicker) and the Pages tab loads on the
+    // first open — instead of waiting for /me to come back before we know the
+    // account is a creator.
+    private static let roleKey = "reelie.role"
+    private static let creatorStatusKey = "reelie.creatorStatus"
+
+    init() {
+        // Only trust the cached role when a token is stored — a signed-out device
+        // is always a plain viewer.
+        if authToken != nil {
+            if let r = UserDefaults.standard.string(forKey: Self.roleKey) {
+                currentUser.role = Role.from(r)
+            }
+            currentUser.creatorStatus = UserDefaults.standard.string(forKey: Self.creatorStatusKey)
+        }
+    }
+
+    private func cacheRole() {
+        UserDefaults.standard.set(currentUser.role.raw, forKey: Self.roleKey)
+        UserDefaults.standard.setValue(currentUser.creatorStatus, forKey: Self.creatorStatusKey)
+    }
+
     // Legacy convenience (creator studio still reads/writes these).
     var displayName: String {
         get { currentUser.displayName }
@@ -334,6 +357,7 @@ final class AppState {
         if !u.avatarGradient.isEmpty { currentUser.avatarGradient = u.avatarGradient }
         currentUser.role = u.role
         currentUser.creatorStatus = u.creatorStatus
+        cacheRole()
     }
 
     @MainActor
@@ -446,7 +470,7 @@ final class AppState {
         let h = handle.trimmingCharacters(in: .whitespaces).lowercased()
         currentUser.handle = h
         guard let base = apiBaseURL, let token = authToken else {
-            currentUser.role = .both   // offline: unlock locally
+            currentUser.role = .both; cacheRole()   // offline: unlock locally
             return true
         }
         do {
@@ -462,6 +486,9 @@ final class AppState {
         authToken = nil
         refreshToken = nil
         currentUser.role = .viewer
+        currentUser.creatorStatus = nil
+        UserDefaults.standard.removeObject(forKey: Self.roleKey)
+        UserDefaults.standard.removeObject(forKey: Self.creatorStatusKey)
         earningsSummary = nil
         creatorStats = nil
         selectedTab = .discover
@@ -480,7 +507,7 @@ final class AppState {
     @MainActor @discardableResult
     func generatePage(videoId: String? = nil, url: String? = nil,
                       uploadFileURL: URL? = nil, title: String? = nil,
-                      onStage: ((String) -> Void)? = nil) async -> String? {
+                      onProgress: ((_ stage: String, _ phase: String?, _ preview: [GenPreviewItem]) -> Void)? = nil) async -> String? {
         guard let base = apiBaseURL, let token = authToken else { return nil }
         let client = APIClient(baseURL: base)
         // A pasted link or upload runs live extraction (download → transcribe → find
@@ -489,14 +516,14 @@ final class AppState {
         do {
             var uploadKey: String? = nil
             if let f = uploadFileURL {
-                onStage?("Uploading your video…")
+                onProgress?("Uploading your video…", "upload", [])
                 uploadKey = try await client.uploadVideo(fileURL: f, token: token)
             }
             let jobId = try await client.startGeneration(videoId: videoId, url: url,
                                                          uploadKey: uploadKey, title: title, token: token)
             for _ in 0..<maxPolls {
                 let st = try await client.generationStatus(jobId: jobId, token: token)
-                onStage?(st.stage)
+                onProgress?(st.stage, st.phase, st.preview ?? [])
                 if st.status == "done" {
                     await refreshFromAPI()
                     await loadMyPages()

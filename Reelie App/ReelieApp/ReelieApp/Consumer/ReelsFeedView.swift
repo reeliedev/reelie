@@ -68,10 +68,16 @@ struct ReelsFeedView: View {
     @State private var refreshed = false
 
     var body: some View {
-        Group {
-            if !items.isEmpty {
-                ZStack {
-                    Color.black.ignoresSafeArea()
+        // GeometryReader at the (safe-area-respecting) root reads the real top
+        // inset, so the wordmark clears the notch even though the video below
+        // ignores the safe area and fills the whole screen.
+        GeometryReader { proxy in
+            Group {
+                if !items.isEmpty {
+                    // The ScrollView ignores the safe area so its container spans
+                    // the WHOLE screen — then each cell (containerRelativeFrame) is
+                    // exactly one full screen tall, so paging snaps cleanly with no
+                    // black bar above and no peek of the previous video below the notch.
                     ScrollView(.vertical, showsIndicators: false) {
                         LazyVStack(spacing: 0) {
                             ForEach(items.filter { !app.isBlocked(creator: $0.handle) }) { item in
@@ -84,17 +90,22 @@ struct ReelsFeedView: View {
                     }
                     .scrollTargetBehavior(.paging)
                     .scrollPosition(id: $activeID)
+                    .background(Color.black)
+                    .ignoresSafeArea()
+                    .overlay(alignment: .top) {
+                        Text("Reelie")
+                            .font(ReelieFont.display(22)).foregroundStyle(.white)
+                            .shadow(color: .black.opacity(0.45), radius: 6)
+                            .padding(.top, proxy.safeAreaInsets.top + 4)
+                            .allowsHitTesting(false)
+                    }
+                } else if loaded {
+                    EmptyDiscover()             // no videos — branded light state
+                } else {
+                    LoadingDiscover()           // first load — branded light, not a black void
                 }
-                .overlay(alignment: .top) {
-                    Text("Reelie").font(ReelieFont.display(22)).foregroundStyle(.white)
-                        .shadow(color: .black.opacity(0.4), radius: 6)
-                        .padding(.top, 6)
-                }
-            } else if loaded {
-                EmptyDiscover()                 // no videos — branded light state
-            } else {
-                LoadingDiscover()               // first load — branded light, not a black void
             }
+            .frame(width: proxy.size.width, height: proxy.size.height)
         }
         .task { await load() }
     }
@@ -250,7 +261,9 @@ struct ReelCell: View {
                 Spacer()
                 actionRail
             }
-            .padding(.horizontal, 16).padding(.bottom, 22)
+            // Clear the overlaid tab bar (~tab bar + home indicator) so the shop
+            // card and action rail sit above it on the full-screen feed.
+            .padding(.horizontal, 16).padding(.bottom, 96)
         }
     }
 

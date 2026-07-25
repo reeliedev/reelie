@@ -9,7 +9,12 @@ import Foundation
 // existing `Product` model (now with price fields).
 
 struct GeneratedPage: Identifiable {
-    let id = UUID()
+    // Identity is derived deterministically from the page's stable key ("handle/slug")
+    // so that reloading pages (loadMyPages decodes fresh DTOs) keeps the SAME id.
+    // A random per-decode UUID would change every refresh, invalidating any
+    // navigation value captured mid-interaction — that's what made the Preview
+    // button need a second tap.
+    var id: UUID { GeneratedPage.stableID(for: key) }
     var title: String
     var emoji: String
     var slug: String                 // generated default slug
@@ -39,6 +44,25 @@ struct GeneratedPage: Identifiable {
 
     /// Stable identity across launches (favorites, overrides) — not the random UUID.
     var key: String { "\(handle)/\(slug)" }
+
+    /// A deterministic UUID for a page key, so the same page always has the same
+    /// `id` regardless of when/how often it's decoded. FNV-1a over the key bytes,
+    /// run in two directions to fill all 16 UUID bytes.
+    static func stableID(for key: String) -> UUID {
+        var h1: UInt64 = 0xcbf29ce484222325
+        var h2: UInt64 = 0x84222325cbf29ce4
+        for b in key.utf8 {
+            h1 = (h1 ^ UInt64(b)) &* 0x100000001b3
+            h2 = (h2 &+ UInt64(b)) &* 0x100000001b3
+        }
+        func byte(_ v: UInt64, _ i: Int) -> UInt8 { UInt8((v >> (UInt64(i) * 8)) & 0xff) }
+        return UUID(uuid: (
+            byte(h1, 0), byte(h1, 1), byte(h1, 2), byte(h1, 3),
+            byte(h1, 4), byte(h1, 5), byte(h1, 6), byte(h1, 7),
+            byte(h2, 0), byte(h2, 1), byte(h2, 2), byte(h2, 3),
+            byte(h2, 4), byte(h2, 5), byte(h2, 6), byte(h2, 7)
+        ))
+    }
 }
 
 // MARK: - Routine FAQ + totals (match the web's Q&A block + kit)

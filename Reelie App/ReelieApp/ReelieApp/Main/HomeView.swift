@@ -59,7 +59,9 @@ struct HomeView: View {
                 PageEditorView(pageID: id)
             }
         }
-        .task { await app.loadMyPages() }
+        // Keyed on isCreator so pages load the moment creator status resolves —
+        // not only on a second visit to the tab.
+        .task(id: app.isCreator) { await app.loadMyPages() }
     }
 }
 

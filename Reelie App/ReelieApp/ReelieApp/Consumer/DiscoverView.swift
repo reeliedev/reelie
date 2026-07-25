@@ -7,16 +7,15 @@ struct DiscoverView: View {
 
     var body: some View {
         @Bindable var app = app
-        VStack(spacing: 0) {
-            ReelsFeedView()
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            ReelieTabBar(selection: $app.selectedTab, showsCreator: app.isCreator)
-                .background(.white)
-        }
-        .background(.white)
-        .navigationBarBackButtonHidden(true)
-        .toolbar(.hidden, for: .navigationBar)
-        .consumerDestinations()
+        ReelsFeedView()
+            // Tab bar rides in the bottom safe area; the video fills behind it.
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                ReelieTabBar(selection: $app.selectedTab, showsCreator: app.isCreator)
+            }
+            .background(.white)
+            .navigationBarBackButtonHidden(true)
+            .toolbar(.hidden, for: .navigationBar)
+            .consumerDestinations()
     }
 }
 

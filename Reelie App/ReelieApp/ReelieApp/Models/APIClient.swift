@@ -329,7 +329,30 @@ struct AvailableVideo: Decodable, Identifiable {
 }
 private struct StartGen: Decodable { let jobId: String }
 private struct PresignResult: Decodable { let uploadUrl: String; let key: String }
-struct GenStatus: Decodable { let status: String; let stage: String; let pageSlug: String?; let error: String? }
+struct GenStatus: Decodable {
+    let status: String; let stage: String; let pageSlug: String?; let error: String?
+    // Live-analysis fields (mirror GET /me/generate/{id}): the pipeline phase and
+    // the products detected so far, revealed one-by-one in the UI like the web.
+    let phase: String?
+    let preview: [GenPreviewItem]?
+}
+
+/// One product surfaced during live analysis (job.preview items).
+struct GenPreviewItem: Decodable, Identifiable {
+    let brand: String?
+    let name: String?
+    let variant: String?
+    let t: Double?          // timestamp (seconds) where it was found
+    var id: String { (brand ?? "") + "|" + (name ?? "") + "|" + String(t ?? 0) }
+    var label: String {
+        let s = [brand, name].compactMap { $0 }.joined(separator: " ").trimmingCharacters(in: .whitespaces)
+        return s.isEmpty ? "Product" : s
+    }
+    var foundAt: String {
+        let sec = max(0, Int((t ?? 0).rounded()))
+        return "\(sec / 60):" + String(format: "%02d", sec % 60)
+    }
+}
 
 // Social-connection payloads.
 struct ConnectStart: Decodable { let authorizeUrl: String; let mock: Bool; let callbackScheme: String }

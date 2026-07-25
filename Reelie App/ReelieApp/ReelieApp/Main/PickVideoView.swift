@@ -37,7 +37,55 @@ struct PickVideoView: View {
     @State private var showFilePicker = false
     @State private var photoItem: PhotosPickerItem?
 
+    // Live-analysis state — mirrors the web: the video plays while products are
+    // detected and revealed one-by-one, then it lands on the editable draft.
+    @State private var genPhase = ""                    // upload/analyzing/found/building/done
+    @State private var preview: [GenPreviewItem] = []   // products detected so far
+    @State private var revealed = 0                     // how many are shown in the list
+    @State private var localVideoURL: URL?              // the uploaded clip, shown while analyzing
+    @State private var revealTask: Task<Void, Never>?
+
     enum Phase { case pick, generating, done, failed }
+
+    /// Single progress sink passed to `generatePage`: updates the stage label and,
+    /// once products arrive, kicks off the staggered reveal (one every 0.8s).
+    private func onProgress(_ stage: String, _ phase: String?, _ newPreview: [GenPreviewItem]) {
+        self.stage = stage
+        if let phase { self.genPhase = phase }
+        if preview.isEmpty, !newPreview.isEmpty {
+            preview = newPreview
+            startReveal()
+        }
+    }
+
+    private func startReveal() {
+        revealTask?.cancel()
+        revealTask = Task {
+            while revealed < preview.count {
+                try? await Task.sleep(nanoseconds: 800_000_000)
+                if Task.isCancelled { return }
+                if revealed < preview.count { revealed += 1 }
+            }
+        }
+    }
+
+    /// Generation finished. Reveal any remaining products, then land on the
+    /// editable draft page (the app twin of the web's review/edit screen) — not a
+    /// "your page is live" screen, since generated pages start as drafts.
+    private func finish(slug: String?) {
+        revealTask?.cancel()
+        revealed = preview.count
+        guard let slug, let page = app.generatedPages.first(where: { $0.slug == slug }) else {
+            newTitle = "Your new page"; phase = .done; return
+        }
+        newTitle = page.title
+        // Small beat so the last product lands before the transition.
+        Task {
+            try? await Task.sleep(nanoseconds: 500_000_000)
+            app.selectedTab = .pages
+            app.homePath = [.generatedPage(pageID: page.id)]
+        }
+    }
 
     private let columns = [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)]
 
@@ -78,18 +126,15 @@ struct PickVideoView: View {
     /// (camera-roll videos are often HEVC/HDR, which the pipeline can't process),
     /// then upload + generate — so it works just like a computer upload.
     private func uploadFromPhotos(_ item: PhotosPickerItem) async {
-        phase = .generating; stage = "Preparing your video…"
         defer { photoItem = nil }
+        phase = .generating; stage = "Preparing your video…"; genPhase = "upload"
+        preview = []; revealed = 0; localVideoURL = nil
         guard let movie = try? await item.loadTransferable(type: PickedMovie.self) else { phase = .failed; return }
         let toUpload = await exportToMP4(movie.url) ?? movie.url   // fall back to original if export fails
-        stage = "Uploading your video…"
-        let slug = await app.generatePage(uploadFileURL: toUpload) { stage = $0 }
-        try? FileManager.default.removeItem(at: movie.url)
-        if toUpload != movie.url { try? FileManager.default.removeItem(at: toUpload) }
-        if let slug {
-            newTitle = app.catalog.first { $0.handle == app.handle && $0.slug == slug }?.title ?? "Your new page"
-            phase = .done
-        } else { phase = .failed }
+        localVideoURL = toUpload                                    // play it while we analyze
+        let slug = await app.generatePage(uploadFileURL: toUpload, onProgress: onProgress)
+        if movie.url != toUpload { try? FileManager.default.removeItem(at: movie.url) }
+        if slug != nil { finish(slug: slug) } else { phase = .failed }
     }
 
     /// Re-encode to H.264/AAC MP4. The resolution presets output H.264 (not HEVC),
@@ -121,15 +166,10 @@ struct PickVideoView: View {
         try? FileManager.default.removeItem(at: dst)
         do { try FileManager.default.copyItem(at: picked, to: dst) }
         catch { phase = .failed; return }
-        phase = .generating; stage = "Uploading your video…"
-        let slug = await app.generatePage(uploadFileURL: dst) { stage = $0 }
-        try? FileManager.default.removeItem(at: dst)
-        if let slug {
-            newTitle = app.catalog.first { $0.handle == app.handle && $0.slug == slug }?.title ?? "Your new page"
-            phase = .done
-        } else {
-            phase = .failed
-        }
+        phase = .generating; stage = "Uploading your video…"; genPhase = "upload"
+        preview = []; revealed = 0; localVideoURL = dst
+        let slug = await app.generatePage(uploadFileURL: dst, onProgress: onProgress)
+        if slug != nil { finish(slug: slug) } else { phase = .failed }
     }
 
     private func load() async {
@@ -250,14 +290,10 @@ struct PickVideoView: View {
     /// Shared: extract + build a page from any video URL (pasted or connected).
     private func runGeneration(url: String) async {
         guard !url.isEmpty else { return }
-        phase = .generating; stage = "Fetching your video…"
-        let slug = await app.generatePage(url: url) { stage = $0 }
-        if let slug {
-            newTitle = app.catalog.first { $0.handle == app.handle && $0.slug == slug }?.title ?? "Your new page"
-            phase = .done
-        } else {
-            phase = .failed
-        }
+        phase = .generating; stage = "Fetching your video…"; genPhase = ""
+        preview = []; revealed = 0; localVideoURL = nil
+        let slug = await app.generatePage(url: url, onProgress: onProgress)
+        if slug != nil { finish(slug: slug) } else { phase = .failed }
     }
 
     private func tile(_ v: AvailableVideo) -> some View {
@@ -289,40 +325,109 @@ struct PickVideoView: View {
 
     private func generate() async {
         guard let vid = selected else { return }
-        phase = .generating; stage = "Starting…"
-        let slug = await app.generatePage(videoId: vid) { stage = $0 }
-        if let slug {
-            newTitle = app.catalog.first { $0.handle == app.handle && $0.slug == slug }?.title ?? "Your new page"
-            phase = .done
-        } else {
-            phase = .failed
-        }
+        phase = .generating; stage = "Starting…"; genPhase = ""
+        preview = []; revealed = 0; localVideoURL = nil
+        let slug = await app.generatePage(videoId: vid, onProgress: onProgress)
+        if slug != nil { finish(slug: slug) } else { phase = .failed }
     }
 
     // MARK: states
 
+    // Live analysis — the video plays and scans while detected products drop into
+    // the list one-by-one, exactly like the web analyzer.
     private var generatingBody: some View {
         VStack(spacing: 0) {
-            Spacer()
-            ProgressView().scaleEffect(1.3).tint(Palette.ink)
-            Text(stage).displayStyle(24).padding(.top, 20)
-            Text("Finding your products, pricing them, and publishing your page.")
-                .font(ReelieFont.ui(14)).foregroundStyle(Palette.grey)
-                .multilineTextAlignment(.center).frame(maxWidth: 280).lineSpacing(2).padding(.top, 10)
-            Spacer(); Spacer()
+            VStack(spacing: 5) {
+                Text(analyzingTitle).displayStyle(23).multilineTextAlignment(.center)
+                Text(analyzingSub)
+                    .font(ReelieFont.ui(13)).foregroundStyle(Palette.grey)
+                    .multilineTextAlignment(.center)
+            }
+            .padding(.top, 6).padding(.bottom, 16).padding(.horizontal, 20)
+
+            AnalyzingStage(videoURL: localVideoURL, ping: revealed)
+                .frame(height: 280)
+                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .padding(.horizontal, 28)
+
+            HStack(spacing: 8) {
+                if revealed > 0 {
+                    Text("\(revealed) product\(revealed == 1 ? "" : "s") found")
+                        .font(ReelieFont.ui(13.5, weight: .bold)).foregroundStyle(Palette.ink)
+                } else {
+                    ProgressView().scaleEffect(0.8).tint(Palette.ink)
+                    Text("Looking for products…")
+                        .font(ReelieFont.ui(13.5, weight: .semibold)).foregroundStyle(Palette.grey)
+                }
+                Spacer()
+            }
+            .padding(.horizontal, 28).padding(.top, 16).padding(.bottom, 6)
+
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 8) {
+                    ForEach(revealedItems) { item in analyzedRow(item) }
+                }
+                .padding(.horizontal, 28).padding(.top, 4).padding(.bottom, 20)
+            }
+            .animation(.spring(response: 0.35, dampingFraction: 0.82), value: revealed)
         }
-        .padding(.horizontal, 28)
+        .onDisappear { revealTask?.cancel() }
+    }
+
+    private var analyzingTitle: String {
+        switch genPhase {
+        case "building": return "Pricing & building your page"
+        case "done":     return "Draft ready to review"
+        default:         return "Analyzing your video"
+        }
+    }
+    private var analyzingSub: String {
+        switch genPhase {
+        case "upload":   return "Uploading your video…"
+        case "building": return stage
+        case "done":     return "Check it over, then publish."
+        default:         return preview.isEmpty
+            ? "Watching every second to find the products…"
+            : "Products detected in the video ✨"
+        }
+    }
+    private var revealedItems: [GenPreviewItem] { Array(preview.prefix(revealed)).reversed() }
+
+    private func analyzedRow(_ item: GenPreviewItem) -> some View {
+        HStack(spacing: 12) {
+            Text("🔎").font(.system(size: 17))
+                .frame(width: 40, height: 40)
+                .background(Palette.soft, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
+            VStack(alignment: .leading, spacing: 2) {
+                (Text(item.label).font(ReelieFont.ui(14.5, weight: .semibold)).foregroundStyle(Palette.ink)
+                 + (item.variant.map { Text("  \($0)").font(ReelieFont.ui(12)).foregroundStyle(Palette.grey) } ?? Text("")))
+                    .lineLimit(1)
+                Text("found at \(item.foundAt)")
+                    .font(ReelieFont.ui(11.5)).foregroundStyle(Palette.faint)
+            }
+            Spacer(minLength: 4)
+            Image(systemName: "checkmark.circle.fill").font(.system(size: 16)).foregroundStyle(Palette.sun)
+        }
+        .padding(.horizontal, 12).padding(.vertical, 10)
+        .hairlineCard(cornerRadius: 14)
+        .transition(.asymmetric(insertion: .move(edge: .top).combined(with: .opacity),
+                                removal: .opacity))
     }
 
     private var doneBody: some View {
         VStack(spacing: 0) {
             Spacer()
             SunTick(size: 64)
-            Text("Your page is live").displayStyle(28).padding(.top, 18)
+            Text("Draft ready to review").displayStyle(28).multilineTextAlignment(.center).padding(.top, 18)
             Text(newTitle)
                 .font(ReelieFont.ui(15, weight: .bold)).foregroundStyle(Palette.grey).padding(.top, 6)
-            BigButton(title: "Done", style: .sun) { app.selectedTab = .discover; dismiss() }
-                .padding(.top, 30).padding(.horizontal, 28)
+            BigButton(title: "Review & publish", style: .sun) {
+                if let page = app.generatedPages.first(where: { $0.title == newTitle }) {
+                    app.selectedTab = .pages
+                    app.homePath = [.generatedPage(pageID: page.id)]
+                } else { dismiss() }
+            }
+            .padding(.top, 30).padding(.horizontal, 28)
             Spacer(); Spacer()
         }
         .padding(.horizontal, 28)
@@ -338,6 +443,68 @@ struct PickVideoView: View {
             Spacer(); Spacer()
         }
         .padding(.horizontal, 28)
+    }
+}
+
+// MARK: - Analyzing stage (the video being scanned)
+
+/// The uploaded clip playing (muted, looping) under a sweeping scan line — or a
+/// branded placeholder for link/past-video sources that have no local file. The
+/// border flashes each time a new product is detected. Mirrors the web `.az-stage`.
+private struct AnalyzingStage: View {
+    let videoURL: URL?
+    var ping: Int
+    @State private var player = AVPlayer()
+    @State private var scan = false
+    @State private var flash = false
+    @State private var loopObserver: NSObjectProtocol?
+
+    var body: some View {
+        ZStack {
+            if let url = videoURL {
+                PlayerLayerView(player: player)
+                    .onAppear { start(url) }
+                    .onDisappear { player.pause() }
+            } else {
+                LinearGradient(colors: [Color(hex: 0xE8E4DA), Color(hex: 0xD8D2C4)],
+                               startPoint: .top, endPoint: .bottom)
+                Text("🎬").font(.system(size: 54))
+            }
+            GeometryReader { geo in
+                Rectangle()
+                    .fill(LinearGradient(colors: [.clear, Palette.sun.opacity(0.95), .clear],
+                                         startPoint: .leading, endPoint: .trailing))
+                    .frame(height: 3)
+                    .shadow(color: Palette.sun.opacity(0.9), radius: 8)
+                    .offset(y: scan ? geo.size.height - 3 : 0)
+                    .animation(.easeInOut(duration: 2.1).repeatForever(autoreverses: true), value: scan)
+            }
+            Color.black.opacity(0.10)
+        }
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .strokeBorder(Palette.sun, lineWidth: 3)
+                .opacity(flash ? 0.9 : 0)
+        )
+        .onAppear { scan = true }
+        .onChange(of: ping) { _, _ in
+            withAnimation(.easeIn(duration: 0.12)) { flash = true }
+            withAnimation(.easeOut(duration: 0.6).delay(0.12)) { flash = false }
+        }
+    }
+
+    private func start(_ url: URL) {
+        if player.currentItem == nil {
+            let item = AVPlayerItem(url: url)
+            player.replaceCurrentItem(with: item)
+            player.isMuted = true
+            player.actionAtItemEnd = .none
+            loopObserver = NotificationCenter.default.addObserver(
+                forName: .AVPlayerItemDidPlayToEndTime, object: item, queue: .main) { _ in
+                    player.seek(to: .zero); player.play()
+                }
+        }
+        player.play()
     }
 }
 

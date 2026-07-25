@@ -184,6 +184,14 @@ enum Role: Equatable {
 
     var isCreator: Bool { self == .creator || self == .both }
 
+    var raw: String {
+        switch self {
+        case .viewer: return "viewer"
+        case .creator: return "creator"
+        case .both: return "both"
+        }
+    }
+
     static func from(_ s: String) -> Role {
         switch s {
         case "creator": return .creator

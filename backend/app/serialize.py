@@ -5,6 +5,7 @@ Response builders — camelCase dicts that decode 1:1 into the iOS models
 
 from __future__ import annotations
 
+from app.integrations import effective_retailer
 from app.models import Creator, Page, Product, User
 
 
@@ -55,7 +56,9 @@ def product_app(p: Product) -> dict:
         "timestamp": p.timestamp,
         "note": p.note,
         "guide": p.guide,
-        "retailer": p.retailer,
+        # Honest retailer: matches where the link actually resolves (same helper the
+        # web page uses), so a client can't show "Ulta" while the link goes to Amazon.
+        "retailer": effective_retailer(p),
         "priceDisplay": p.price_display,
         "priceAmount": p.price_amount,
         "currency": p.currency,

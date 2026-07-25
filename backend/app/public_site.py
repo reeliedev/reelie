@@ -22,7 +22,8 @@ import json
 from pathlib import Path
 
 from app import config
-from app.integrations import is_trusted_retailer, retailer_for_url
+from app.integrations import (effective_retailer as _effective_retailer,
+                              is_trusted_retailer, retailer_for_url)
 from app.models import Creator, Page, Product
 
 BASE = config.PUBLIC_BASE_URL
@@ -334,17 +335,6 @@ _EVIDENCE = {"both": "Shown &amp; mentioned", "shown": "Shown in the video",
 
 def _approx(estimated: bool) -> str:
     return ' <span class="approx">approx.</span>' if estimated else ""
-
-
-def _effective_retailer(p: Product) -> str:
-    """Where this product actually links: a known retailer when the resolved link
-    points there, else the brand's own store; falls back to the guessed retailer
-    only for a trusted-retailer search link. Keeps 'available at …' honest."""
-    if p.link_kind in ("own", "auto") and (p.url or "").startswith("http"):
-        return retailer_for_url(p.url) or (p.brand or "").strip()
-    if is_trusted_retailer(p.retailer):
-        return (p.retailer or "").strip()
-    return (p.brand or "").strip()
 
 
 def _totals(products: list[Product]) -> dict:

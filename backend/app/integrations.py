@@ -45,6 +45,21 @@ def retailer_for_url(url: str) -> str:
     return ""
 
 
+def effective_retailer(p) -> str:
+    """The retailer that MATCHES where a product actually links (keeps the label
+    honest). Shared by the web page AND the API DTO so every client — web, iOS —
+    shows the same, correct retailer instead of the raw guessed one.
+      • a resolved own/auto URL → the retailer derived from that URL
+      • a trusted guessed retailer for a search link → that retailer
+      • otherwise the brand's own store
+    Duck-typed on Product (link_kind, url, retailer, brand)."""
+    if p.link_kind in ("own", "auto") and (p.url or "").startswith("http"):
+        return retailer_for_url(p.url) or (p.brand or "").strip()
+    if is_trusted_retailer(p.retailer):
+        return (p.retailer or "").strip()
+    return (p.brand or "").strip()
+
+
 def _shopping_search(brand: str, name: str, retailer: str = "") -> str:
     """Google Shopping search for the product — finds it across all retailers, so
     it always resolves to something buyable even when the retailer guess is off."""

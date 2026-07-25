@@ -5,7 +5,7 @@ Response builders — camelCase dicts that decode 1:1 into the iOS models
 
 from __future__ import annotations
 
-from app.integrations import effective_retailer
+from app.integrations import effective_retailer, money
 from app.models import Creator, Page, Product, User
 
 
@@ -59,7 +59,9 @@ def product_app(p: Product) -> dict:
         # Honest retailer: matches where the link actually resolves (same helper the
         # web page uses), so a client can't show "Ulta" while the link goes to Amazon.
         "retailer": effective_retailer(p),
-        "priceDisplay": p.price_display,
+        # Fall back to formatting the numeric price so a client (iOS) that only
+        # reads priceDisplay still shows a price — matches the web + feed.
+        "priceDisplay": p.price_display or money(p.price_amount, p.currency),
         "priceAmount": p.price_amount,
         "currency": p.currency,
         "priceEstimated": p.price_estimated,

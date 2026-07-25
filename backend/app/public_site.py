@@ -23,7 +23,7 @@ from pathlib import Path
 
 from app import config
 from app.integrations import (effective_retailer as _effective_retailer,
-                              is_trusted_retailer, retailer_for_url)
+                              is_trusted_retailer, money as _money, retailer_for_url)
 from app.models import Creator, Page, Product
 
 BASE = config.PUBLIC_BASE_URL
@@ -41,15 +41,6 @@ def page_url(handle: str, slug: str) -> str:
 def shop_url(handle: str, slug: str, position: int) -> str:
     # Route through the /r redirect so clicks are logged before the retailer.
     return f"{BASE}/r/{handle}/{slug}/{position}"
-
-
-def _money(amount: float | None, currency: str) -> str:
-    if amount is None:
-        return ""
-    sym = {"USD": "$", "GBP": "£", "EUR": "€"}.get(currency, "")
-    if abs(amount - round(amount)) < 0.005:
-        return f"{sym}{int(round(amount))}"
-    return f"{sym}{amount:,.2f}"
 
 
 # --------------------------------------------------------------------------

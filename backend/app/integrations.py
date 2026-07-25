@@ -45,6 +45,18 @@ def retailer_for_url(url: str) -> str:
     return ""
 
 
+def money(amount: float | None, currency: str) -> str:
+    """Format a price for display ($24, £12.50). Shared by the web page, the API
+    DTO and the feed so a product with a numeric price but no pre-set display
+    string still shows a price on every client."""
+    if amount is None:
+        return ""
+    sym = {"USD": "$", "GBP": "£", "EUR": "€"}.get(currency, "")
+    if abs(amount - round(amount)) < 0.005:
+        return f"{sym}{int(round(amount))}"
+    return f"{sym}{amount:,.2f}"
+
+
 def effective_retailer(p) -> str:
     """The retailer that MATCHES where a product actually links (keeps the label
     honest). Shared by the web page AND the API DTO so every client — web, iOS —

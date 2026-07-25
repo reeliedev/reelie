@@ -18,6 +18,12 @@ struct RoutineView: View {
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 0) {
                         header(page)
+                        if !page.intro.isEmpty {
+                            Text(page.intro)
+                                .font(ReelieFont.ui(15)).foregroundStyle(Palette.ink).lineSpacing(3)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.top, 18)
+                        }
                         if let t = page.totals, !t.totalDisplay.isEmpty { totalsCard(t) }
                         SectionLabel(text: "THE ROUTINE").padding(.top, 24).padding(.bottom, 12)
                         ForEach(Array(page.products.enumerated()), id: \.element.id) { i, product in
@@ -154,26 +160,78 @@ private struct ProductRow: View {
         return base?.appendingPathComponent("r/\(pageHandle)/\(pageSlug)/\(number)")
     }
 
+    /// The clip's poster frame (a real still from the video), absolute-ized.
+    private var posterURL: URL? {
+        guard let p = product.clipPoster, !p.isEmpty else { return nil }
+        if p.hasPrefix("http") { return URL(string: p) }
+        return (app.apiBaseURL ?? URL(string: "https://reelie.io"))?.appendingPathComponent(p)
+    }
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 13) {
-                Text("\(number)").font(ReelieFont.display(16)).foregroundStyle(Palette.faint).frame(width: 18)
-                EmojiThumb(emoji: product.emoji, size: 50)
-                VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: 0) {
+            // Real video still (a moment from the source video) when we have one.
+            if let poster = posterURL {
+                AsyncImage(url: poster) { img in
+                    img.resizable().aspectRatio(contentMode: .fill)
+                } placeholder: {
+                    GradientPoster(corner: 0).overlay(Text(product.emoji).font(.system(size: 34)))
+                }
+                .frame(maxWidth: .infinity).frame(height: 200).clipped()
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .padding(.bottom, 12)
+            }
+
+            // Step + timestamp, and the evidence tag.
+            HStack(spacing: 6) {
+                Text("STEP \(number)")
+                    .font(ReelieFont.ui(10.5, weight: .bold)).tracking(0.8).foregroundStyle(Palette.grey)
+                if !product.timestamp.isEmpty, product.timestamp != "0:00" {
+                    Text("· \(product.timestamp)").font(ReelieFont.ui(10.5, weight: .bold)).foregroundStyle(Palette.faint)
+                }
+                Spacer()
+                Text(product.evidence.label)
+                    .font(ReelieFont.ui(10, weight: .semibold)).foregroundStyle(Palette.grey)
+                    .padding(.horizontal, 8).padding(.vertical, 3)
+                    .background(Palette.soft, in: Capsule())
+            }
+            .padding(.bottom, 8)
+
+            HStack(alignment: .top, spacing: 12) {
+                if posterURL == nil { EmojiThumb(emoji: product.emoji, size: 46) }
+                VStack(alignment: .leading, spacing: 3) {
                     if !product.brand.isEmpty {
                         Text(product.brand.uppercased())
                             .font(ReelieFont.ui(11, weight: .bold)).tracking(0.6).foregroundStyle(Palette.grey)
                     }
-                    Text(product.name)
-                        .font(ReelieFont.ui(14.5, weight: .medium)).foregroundStyle(Palette.ink)
+                    (Text(product.name).font(ReelieFont.ui(16, weight: .semibold)).foregroundStyle(Palette.ink)
+                     + (product.variant.map {
+                            Text("  \($0)").font(ReelieFont.ui(13)).foregroundStyle(Palette.grey)
+                        } ?? Text("")))
                         .fixedSize(horizontal: false, vertical: true)
-                    if let price = product.priceDisplay {
-                        Text(price).font(ReelieFont.ui(12.5, weight: .bold)).foregroundStyle(Palette.ink).padding(.top, 3)
+                }
+                Spacer(minLength: 0)
+            }
+
+            // Narration — how they use it (the meat of the guide).
+            if let n = product.narration {
+                Text(n).font(ReelieFont.ui(13.5)).foregroundStyle(Palette.grey).lineSpacing(2)
+                    .fixedSize(horizontal: false, vertical: true).padding(.top, 8)
+            }
+
+            // Price + shop.
+            HStack(alignment: .center) {
+                if let price = product.priceDisplay {
+                    HStack(spacing: 4) {
+                        Text(price).font(ReelieFont.ui(14, weight: .bold)).foregroundStyle(Palette.ink)
+                        if product.priceEstimated {
+                            Text("approx.").font(ReelieFont.ui(11)).foregroundStyle(Palette.faint)
+                        }
                     }
                 }
-                Spacer(minLength: 4)
+                Spacer()
                 shopButton
             }
+            .padding(.top, 12)
 
             if !alsoUsedBy.isEmpty {
                 HStack(spacing: 7) {
@@ -185,10 +243,10 @@ private struct ProductRow: View {
                         .buttonStyle(.plain)
                     }
                 }
-                .padding(.leading, 31)
+                .padding(.top, 12)
             }
         }
-        .padding(.horizontal, 14).padding(.vertical, 13)
+        .padding(14)
         .hairlineCard()
     }
 

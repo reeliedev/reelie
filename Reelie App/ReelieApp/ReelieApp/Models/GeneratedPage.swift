@@ -94,6 +94,8 @@ struct GeneratedPageDTO: Decodable {
         let linkKind: String
         let rate: Int?
         let ownLabel: String?
+        let clipUrl: String?
+        let clipPoster: String?
     }
 }
 
@@ -132,10 +134,13 @@ extension GeneratedPageDTO.GeneratedProductDTO {
             brand: brand,
             name: name,
             emoji: emoji,
+            variant: variant,
             evidence: Self.mapEvidence(evidence),
             timestamp: timestamp,
             note: note,
             guide: guide,
+            clipUrl: clipUrl,
+            clipPoster: clipPoster,
             link: mapLink(),
             priceDisplay: priceDisplay,
             retailer: retailer,

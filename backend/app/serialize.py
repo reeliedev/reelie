@@ -78,6 +78,10 @@ def product_app(p: Product) -> dict:
         "rate": p.rate,
         "ownLabel": p.own_label,
         "url": p.url,
+        # Per-step video clip (a moment from the source video) + its poster, so the
+        # app can show the same rich media the web guide does instead of an emoji.
+        "clipUrl": p.clip_url,
+        "clipPoster": p.clip_poster,
     }
 
 

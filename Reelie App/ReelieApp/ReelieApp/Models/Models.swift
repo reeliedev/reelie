@@ -81,6 +81,15 @@ enum Evidence: String {
     case spoken = "Spoken"
     case shown = "Shown"
     case both = "Both"
+
+    /// Reader-facing label (matches the web's evidence tags).
+    var label: String {
+        switch self {
+        case .both:   return "Shown & mentioned"
+        case .shown:  return "Shown in the video"
+        case .spoken: return "Mentioned in the video"
+        }
+    }
 }
 
 struct Product: Identifiable {
@@ -89,12 +98,18 @@ struct Product: Identifiable {
     var brand: String
     var name: String
     var emoji: String
+    var variant: String? = nil   // "shade 120" / "50ml"
     var evidence: Evidence
     var timestamp: String        // "0:12"
     var note: String? = nil      // "which shade?" / "are we right?"
     var guide: String? = nil     // 1-3 sentence narration (editable on generated pages)
+    var clipUrl: String? = nil   // per-step video clip from the source video
+    var clipPoster: String? = nil
     var link: LinkKind
     var status: ProductStatus = .ready
+
+    /// The narration to show under a product: the guide, or the quoted note.
+    var narration: String? { guide ?? note.map { "\"\($0)\"" } }
 
     // page-detail metrics (optional)
     var earned: String? = nil

@@ -1,5 +1,21 @@
 import SwiftUI
 import UniformTypeIdentifiers
+import PhotosUI
+
+/// A video picked from the Photos library, copied into our sandbox as a temp file.
+struct PickedMovie: Transferable {
+    let url: URL
+    static var transferRepresentation: some TransferRepresentation {
+        FileRepresentation(contentType: .movie) { SentTransferredFile($0.url) }
+        importing: { received in
+            let dst = FileManager.default.temporaryDirectory
+                .appendingPathComponent("upload-\(UUID().uuidString).mov")
+            try? FileManager.default.removeItem(at: dst)
+            try FileManager.default.copyItem(at: received.file, to: dst)
+            return PickedMovie(url: dst)
+        }
+    }
+}
 
 /// Screen 06 — Pick a video to build a page from. Self-serve: the chosen video is
 /// generated into a shoppable page server-side and published to the creator's
@@ -18,6 +34,7 @@ struct PickVideoView: View {
     @State private var stage = "Starting…"
     @State private var newTitle = ""
     @State private var showFilePicker = false
+    @State private var photoItem: PhotosPickerItem?
 
     enum Phase { case pick, generating, done, failed }
 
@@ -50,6 +67,26 @@ struct PickVideoView: View {
                 Task { await runUpload(picked) }
             }
         }
+        .onChange(of: photoItem) { _, item in
+            guard let item else { return }
+            Task { await uploadFromPhotos(item) }
+        }
+    }
+
+    /// Load the picked camera-roll video into a temp file, then upload + generate.
+    private func uploadFromPhotos(_ item: PhotosPickerItem) async {
+        phase = .generating; stage = "Loading your video…"
+        defer { photoItem = nil }
+        do {
+            guard let movie = try await item.loadTransferable(type: PickedMovie.self) else { phase = .failed; return }
+            stage = "Uploading your video…"
+            let slug = await app.generatePage(uploadFileURL: movie.url) { stage = $0 }
+            try? FileManager.default.removeItem(at: movie.url)
+            if let slug {
+                newTitle = app.catalog.first { $0.handle == app.handle && $0.slug == slug }?.title ?? "Your new page"
+                phase = .done
+            } else { phase = .failed }
+        } catch { phase = .failed }
     }
 
     /// Copy the picked file into our sandbox (security-scoped access ends when the
@@ -111,22 +148,35 @@ struct PickVideoView: View {
                 Text("We'll watch it, find every product, and build your shoppable page.")
                     .font(ReelieFont.ui(12)).foregroundStyle(Palette.grey).padding(.top, 8)
 
-                // Upload your own file — highest quality (no re-compression from a host).
-                SectionLabel(text: "OR UPLOAD A VIDEO").padding(.top, 28).padding(.bottom, 10)
-                Button { showFilePicker = true } label: {
+                // Upload your own video — camera roll is the default (where creators'
+                // videos live); a file picker is the alternative.
+                SectionLabel(text: "OR UPLOAD YOUR VIDEO").padding(.top, 28).padding(.bottom, 10)
+                PhotosPicker(selection: $photoItem, matching: .videos, photoLibrary: .shared()) {
                     HStack(spacing: 10) {
-                        Image(systemName: "arrow.up.circle.fill").font(.system(size: 18)).foregroundStyle(Palette.ink)
+                        Image(systemName: "photo.on.rectangle.angled").font(.system(size: 18)).foregroundStyle(Palette.ink)
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Upload an MP4 or MOV").font(ReelieFont.ui(14, weight: .medium)).foregroundStyle(Palette.ink)
-                            Text("Best quality — straight from your device").font(ReelieFont.ui(11.5)).foregroundStyle(Palette.grey)
+                            Text("Choose from Camera Roll").font(ReelieFont.ui(14, weight: .semibold)).foregroundStyle(Palette.ink)
+                            Text("Pick a video you've filmed or posted — best quality").font(ReelieFont.ui(11.5)).foregroundStyle(Palette.grey)
                         }
                         Spacer()
                         Image(systemName: "chevron.right").font(.system(size: 12, weight: .semibold)).foregroundStyle(Palette.grey)
                     }
                     .padding(.horizontal, 14).frame(height: 62)
-                    .hairlineCard(cornerRadius: 14, color: Palette.line)
+                    .hairlineCard(cornerRadius: 14, color: Palette.ink)   // emphasized (default)
                 }
                 .buttonStyle(.plain)
+
+                Button { showFilePicker = true } label: {
+                    HStack(spacing: 10) {
+                        Image(systemName: "folder").font(.system(size: 15)).foregroundStyle(Palette.grey)
+                        Text("Upload a file (MP4 or MOV)").font(ReelieFont.ui(13.5, weight: .medium)).foregroundStyle(Palette.grey)
+                        Spacer()
+                        Image(systemName: "chevron.right").font(.system(size: 12, weight: .semibold)).foregroundStyle(Palette.faint)
+                    }
+                    .padding(.horizontal, 14).frame(height: 52)
+                    .hairlineCard(cornerRadius: 12, color: Palette.line)
+                }
+                .buttonStyle(.plain).padding(.top, 10)
 
                 if !connected.isEmpty {
                     SectionLabel(text: "FROM YOUR \(connectedPlatform.uppercased())").padding(.top, 28).padding(.bottom, 10)

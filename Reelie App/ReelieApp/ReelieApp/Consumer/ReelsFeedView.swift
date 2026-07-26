@@ -271,16 +271,19 @@ struct ReelCell: View {
     private var overlay: some View {
         VStack(alignment: .leading, spacing: 0) {
             Spacer()
-            HStack(alignment: .bottom) {
+            HStack(alignment: .bottom, spacing: 10) {
+                // Left column flexes to fill the space that's left after the action
+                // rail — so it can never push the rail (the Like button!) off the
+                // right edge, and its own content never spills off the left.
                 VStack(alignment: .leading, spacing: 12) {
                     creatorRow
                     Text(item.caption)
                         .font(ReelieFont.ui(14)).foregroundStyle(.white)
                         .lineLimit(2).shadow(color: .black.opacity(0.4), radius: 6)
-                        .frame(maxWidth: 260, alignment: .leading)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     shopCard
                 }
-                Spacer()
+                .frame(maxWidth: .infinity, alignment: .leading)
                 actionRail
             }
             // Clear the overlaid tab bar (~tab bar + home indicator) so the shop

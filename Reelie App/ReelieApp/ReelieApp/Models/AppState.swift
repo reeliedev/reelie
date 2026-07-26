@@ -14,8 +14,8 @@ enum MainTab: Hashable {
 /// Result of a self-serve generation from the app's point of view.
 enum GenerationOutcome {
     case done(slug: String)
-    case failed
-    case building   // backend still working past our live-watch window → lands in Drafts
+    case failed(reason: String?)   // reason is the backend's creator-facing message
+    case building                  // backend still working past our watch window → lands in Drafts
 }
 
 @Observable
@@ -562,7 +562,7 @@ final class AppState {
     func generatePage(videoId: String? = nil, url: String? = nil,
                       uploadFileURL: URL? = nil, title: String? = nil,
                       onProgress: ((_ stage: String, _ phase: String?, _ preview: [GenPreviewItem]) -> Void)? = nil) async -> GenerationOutcome {
-        guard let base = apiBaseURL, let token = authToken else { return .failed }
+        guard let base = apiBaseURL, let token = authToken else { return .failed(reason: nil) }
         let client = APIClient(baseURL: base)
         // A pasted link or upload runs live extraction (download → transcribe → find
         // products → cut clips), which can take several minutes — especially at 1080p.
@@ -599,13 +599,16 @@ final class AppState {
                     await loadMyPages()
                     return .done(slug: st.pageSlug ?? "")
                 }
-                if st.status == "error" { print("[Reelie] generate error: \(st.error ?? "")"); return .failed }
+                if st.status == "error" {
+                    print("[Reelie] generate error: \(st.error ?? "")")
+                    return .failed(reason: st.error)
+                }
                 try? await Task.sleep(nanoseconds: interval)
             }
             // Watch window elapsed — the backend keeps building; it'll show in Drafts.
             await loadMyPages()
             return .building
-        } catch { print("[Reelie] generatePage: \(error)"); return .failed }
+        } catch { print("[Reelie] generatePage: \(error)"); return .failed(reason: nil) }
     }
 
     // ---- Creator studio --------------------------------------------------

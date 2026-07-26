@@ -44,15 +44,16 @@ struct PickVideoView: View {
     @State private var revealed = 0                     // how many are shown in the list
     @State private var localVideoURL: URL?              // the uploaded clip, shown while analyzing
     @State private var revealTask: Task<Void, Never>?
+    @State private var failReason: String?              // creator-facing failure message
 
     enum Phase { case pick, generating, done, building, failed }
 
     /// Route the generation result to the right screen.
     private func handle(_ outcome: GenerationOutcome) {
         switch outcome {
-        case .done(let slug): finish(slug: slug)
-        case .building:       revealTask?.cancel(); phase = .building
-        case .failed:         phase = .failed
+        case .done(let slug):     finish(slug: slug)
+        case .building:           revealTask?.cancel(); phase = .building
+        case .failed(let reason): revealTask?.cancel(); failReason = reason; phase = .failed
         }
     }
 
@@ -139,7 +140,7 @@ struct PickVideoView: View {
         defer { photoItem = nil }
         phase = .generating; stage = "Preparing your video…"; genPhase = "upload"
         preview = []; revealed = 0; localVideoURL = nil
-        guard let movie = try? await item.loadTransferable(type: PickedMovie.self) else { phase = .failed; return }
+        guard let movie = try? await item.loadTransferable(type: PickedMovie.self) else { failReason = nil; phase = .failed; return }
         // Only re-encode when we must: an already-H.264 video is uploaded UNTOUCHED
         // (no second compression pass → no quality loss). HEVC gets converted so the
         // backend can process it.
@@ -193,7 +194,7 @@ struct PickVideoView: View {
             .appendingPathComponent(picked.lastPathComponent)
         try? FileManager.default.removeItem(at: dst)
         do { try FileManager.default.copyItem(at: picked, to: dst) }
-        catch { phase = .failed; return }
+        catch { failReason = nil; phase = .failed; return }
         phase = .generating; stage = "Uploading your video…"; genPhase = "upload"
         preview = []; revealed = 0; localVideoURL = dst
         handle(await app.generatePage(uploadFileURL: dst, onProgress: onProgress))
@@ -217,41 +218,21 @@ struct PickVideoView: View {
     private var pickBody: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 0) {
-                // Primary: paste a link to your own video.
-                SectionLabel(text: "PASTE A VIDEO LINK").padding(.top, 8).padding(.bottom, 10)
-                HStack(spacing: 9) {
-                    Image(systemName: "link").font(.system(size: 14, weight: .medium)).foregroundStyle(Palette.grey)
-                    TextField("YouTube, TikTok, or a video URL", text: $linkText)
-                        .font(ReelieFont.ui(14)).foregroundStyle(Palette.ink)
-                        .textInputAutocapitalization(.never).autocorrectionDisabled()
-                        .keyboardType(.URL)
-                }
-                .padding(.horizontal, 14).padding(.vertical, 13)
-                .hairlineCard(cornerRadius: 14, color: linkText.isEmpty ? Palette.line : Palette.ink)
-                BigButton(title: "Make a page from this link", style: .sun) {
-                    Task { await generateFromLink() }
-                }
-                .opacity(linkText.trimmingCharacters(in: .whitespaces).isEmpty ? 0.5 : 1)
-                .disabled(linkText.trimmingCharacters(in: .whitespaces).isEmpty)
-                .padding(.top, 10)
-                Text("We'll watch it, find every product, and build your shoppable page.")
-                    .font(ReelieFont.ui(12)).foregroundStyle(Palette.grey).padding(.top, 8)
-
-                // Upload your own video — camera roll is the default (where creators'
-                // videos live); a file picker is the alternative.
-                SectionLabel(text: "OR UPLOAD YOUR VIDEO").padding(.top, 28).padding(.bottom, 10)
+                // Primary: upload your own video — most reliable and best quality
+                // (no YouTube download to be blocked, no resolution cap).
+                SectionLabel(text: "UPLOAD YOUR VIDEO").padding(.top, 8).padding(.bottom, 10)
                 PhotosPicker(selection: $photoItem, matching: .videos, photoLibrary: .shared()) {
                     HStack(spacing: 10) {
                         Image(systemName: "photo.on.rectangle.angled").font(.system(size: 18)).foregroundStyle(Palette.ink)
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Choose from Camera Roll").font(ReelieFont.ui(14, weight: .semibold)).foregroundStyle(Palette.ink)
-                            Text("Pick a video you've filmed or posted — best quality").font(ReelieFont.ui(11.5)).foregroundStyle(Palette.grey)
+                            Text("Best quality, always works — pick a video you've filmed or posted").font(ReelieFont.ui(11.5)).foregroundStyle(Palette.grey)
                         }
                         Spacer()
                         Image(systemName: "chevron.right").font(.system(size: 12, weight: .semibold)).foregroundStyle(Palette.grey)
                     }
                     .padding(.horizontal, 14).frame(height: 62)
-                    .hairlineCard(cornerRadius: 14, color: Palette.ink)   // emphasized (default)
+                    .hairlineCard(cornerRadius: 14, color: Palette.ink)   // emphasized (primary)
                 }
                 .buttonStyle(.plain)
 
@@ -266,6 +247,27 @@ struct PickVideoView: View {
                     .hairlineCard(cornerRadius: 12, color: Palette.line)
                 }
                 .buttonStyle(.plain).padding(.top, 10)
+
+                // Secondary: paste a link. It works, but YouTube can block server-side
+                // downloads — so uploading (above) is framed as the reliable path.
+                SectionLabel(text: "OR PASTE A LINK").padding(.top, 28).padding(.bottom, 10)
+                HStack(spacing: 9) {
+                    Image(systemName: "link").font(.system(size: 14, weight: .medium)).foregroundStyle(Palette.grey)
+                    TextField("YouTube, TikTok, or a video URL", text: $linkText)
+                        .font(ReelieFont.ui(14)).foregroundStyle(Palette.ink)
+                        .textInputAutocapitalization(.never).autocorrectionDisabled()
+                        .keyboardType(.URL)
+                }
+                .padding(.horizontal, 14).padding(.vertical, 13)
+                .hairlineCard(cornerRadius: 14, color: linkText.isEmpty ? Palette.line : Palette.ink)
+                BigButton(title: "Make a page from this link", style: .outline) {
+                    Task { await generateFromLink() }
+                }
+                .opacity(linkText.trimmingCharacters(in: .whitespaces).isEmpty ? 0.5 : 1)
+                .disabled(linkText.trimmingCharacters(in: .whitespaces).isEmpty)
+                .padding(.top, 10)
+                Text("Heads up: YouTube sometimes blocks link downloads. If a link fails, upload the video above instead.")
+                    .font(ReelieFont.ui(12)).foregroundStyle(Palette.grey).padding(.top, 8)
 
                 if !connected.isEmpty {
                     SectionLabel(text: "FROM YOUR \(connectedPlatform.uppercased())").padding(.top, 28).padding(.bottom, 10)
@@ -481,8 +483,14 @@ struct PickVideoView: View {
         VStack(spacing: 0) {
             Spacer()
             Text("😕").font(.system(size: 44))
-            Text("We had trouble with that one").displayStyle(24).multilineTextAlignment(.center).padding(.top, 14)
-            BigButton(title: "Try another video", style: .sun) { phase = .pick }
+            Text(failReason == nil ? "We had trouble with that one" : "That link didn't work")
+                .displayStyle(24).multilineTextAlignment(.center).padding(.top, 14)
+            if let reason = failReason {
+                Text(reason)
+                    .font(ReelieFont.ui(14)).foregroundStyle(Palette.grey)
+                    .multilineTextAlignment(.center).frame(maxWidth: 300).lineSpacing(2).padding(.top, 10)
+            }
+            BigButton(title: "Upload a video instead", style: .sun) { failReason = nil; phase = .pick }
                 .padding(.top, 28).padding(.horizontal, 28)
             Spacer(); Spacer()
         }

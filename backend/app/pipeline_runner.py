@@ -33,6 +33,24 @@ def _set(job_id: str, **fields) -> None:
         s.commit()
 
 
+def _friendly_error(msg: str) -> str:
+    """Turn a raw pipeline/yt-dlp error into a short, creator-facing message. The
+    most common one is YouTube blocking the server download ('confirm you're not a
+    bot') — for which the fix is to upload the file instead."""
+    low = (msg or "").lower()
+    if ("confirm you" in low and "bot" in low) or "sign in to confirm" in low \
+            or "use --cookies" in low or "cookies-from-browser" in low:
+        return ("YouTube blocked this download. Upload the video file instead "
+                "(Camera Roll or a file) — that always works.")
+    if "private video" in low or "video unavailable" in low or "removed" in low:
+        return "That video isn't available to download (it may be private or removed)."
+    if "age" in low and "restrict" in low:
+        return "That video is age-restricted and can't be downloaded. Upload the file instead."
+    if "unable to download" in low or "unsupported url" in low or "not a valid url" in low:
+        return "We couldn't fetch that link. Check the URL, or upload the video file instead."
+    return "We couldn't process that video. Try uploading the file instead."
+
+
 def _load_preview(video_id: str) -> tuple[list[dict], float]:
     """Read the extraction output → the products found (for the live reveal) plus
     the video duration (for the scan animation). Empty if not present."""
@@ -157,8 +175,8 @@ def process_job(job_id: str) -> None:
         _build(job_id, handle, display_name, video_id, title)
     except Exception as e:  # noqa: BLE001
         msg = str(e)
-        print(f"[worker] job {job_id} FAILED: {msg[-1500:]}", flush=True)  # full-ish in worker log
-        _set(job_id, status="error", stage="Failed", error=msg[-800:])
+        print(f"[worker] job {job_id} FAILED: {msg[-1500:]}", flush=True)  # raw in worker log
+        _set(job_id, status="error", stage="Failed", error=_friendly_error(msg))
     finally:
         if tmp and os.path.exists(tmp):
             try:

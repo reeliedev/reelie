@@ -2,6 +2,7 @@ import SwiftUI
 import UniformTypeIdentifiers
 import PhotosUI
 import AVFoundation
+import WebKit
 
 /// A video picked from the Photos library, copied into our sandbox as a temp file.
 struct PickedMovie: Transferable {
@@ -43,7 +44,7 @@ struct PickVideoView: View {
     @State private var preview: [GenPreviewItem] = []   // products detected so far
     @State private var revealed = 0                     // how many are shown in the list
     @State private var localVideoURL: URL?              // the uploaded clip, shown while analyzing
-    @State private var analyzePoster: URL?              // link source's thumbnail, shown while analyzing
+    @State private var analyzeYouTubeID: String?        // link source's YouTube id, embedded while analyzing
     @State private var revealTask: Task<Void, Never>?
     @State private var failReason: String?              // creator-facing failure message
 
@@ -157,9 +158,9 @@ struct PickVideoView: View {
         handle(outcome)
     }
 
-    /// A YouTube thumbnail URL for a pasted link, so the analyzing screen shows a
-    /// real frame instead of a blank placeholder (the file is on the server, not here).
-    private func youtubeThumbnail(from raw: String) -> URL? {
+    /// The YouTube video id from a pasted link, so the analyzing screen can embed
+    /// and play the actual video (the file itself is on the server, not the device).
+    private func youtubeID(from raw: String) -> String? {
         guard let comps = URLComponents(string: raw), let host = comps.host?.lowercased() else { return nil }
         var id: String?
         if host.contains("youtu.be") {
@@ -174,7 +175,7 @@ struct PickVideoView: View {
             }
         }
         guard let vid = id, !vid.isEmpty else { return nil }
-        return URL(string: "https://img.youtube.com/vi/\(vid)/hqdefault.jpg")
+        return vid
     }
 
     /// True if the video is already H.264 (avc1) — in which case we upload it as-is
@@ -342,7 +343,7 @@ struct PickVideoView: View {
         guard !url.isEmpty else { return }
         phase = .generating; stage = "Fetching your video…"; genPhase = ""
         preview = []; revealed = 0; localVideoURL = nil
-        analyzePoster = youtubeThumbnail(from: url)   // show the YouTube thumb while analyzing
+        analyzeYouTubeID = youtubeID(from: url)   // embed + play the YouTube video while analyzing
         handle(await app.generatePage(url: url, onProgress: onProgress))
     }
 
@@ -394,7 +395,7 @@ struct PickVideoView: View {
             }
             .padding(.top, 6).padding(.bottom, 16).padding(.horizontal, 20)
 
-            AnalyzingStage(videoURL: localVideoURL, posterURL: analyzePoster, ping: revealed)
+            AnalyzingStage(videoURL: localVideoURL, youtubeID: analyzeYouTubeID, ping: revealed)
                 .frame(height: 280)
                 .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                 .padding(.horizontal, 28)
@@ -520,6 +521,37 @@ struct PickVideoView: View {
     }
 }
 
+// MARK: - Embedded YouTube player (for link sources, whose file is server-side)
+
+/// Muted, autoplaying, looping YouTube embed — plays the actual video during
+/// analysis when the creator pasted a link (works for Shorts too). Non-interactive
+/// so the scan overlay + product reveal sit cleanly on top.
+private struct YouTubeEmbedView: UIViewRepresentable {
+    let videoID: String
+
+    func makeUIView(context: Context) -> WKWebView {
+        let cfg = WKWebViewConfiguration()
+        cfg.allowsInlineMediaPlayback = true
+        cfg.mediaTypesRequiringUserActionForPlayback = []   // allow muted autoplay
+        let web = WKWebView(frame: .zero, configuration: cfg)
+        web.isOpaque = false
+        web.backgroundColor = .black
+        web.scrollView.isScrollEnabled = false
+        web.isUserInteractionEnabled = false
+        let html = """
+        <html><head><meta name='viewport' content='initial-scale=1, maximum-scale=1'>
+        <style>html,body{margin:0;background:#000;height:100%;overflow:hidden}
+        iframe{position:absolute;inset:0;width:100%;height:100%;border:0}</style></head>
+        <body><iframe src='https://www.youtube.com/embed/\(videoID)?autoplay=1&mute=1&controls=0&loop=1&playlist=\(videoID)&playsinline=1&modestbranding=1&rel=0&fs=0&disablekb=1&iv_load_policy=3'
+        allow='autoplay; encrypted-media' allowfullscreen></iframe></body></html>
+        """
+        web.loadHTMLString(html, baseURL: URL(string: "https://www.youtube.com"))
+        return web
+    }
+
+    func updateUIView(_ web: WKWebView, context: Context) {}
+}
+
 // MARK: - Analyzing stage (the video being scanned)
 
 /// The uploaded clip playing (muted, looping) under a sweeping scan line — or a
@@ -527,7 +559,7 @@ struct PickVideoView: View {
 /// border flashes each time a new product is detected. Mirrors the web `.az-stage`.
 private struct AnalyzingStage: View {
     let videoURL: URL?
-    var posterURL: URL? = nil
+    var youtubeID: String? = nil
     var ping: Int
     @State private var player = AVPlayer()
     @State private var scan = false
@@ -542,14 +574,13 @@ private struct AnalyzingStage: View {
                 PlayerLayerView(player: player, gravity: .resizeAspect)
                     .onAppear { start(url) }
                     .onDisappear { player.pause() }
-            } else if let poster = posterURL {
-                // Link source: the file is on the server, so show its thumbnail.
-                AsyncImage(url: poster) { img in
+            } else if let yt = youtubeID {
+                // Link source: the file is on the server, so embed + play the actual
+                // YouTube video (thumbnail shows underneath until it starts).
+                AsyncImage(url: URL(string: "https://img.youtube.com/vi/\(yt)/hqdefault.jpg")) { img in
                     img.resizable().aspectRatio(contentMode: .fill)
-                } placeholder: {
-                    LinearGradient(colors: [Color(hex: 0xE8E4DA), Color(hex: 0xD8D2C4)],
-                                   startPoint: .top, endPoint: .bottom)
-                }
+                } placeholder: { Color.black }
+                YouTubeEmbedView(videoID: yt)
             } else {
                 LinearGradient(colors: [Color(hex: 0xE8E4DA), Color(hex: 0xD8D2C4)],
                                startPoint: .top, endPoint: .bottom)

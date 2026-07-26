@@ -50,6 +50,17 @@ struct EarningsView: View {
     var body: some View {
         @Bindable var app = app
         VStack(spacing: 0) {
+            if app.isBackedCreator && !app.earningsLoaded {
+                // Loader instead of a flash of mock sample earnings.
+                VStack(spacing: 14) {
+                    Spacer()
+                    ProgressView().tint(Palette.ink)
+                    Text("Loading your earnings…")
+                        .font(ReelieFont.ui(13.5, weight: .medium)).foregroundStyle(Palette.grey)
+                    Spacer()
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {
                     // Balance.
@@ -199,6 +210,7 @@ struct EarningsView: View {
                 }
                 .padding(.horizontal, 28)
                 .padding(.top, 14).padding(.bottom, 16)
+            }
             }
 
             ReelieTabBar(selection: $app.selectedTab, showsCreator: app.isCreator)

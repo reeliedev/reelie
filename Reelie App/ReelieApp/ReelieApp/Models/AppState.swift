@@ -213,8 +213,12 @@ final class AppState {
     // loader instead of briefly flashing the bundled mock pages before swapping.
     var pagesLoaded = false
 
-    /// A real, signed-in creator whose pages come from the backend (not mock data).
-    var usesAPIPages: Bool { apiBaseURL != nil && isCreator && authToken != nil }
+    /// A real, signed-in creator whose data comes from the backend (not mock data).
+    var isBackedCreator: Bool { apiBaseURL != nil && isCreator && authToken != nil }
+    var usesAPIPages: Bool { isBackedCreator }
+    // True once the first earnings fetch has returned, so the Earnings tab can show
+    // a loader instead of briefly flashing mock sample earnings.
+    var earningsLoaded = false
 
     @MainActor
     func loadMyPages() async {
@@ -319,13 +323,14 @@ final class AppState {
 
     @MainActor
     func loadEarnings() async {
-        guard let base = apiBaseURL, isCreator, let token = authToken else { return }
+        guard let base = apiBaseURL, isCreator, let token = authToken else { earningsLoaded = true; return }
         do {
             earningsSummary = try await APIClient(baseURL: base).earnings(handle: handle, token: token)
             backendConnected = true
         } catch {
             print("[Reelie] loadEarnings: FAILED — \(error)")
         }
+        earningsLoaded = true
     }
 
     // Page analytics: human views + AI answer-engine crawls (GEO/AEO) + funnel.

@@ -7,13 +7,12 @@
 	     App Store / TestFlight upload. -->
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
-	<!-- Branded launch screen: the Reelie logo centered on the system background. -->
+	<!-- Plain white launch screen (no logo) — the animated Reelie splash takes over
+	     immediately, so the static square logo never flashes on cold launch. -->
 	<key>UILaunchScreen</key>
 	<dict>
-		<key>UIImageName</key>
-		<string>LaunchLogo</string>
-		<key>UIImageRespectsSafeAreaInsets</key>
-		<true/>
+		<key>UIColorName</key>
+		<string>LaunchBackground</string>
 	</dict>
 	<!-- Local-networking exception ONLY (loopback/private hosts) so a debug build
 	     can hit a local dev API over http. This is an Apple-sanctioned exception —

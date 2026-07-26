@@ -18,14 +18,24 @@ struct GeneratedPageView: View {
 
     var body: some View {
         @Bindable var app = app
-        if let idx = pageIndex {
+        if let page = app.generatedPages.first(where: { $0.id == pageID }) {
+            // Bind by looking the page up by its STABLE id every access — never a
+            // captured index, which would go out of bounds the instant the page is
+            // deleted (loadMyPages shrinks the array) and crash the app.
             let linkBinding = Binding<String>(
-                get: { app.generatedPages[idx].customSlug ?? app.generatedPages[idx].slug },
-                set: { app.generatedPages[idx].customSlug = $0 }
+                get: {
+                    guard let i = app.generatedPages.firstIndex(where: { $0.id == pageID }) else { return "" }
+                    return app.generatedPages[i].customSlug ?? app.generatedPages[i].slug
+                },
+                set: {
+                    guard let i = app.generatedPages.firstIndex(where: { $0.id == pageID }) else { return }
+                    app.generatedPages[i].customSlug = $0
+                }
             )
-            content(page: app.generatedPages[idx], link: linkBinding)
+            content(page: page, link: linkBinding)
         } else {
-            Text("Page not found").font(ReelieFont.ui(15)).foregroundStyle(Palette.grey)
+            // The page was deleted out from under this screen — pop back safely.
+            Color.white.onAppear { dismiss() }
         }
     }
 
@@ -172,9 +182,9 @@ struct GeneratedPageView: View {
         .task(id: page.slug) { stats = await app.pageStats(slug: page.slug) }
         .confirmationDialog("Delete this page?", isPresented: $showDelete, titleVisibility: .visible) {
             Button("Delete page", role: .destructive) {
-                if let idx = pageIndex {
-                    let page = app.generatedPages[idx]
-                    Task { await app.deletePageAPI(page); dismiss() }
+                if let page = app.generatedPages.first(where: { $0.id == pageID }) {
+                    dismiss()                                  // pop first…
+                    Task { await app.deletePageAPI(page) }     // …then remove it
                 }
             }
             Button("Cancel", role: .cancel) {}

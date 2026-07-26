@@ -45,7 +45,16 @@ struct PickVideoView: View {
     @State private var localVideoURL: URL?              // the uploaded clip, shown while analyzing
     @State private var revealTask: Task<Void, Never>?
 
-    enum Phase { case pick, generating, done, failed }
+    enum Phase { case pick, generating, done, building, failed }
+
+    /// Route the generation result to the right screen.
+    private func handle(_ outcome: GenerationOutcome) {
+        switch outcome {
+        case .done(let slug): finish(slug: slug)
+        case .building:       revealTask?.cancel(); phase = .building
+        case .failed:         phase = .failed
+        }
+    }
 
     /// Single progress sink passed to `generatePage`: updates the stage label and,
     /// once products arrive, kicks off the staggered reveal (one every 0.8s).
@@ -93,7 +102,7 @@ struct PickVideoView: View {
         VStack(spacing: 0) {
             ZStack {
                 HStack { BackButton { dismiss() }; Spacer() }
-                Text(phase == .generating ? "Building your page" : "Pick a video")
+                Text(phase == .generating || phase == .building ? "Building your page" : "Pick a video")
                     .font(ReelieFont.ui(15, weight: .bold)).foregroundStyle(Palette.ink)
             }
             .frame(height: 44).padding(.horizontal, 28)
@@ -102,6 +111,7 @@ struct PickVideoView: View {
             case .pick: pickBody
             case .generating: generatingBody
             case .done: doneBody
+            case .building: buildingBody
             case .failed: failedBody
             }
         }
@@ -140,9 +150,9 @@ struct PickVideoView: View {
             toUpload = await exportToMP4(movie.url) ?? movie.url   // fall back to original if export fails
         }
         localVideoURL = toUpload                                    // play it while we analyze
-        let slug = await app.generatePage(uploadFileURL: toUpload, onProgress: onProgress)
+        let outcome = await app.generatePage(uploadFileURL: toUpload, onProgress: onProgress)
         if movie.url != toUpload { try? FileManager.default.removeItem(at: movie.url) }
-        if slug != nil { finish(slug: slug) } else { phase = .failed }
+        handle(outcome)
     }
 
     /// True if the video is already H.264 (avc1) — in which case we upload it as-is
@@ -186,8 +196,7 @@ struct PickVideoView: View {
         catch { phase = .failed; return }
         phase = .generating; stage = "Uploading your video…"; genPhase = "upload"
         preview = []; revealed = 0; localVideoURL = dst
-        let slug = await app.generatePage(uploadFileURL: dst, onProgress: onProgress)
-        if slug != nil { finish(slug: slug) } else { phase = .failed }
+        handle(await app.generatePage(uploadFileURL: dst, onProgress: onProgress))
     }
 
     private func load() async {
@@ -310,8 +319,7 @@ struct PickVideoView: View {
         guard !url.isEmpty else { return }
         phase = .generating; stage = "Fetching your video…"; genPhase = ""
         preview = []; revealed = 0; localVideoURL = nil
-        let slug = await app.generatePage(url: url, onProgress: onProgress)
-        if slug != nil { finish(slug: slug) } else { phase = .failed }
+        handle(await app.generatePage(url: url, onProgress: onProgress))
     }
 
     private func tile(_ v: AvailableVideo) -> some View {
@@ -345,8 +353,7 @@ struct PickVideoView: View {
         guard let vid = selected else { return }
         phase = .generating; stage = "Starting…"; genPhase = ""
         preview = []; revealed = 0; localVideoURL = nil
-        let slug = await app.generatePage(videoId: vid, onProgress: onProgress)
-        if slug != nil { finish(slug: slug) } else { phase = .failed }
+        handle(await app.generatePage(videoId: vid, onProgress: onProgress))
     }
 
     // MARK: states
@@ -446,6 +453,25 @@ struct PickVideoView: View {
                 } else { dismiss() }
             }
             .padding(.top, 30).padding(.horizontal, 28)
+            Spacer(); Spacer()
+        }
+        .padding(.horizontal, 28)
+    }
+
+    // Still building past our live-watch window — the backend keeps going and the
+    // page lands in Pages (Drafts). NOT a failure.
+    private var buildingBody: some View {
+        VStack(spacing: 0) {
+            Spacer()
+            Text("⏳").font(.system(size: 44))
+            Text("Still building your page").displayStyle(26).multilineTextAlignment(.center).padding(.top, 14)
+            Text("This one's taking a little longer. We'll keep building it — it'll appear in your Pages as a draft when it's ready.")
+                .font(ReelieFont.ui(14)).foregroundStyle(Palette.grey)
+                .multilineTextAlignment(.center).frame(maxWidth: 300).lineSpacing(2).padding(.top, 10)
+            BigButton(title: "Go to my Pages", style: .sun) {
+                app.selectedTab = .pages; app.homePath = []; dismiss()
+            }
+            .padding(.top, 28).padding(.horizontal, 28)
             Spacer(); Spacer()
         }
         .padding(.horizontal, 28)

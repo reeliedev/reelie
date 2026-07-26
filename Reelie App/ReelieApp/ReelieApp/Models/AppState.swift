@@ -11,6 +11,13 @@ enum MainTab: Hashable {
     case pages, earnings
 }
 
+/// Result of a self-serve generation from the app's point of view.
+enum GenerationOutcome {
+    case done(slug: String)
+    case failed
+    case building   // backend still working past our live-watch window → lands in Drafts
+}
+
 @Observable
 final class AppState {
 
@@ -547,17 +554,22 @@ final class AppState {
         catch { print("[Reelie] availableVideos: \(error)"); return [] }
     }
 
-    /// Starts generation and polls to completion. Returns the new page's slug (or
-    /// nil on failure). Refreshes the catalogue so the page is browsable.
+    /// Starts generation and watches it. Returns `.done(slug)` when the page is
+    /// built, `.failed` on a real error, or `.building` if our watch window elapses
+    /// while the backend is still working (the page will land in Drafts) — so a slow
+    /// (e.g. 1080p) job is never mistaken for a failure.
     @MainActor @discardableResult
     func generatePage(videoId: String? = nil, url: String? = nil,
                       uploadFileURL: URL? = nil, title: String? = nil,
-                      onProgress: ((_ stage: String, _ phase: String?, _ preview: [GenPreviewItem]) -> Void)? = nil) async -> String? {
-        guard let base = apiBaseURL, let token = authToken else { return nil }
+                      onProgress: ((_ stage: String, _ phase: String?, _ preview: [GenPreviewItem]) -> Void)? = nil) async -> GenerationOutcome {
+        guard let base = apiBaseURL, let token = authToken else { return .failed }
         let client = APIClient(baseURL: base)
         // A pasted link or upload runs live extraction (download → transcribe → find
-        // products), so allow more time than generating from an already-extracted video.
-        let maxPolls = (url != nil || uploadFileURL != nil) ? 150 : 40
+        // products → cut clips), which can take several minutes — especially at 1080p.
+        // Watch generously so we don't declare failure while the backend is still busy.
+        let isHeavy = (url != nil || uploadFileURL != nil)
+        let maxPolls = isHeavy ? 300 : 40                 // ~10 min for links/uploads
+        let interval: UInt64 = isHeavy ? 2_000_000_000 : 1_500_000_000
 
         // Ask iOS for background time so polling keeps going if the user leaves the
         // app. The actual analysis runs server-side regardless — this just keeps the
@@ -585,13 +597,15 @@ final class AppState {
                 if st.status == "done" {
                     await refreshFromAPI()
                     await loadMyPages()
-                    return st.pageSlug
+                    return .done(slug: st.pageSlug ?? "")
                 }
-                if st.status == "error" { print("[Reelie] generate error: \(st.error ?? "")"); return nil }
-                try? await Task.sleep(nanoseconds: 1_200_000_000)
+                if st.status == "error" { print("[Reelie] generate error: \(st.error ?? "")"); return .failed }
+                try? await Task.sleep(nanoseconds: interval)
             }
-        } catch { print("[Reelie] generatePage: \(error)") }
-        return nil
+            // Watch window elapsed — the backend keeps building; it'll show in Drafts.
+            await loadMyPages()
+            return .building
+        } catch { print("[Reelie] generatePage: \(error)"); return .failed }
     }
 
     // ---- Creator studio --------------------------------------------------

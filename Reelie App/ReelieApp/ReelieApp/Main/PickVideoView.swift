@@ -43,6 +43,7 @@ struct PickVideoView: View {
     @State private var preview: [GenPreviewItem] = []   // products detected so far
     @State private var revealed = 0                     // how many are shown in the list
     @State private var localVideoURL: URL?              // the uploaded clip, shown while analyzing
+    @State private var analyzePoster: URL?              // link source's thumbnail, shown while analyzing
     @State private var revealTask: Task<Void, Never>?
     @State private var failReason: String?              // creator-facing failure message
 
@@ -154,6 +155,26 @@ struct PickVideoView: View {
         let outcome = await app.generatePage(uploadFileURL: toUpload, onProgress: onProgress)
         if movie.url != toUpload { try? FileManager.default.removeItem(at: movie.url) }
         handle(outcome)
+    }
+
+    /// A YouTube thumbnail URL for a pasted link, so the analyzing screen shows a
+    /// real frame instead of a blank placeholder (the file is on the server, not here).
+    private func youtubeThumbnail(from raw: String) -> URL? {
+        guard let comps = URLComponents(string: raw), let host = comps.host?.lowercased() else { return nil }
+        var id: String?
+        if host.contains("youtu.be") {
+            id = comps.path.split(separator: "/").first.map(String.init)
+        } else if host.contains("youtube.com") {
+            if comps.path.contains("/shorts/") {
+                id = comps.path.components(separatedBy: "/shorts/").last?.split(separator: "/").first.map(String.init)
+            } else if comps.path.contains("/embed/") {
+                id = comps.path.components(separatedBy: "/embed/").last?.split(separator: "/").first.map(String.init)
+            } else {
+                id = comps.queryItems?.first { $0.name == "v" }?.value
+            }
+        }
+        guard let vid = id, !vid.isEmpty else { return nil }
+        return URL(string: "https://img.youtube.com/vi/\(vid)/hqdefault.jpg")
     }
 
     /// True if the video is already H.264 (avc1) — in which case we upload it as-is
@@ -321,6 +342,7 @@ struct PickVideoView: View {
         guard !url.isEmpty else { return }
         phase = .generating; stage = "Fetching your video…"; genPhase = ""
         preview = []; revealed = 0; localVideoURL = nil
+        analyzePoster = youtubeThumbnail(from: url)   // show the YouTube thumb while analyzing
         handle(await app.generatePage(url: url, onProgress: onProgress))
     }
 
@@ -372,7 +394,7 @@ struct PickVideoView: View {
             }
             .padding(.top, 6).padding(.bottom, 16).padding(.horizontal, 20)
 
-            AnalyzingStage(videoURL: localVideoURL, ping: revealed)
+            AnalyzingStage(videoURL: localVideoURL, posterURL: analyzePoster, ping: revealed)
                 .frame(height: 280)
                 .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                 .padding(.horizontal, 28)
@@ -505,6 +527,7 @@ struct PickVideoView: View {
 /// border flashes each time a new product is detected. Mirrors the web `.az-stage`.
 private struct AnalyzingStage: View {
     let videoURL: URL?
+    var posterURL: URL? = nil
     var ping: Int
     @State private var player = AVPlayer()
     @State private var scan = false
@@ -515,10 +538,18 @@ private struct AnalyzingStage: View {
         ZStack {
             Color.black
             if let url = videoURL {
-                // Whole video visible (aspect-fit), never cropped/zoomed.
+                // Uploaded file is on-device → play the whole video (aspect-fit).
                 PlayerLayerView(player: player, gravity: .resizeAspect)
                     .onAppear { start(url) }
                     .onDisappear { player.pause() }
+            } else if let poster = posterURL {
+                // Link source: the file is on the server, so show its thumbnail.
+                AsyncImage(url: poster) { img in
+                    img.resizable().aspectRatio(contentMode: .fill)
+                } placeholder: {
+                    LinearGradient(colors: [Color(hex: 0xE8E4DA), Color(hex: 0xD8D2C4)],
+                                   startPoint: .top, endPoint: .bottom)
+                }
             } else {
                 LinearGradient(colors: [Color(hex: 0xE8E4DA), Color(hex: 0xD8D2C4)],
                                startPoint: .top, endPoint: .bottom)

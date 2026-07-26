@@ -51,7 +51,11 @@ def _download(url: str) -> tuple[Path, str]:
     VIDEOS.mkdir(parents=True, exist_ok=True)
     opts = {
         "outtmpl": str(VIDEOS / "%(id)s.%(ext)s"),
-        "format": "mp4/bestvideo[ext=mp4]+bestaudio/best",
+        # Best video up to 1080p + best audio (H.264 preferred), NOT the 360p
+        # progressive "mp4" stream. See download_youtube in pipeline.py.
+        "format": ("bestvideo[height<=1080][vcodec^=avc1]+bestaudio[ext=m4a]/"
+                   "bestvideo[height<=1080]+bestaudio/"
+                   "best[height<=1080]/best"),
         "merge_output_format": "mp4",
         "quiet": True,
         "noplaylist": True,

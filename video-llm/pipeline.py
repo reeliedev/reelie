@@ -103,7 +103,13 @@ def download_youtube(url: str, videos_dir: Path) -> Path:
     import yt_dlp
     videos_dir.mkdir(parents=True, exist_ok=True)
     opts = {
-        "format": "mp4/bestvideo+bestaudio/best",
+        # Grab the best video UP TO 1080p and merge with the best audio — NOT the
+        # single progressive "mp4" stream, which on YouTube is only 360p (itag 18).
+        # Prefer H.264 (avc1) so the file plays everywhere; fall back to any codec,
+        # then to a progressive stream, then to whatever exists.
+        "format": ("bestvideo[height<=1080][vcodec^=avc1]+bestaudio[ext=m4a]/"
+                   "bestvideo[height<=1080]+bestaudio/"
+                   "best[height<=1080]/best"),
         "outtmpl": str(videos_dir / "%(id)s.%(ext)s"),
         "quiet": True,
         "no_warnings": True,

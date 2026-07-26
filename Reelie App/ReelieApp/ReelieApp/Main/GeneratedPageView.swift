@@ -129,11 +129,19 @@ struct GeneratedPageView: View {
                         }
                     }
 
+                    if !page.intro.isEmpty {
+                        Text(page.intro)
+                            .font(ReelieFont.ui(15)).foregroundStyle(Palette.ink).lineSpacing(3)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.top, 20)
+                    }
+
                     SectionLabel(text: "THE ROUTINE")
                         .padding(.top, 22).padding(.bottom, 12)
 
+                    // Rich preview — plays the per-step clip, exactly like the public page.
                     ForEach(Array(page.products.enumerated()), id: \.element.id) { i, product in
-                        StepRow(number: i + 1, product: product).padding(.bottom, 11)
+                        PreviewStepRow(number: i + 1, product: product).padding(.bottom, 11)
                     }
 
                     Text(page.disclosure)
@@ -169,9 +177,19 @@ struct GeneratedPageView: View {
                         }
                     }
                     .padding(.horizontal, 28)
-                    Button("Not now") { dismiss() }
-                        .font(ReelieFont.ui(14, weight: .medium)).foregroundStyle(Palette.grey)
+                    HStack(spacing: 24) {
+                        NavigationLink(value: AppRoute.pageEditor(pageID: pageID)) {
+                            HStack(spacing: 5) {
+                                Image(systemName: "pencil").font(.system(size: 13, weight: .bold))
+                                Text("Edit page").font(ReelieFont.ui(14, weight: .bold))
+                            }
+                            .foregroundStyle(Palette.ink)
+                        }
                         .buttonStyle(.plain)
+                        Button("Not now") { dismiss() }
+                            .font(ReelieFont.ui(14, weight: .medium)).foregroundStyle(Palette.grey)
+                            .buttonStyle(.plain)
+                    }
                 }
             }
             .padding(.bottom, 8)
@@ -246,50 +264,85 @@ struct GeneratedPageView: View {
     }
 }
 
-// MARK: - One numbered product row (mirrors the public web page's .step)
+// MARK: - One numbered step — the same rich, clip-playing row as the public page.
 
-private struct StepRow: View {
+private struct PreviewStepRow: View {
+    @Environment(AppState.self) private var app
     let number: Int
     let product: Product
 
-    var body: some View {
-        HStack(spacing: 13) {
-            Text("\(number)")
-                .font(ReelieFont.display(16)).foregroundStyle(Palette.faint)
-                .frame(width: 18)
-            EmojiThumb(emoji: product.emoji, size: 50)
-            VStack(alignment: .leading, spacing: 2) {
-                if !product.brand.isEmpty {
-                    Text(product.brand.uppercased())
-                        .font(ReelieFont.ui(11, weight: .bold)).tracking(0.6)
-                        .foregroundStyle(Palette.grey)
-                }
-                Text(product.name)
-                    .font(ReelieFont.ui(14.5, weight: .medium)).foregroundStyle(Palette.ink)
-                    .fixedSize(horizontal: false, vertical: true)
-                if let note = product.note {
-                    Text("\"\(note)\"")
-                        .font(ReelieFont.ui(11.5)).foregroundStyle(Palette.grey).italic()
-                        .padding(.top, 1)
-                }
-                priceLine.padding(.top, 4)
-            }
-            Spacer(minLength: 4)
-            shopButton
-        }
-        .padding(.horizontal, 14).padding(.vertical, 13)
-        .hairlineCard()
+    /// Per-step clip + poster, absolute-ized (same as the consumer RoutineView).
+    private var clipURL: URL? { absolutize(product.clipUrl) }
+    private var clipPosterURL: URL? { absolutize(product.clipPoster) }
+    private func absolutize(_ s: String?) -> URL? {
+        guard let s, !s.isEmpty else { return nil }
+        if s.hasPrefix("http") { return URL(string: s) }
+        return (app.apiBaseURL ?? URL(string: "https://reelie.io"))?.appendingPathComponent(s)
     }
 
-    @ViewBuilder private var priceLine: some View {
-        if let price = product.priceDisplay {
-            HStack(spacing: 4) {
-                Text(price).font(ReelieFont.ui(12.5, weight: .bold)).foregroundStyle(Palette.ink)
-                if product.priceEstimated {
-                    Text("approx.").font(ReelieFont.ui(11.5)).foregroundStyle(Palette.faint)
-                }
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // The actual clip playing (muted, looping) — exactly like the web page.
+            if let clip = clipURL {
+                ClipPlayerView(url: clip, posterURL: clipPosterURL)
+                    .frame(maxWidth: .infinity).frame(height: 300)
+                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .padding(.bottom, 12)
             }
+
+            // Step + timestamp, and the evidence tag.
+            HStack(spacing: 6) {
+                Text("STEP \(number)")
+                    .font(ReelieFont.ui(10.5, weight: .bold)).tracking(0.8).foregroundStyle(Palette.grey)
+                if !product.timestamp.isEmpty, product.timestamp != "0:00" {
+                    Text("· \(product.timestamp)").font(ReelieFont.ui(10.5, weight: .bold)).foregroundStyle(Palette.faint)
+                }
+                Spacer()
+                Text(product.evidence.label)
+                    .font(ReelieFont.ui(10, weight: .semibold)).foregroundStyle(Palette.grey)
+                    .padding(.horizontal, 8).padding(.vertical, 3)
+                    .background(Palette.soft, in: Capsule())
+            }
+            .padding(.bottom, 8)
+
+            HStack(alignment: .top, spacing: 12) {
+                if clipURL == nil { EmojiThumb(emoji: product.emoji, size: 46) }
+                VStack(alignment: .leading, spacing: 3) {
+                    if !product.brand.isEmpty {
+                        Text(product.brand.uppercased())
+                            .font(ReelieFont.ui(11, weight: .bold)).tracking(0.6).foregroundStyle(Palette.grey)
+                    }
+                    (Text(product.name).font(ReelieFont.ui(16, weight: .semibold)).foregroundStyle(Palette.ink)
+                     + (product.variant.map {
+                            Text("  \($0)").font(ReelieFont.ui(13)).foregroundStyle(Palette.grey)
+                        } ?? Text("")))
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 0)
+            }
+
+            // Narration — how they use it.
+            if let n = product.narration {
+                Text(n).font(ReelieFont.ui(13.5)).foregroundStyle(Palette.grey).lineSpacing(2)
+                    .fixedSize(horizontal: false, vertical: true).padding(.top, 8)
+            }
+
+            HStack(alignment: .center) {
+                if let price = product.priceDisplay {
+                    HStack(spacing: 4) {
+                        Text(price).font(ReelieFont.ui(14, weight: .bold)).foregroundStyle(Palette.ink)
+                        if product.priceEstimated {
+                            Text("approx.").font(ReelieFont.ui(11)).foregroundStyle(Palette.faint)
+                        }
+                    }
+                }
+                Spacer()
+                shopButton
+            }
+            .padding(.top, 12)
         }
+        .padding(14)
+        .hairlineCard()
     }
 
     private var shopButton: some View {

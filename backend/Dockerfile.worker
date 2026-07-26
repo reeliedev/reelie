@@ -33,5 +33,11 @@ COPY backend/alembic.ini backend/alembic.ini
 COPY video-llm video-llm
 COPY ["Reelie App/page-generator", "Reelie App/page-generator"]
 
+# Always install the LATEST yt-dlp. YouTube's anti-bot changes constantly and
+# yt-dlp ships fixes almost weekly — a stale build gets "confirm you're not a bot"
+# even behind a residential proxy. This runs after the code COPYs, so every deploy
+# refreshes yt-dlp instead of reusing a months-old cached layer.
+RUN pip install --no-cache-dir --upgrade yt-dlp
+
 WORKDIR /app/backend
 CMD ["python", "-m", "app.worker"]

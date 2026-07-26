@@ -72,6 +72,8 @@ struct SavedView: View {
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
         .consumerDestinations()
+        // Routines saved from the feed may not be in the catalog yet — load them.
+        .task { await app.loadSavedRoutines() }
     }
 
     private var emptyState: some View {

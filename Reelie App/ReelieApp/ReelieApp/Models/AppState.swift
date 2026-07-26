@@ -1,5 +1,8 @@
 import SwiftUI
 import Observation
+#if canImport(UIKit)
+import UIKit
+#endif
 
 enum MainTab: Hashable {
     // Consumer surface (always available)
@@ -87,6 +90,29 @@ final class AppState {
         if adding { favorites.insert(page.key) } else { favorites.remove(page.key) }
         FavoritesStore.savePages(favorites)
         syncFavorite(kind: "page", ref: page.key, adding: adding)
+    }
+
+    /// Save/unsave a routine by its key ("handle/slug") — used by the reels feed
+    /// heart, where we only have the key. Pulls the routine into the catalog so it
+    /// actually shows up in the Saved tab (feed routines often aren't loaded yet).
+    func isSaved(key: String) -> Bool { favorites.contains(key) }
+    @MainActor
+    func setSaved(key: String, _ saved: Bool) {
+        if saved { favorites.insert(key) } else { favorites.remove(key) }
+        FavoritesStore.savePages(favorites)
+        syncFavorite(kind: "page", ref: key, adding: saved)
+        if saved, page(withKey: key) == nil {
+            Task { _ = await fetchRoutine(key: key) }
+        }
+    }
+
+    /// Make sure every saved routine is loaded into the catalog so the Saved tab can
+    /// render it — routines saved from the feed may not be in the loaded catalog.
+    @MainActor
+    func loadSavedRoutines() async {
+        for key in favorites where page(withKey: key) == nil {
+            _ = await fetchRoutine(key: key)
+        }
     }
     // ---- UGC safety: block a creator (device-local) + report content ---------
     var blockedCreators: Set<String> = FavoritesStore.loadBlocked()
@@ -532,6 +558,19 @@ final class AppState {
         // A pasted link or upload runs live extraction (download → transcribe → find
         // products), so allow more time than generating from an already-extracted video.
         let maxPolls = (url != nil || uploadFileURL != nil) ? 150 : 40
+
+        // Ask iOS for background time so polling keeps going if the user leaves the
+        // app. The actual analysis runs server-side regardless — this just keeps the
+        // live progress alive as long as iOS allows; the finished page is waiting in
+        // Drafts either way.
+        #if canImport(UIKit)
+        var bgTask: UIBackgroundTaskIdentifier = .invalid
+        bgTask = UIApplication.shared.beginBackgroundTask(withName: "reelie.generate") {
+            if bgTask != .invalid { UIApplication.shared.endBackgroundTask(bgTask); bgTask = .invalid }
+        }
+        defer { if bgTask != .invalid { UIApplication.shared.endBackgroundTask(bgTask); bgTask = .invalid } }
+        #endif
+
         do {
             var uploadKey: String? = nil
             if let f = uploadFileURL {

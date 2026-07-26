@@ -365,7 +365,7 @@ struct ReelCell: View {
                 }
         }
         likeCount = item.likes
-        liked = LikeStore.contains(item.likeKey)
+        liked = app.isSaved(key: item.likeKey)   // heart reflects Saved state
         if isActive { play() }
     }
     private func play() { player.isMuted = muted; player.play() }
@@ -377,6 +377,7 @@ struct ReelCell: View {
         liked.toggle()
         likeCount = max(0, likeCount + (liked ? 1 : -1))
         LikeStore.set(item.likeKey, liked)
+        app.setSaved(key: item.likeKey, liked)   // heart also saves to the Saved tab
         Task {
             if let base = app.apiBaseURL,
                let n = try? await APIClient(baseURL: base)

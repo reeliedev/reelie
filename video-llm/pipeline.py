@@ -120,6 +120,13 @@ def _apply_yt_auth(opts: dict) -> None:
             opts["cookiefile"] = tf.name
     proxy = os.environ.get("YTDLP_PROXY", "").strip()
     if proxy:
+        # If the proxy URL has a {session} placeholder (e.g. IPRoyal's
+        # ..._session-{session}_lifetime-30m), swap in a fresh random id per
+        # download so every request in THIS download uses one stable sticky IP —
+        # YouTube's media URLs are IP-locked, so a mid-download IP change fails.
+        if "{session}" in proxy:
+            import uuid
+            proxy = proxy.replace("{session}", uuid.uuid4().hex[:12])
         opts["proxy"] = proxy
     clients = os.environ.get("YTDLP_PLAYER_CLIENT", "").strip()
     if clients:

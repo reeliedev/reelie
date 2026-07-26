@@ -95,7 +95,11 @@ struct ReelsFeedView: View {
                 .scrollTargetBehavior(.paging)
                 .scrollPosition(id: $activeID)
                 .background(Color.black)
-                .ignoresSafeArea()
+                // Ignore only the TOP safe area: the video runs full-bleed under
+                // the status bar (no black space up top), but the container stops
+                // at the tab bar — so each cell spans status-bar → tab-bar and the
+                // overlay controls sit inside the video, never hidden behind the bar.
+                .ignoresSafeArea(edges: .top)
             } else if loaded {
                 EmptyDiscover()                 // no videos — branded light state
             } else {
@@ -209,7 +213,6 @@ struct ReelCell: View {
                 AsyncImage(url: purl) { img in
                     img.resizable().aspectRatio(contentMode: .fill)
                 } placeholder: { Color.black }
-                    .ignoresSafeArea()
                     .blur(radius: 34)
                     .opacity(0.55)
                     .allowsHitTesting(false)
@@ -217,7 +220,7 @@ struct ReelCell: View {
 
             // The video itself, aspect-FIT so the entire frame is visible — never
             // cropped or zoomed past the edges. This is how reels are shown.
-            PlayerLayerView(player: player, gravity: .resizeAspect).ignoresSafeArea()
+            PlayerLayerView(player: player, gravity: .resizeAspect)
 
             // Poster (also fit) covers the video until its first frame renders, so
             // you see the video instantly, never a black void.
@@ -225,7 +228,6 @@ struct ReelCell: View {
                 AsyncImage(url: purl) { img in
                     img.resizable().aspectRatio(contentMode: .fit)
                 } placeholder: { Color.clear }
-                    .ignoresSafeArea()
                     .allowsHitTesting(false)
                     .opacity(ready ? 0 : 1)
                     .animation(.easeOut(duration: 0.25), value: ready)
@@ -234,7 +236,6 @@ struct ReelCell: View {
             // dim gradient so overlay text is legible
             LinearGradient(colors: [.clear, .clear, .black.opacity(0.7)],
                            startPoint: .top, endPoint: .bottom)
-                .ignoresSafeArea()
 
             // tap anywhere to toggle sound
             Color.clear.contentShape(Rectangle())
@@ -275,9 +276,9 @@ struct ReelCell: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 actionRail
             }
-            // Clear the overlaid tab bar (~tab bar + home indicator) so the shop
-            // card and action rail sit above it on the full-screen feed.
-            .padding(.horizontal, 16).padding(.bottom, 96)
+            // The cell already stops at the tab bar, so only a small breathing gap
+            // is needed — the shop card + action rail are guaranteed on-screen.
+            .padding(.horizontal, 16).padding(.bottom, 20)
         }
     }
 

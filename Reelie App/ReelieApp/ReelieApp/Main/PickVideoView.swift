@@ -461,8 +461,10 @@ private struct AnalyzingStage: View {
 
     var body: some View {
         ZStack {
+            Color.black
             if let url = videoURL {
-                PlayerLayerView(player: player)
+                // Whole video visible (aspect-fit), never cropped/zoomed.
+                PlayerLayerView(player: player, gravity: .resizeAspect)
                     .onAppear { start(url) }
                     .onDisappear { player.pause() }
             } else {

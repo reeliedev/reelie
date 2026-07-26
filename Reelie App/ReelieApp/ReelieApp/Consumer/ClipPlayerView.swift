@@ -3,10 +3,12 @@ import AVKit
 
 /// An autoplaying, muted, looping clip for a routine step — the same treatment as
 /// the web page's `<video muted loop playsinline>` with tap-to-unmute. Plays only
-/// while on screen (paused on disappear). Reuses PlayerLayerView (aspect-fill)
-/// from the reels feed.
+/// while on screen (paused on disappear). The clip is shown WHOLE (aspect-fit,
+/// like Instagram reels), over a blurred fill so off-ratio clips have no black
+/// bands — a phone-shot vertical clip is never cropped or zoomed off the edges.
 struct ClipPlayerView: View {
     let url: URL
+    var posterURL: URL? = nil
     @State private var player = AVPlayer()
     @State private var muted = true
     @State private var loopObserver: NSObjectProtocol?
@@ -14,7 +16,15 @@ struct ClipPlayerView: View {
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
             Color.black
-            PlayerLayerView(player: player)
+            // Ambient blurred fill from the poster (cheap one-time blur).
+            if let purl = posterURL {
+                AsyncImage(url: purl) { img in
+                    img.resizable().aspectRatio(contentMode: .fill)
+                } placeholder: { Color.black }
+                    .blur(radius: 26).opacity(0.5).allowsHitTesting(false)
+            }
+            // The whole clip, never cropped.
+            PlayerLayerView(player: player, gravity: .resizeAspect)
             Button {
                 muted.toggle()
                 player.isMuted = muted

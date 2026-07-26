@@ -167,11 +167,18 @@ private struct ProductRow: View {
         return (app.apiBaseURL ?? URL(string: "https://reelie.io"))?.appendingPathComponent(c)
     }
 
+    /// The clip's poster frame, absolute-ized — used as the blurred ambient fill.
+    private var clipPosterURL: URL? {
+        guard let c = product.clipPoster, !c.isEmpty else { return nil }
+        if c.hasPrefix("http") { return URL(string: c) }
+        return (app.apiBaseURL ?? URL(string: "https://reelie.io"))?.appendingPathComponent(c)
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             // The actual clip playing (muted, looping) — same as the web guide.
             if let clip = clipURL {
-                ClipPlayerView(url: clip)
+                ClipPlayerView(url: clip, posterURL: clipPosterURL)
                     .frame(maxWidth: .infinity).frame(height: 300)
                     .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                     .padding(.bottom, 12)

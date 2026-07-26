@@ -60,11 +60,34 @@ def _download(url: str) -> tuple[Path, str]:
         "quiet": True,
         "noplaylist": True,
     }
-    try:
-        from pipeline import _apply_yt_auth
-        _apply_yt_auth(opts)          # cookies / proxy / player-client from env
-    except Exception:
-        pass
+    # Auth to get past YouTube's bot-check (proxy / cookies / player-client from env).
+    # Self-contained (no import) so it can never be silently skipped, and it logs
+    # whether a proxy/cookies were applied — check the worker logs to confirm.
+    import os as _os
+    import sys as _sys
+    import tempfile as _tempfile
+    _cf = _os.environ.get("YTDLP_COOKIES_FILE", "").strip()
+    if _cf and _os.path.exists(_cf):
+        opts["cookiefile"] = _cf
+    elif _os.environ.get("YTDLP_COOKIES", "").strip():
+        _tf = _tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False)
+        _tf.write(_os.environ["YTDLP_COOKIES"])
+        _tf.close()
+        opts["cookiefile"] = _tf.name
+    _proxy = _os.environ.get("YTDLP_PROXY", "").strip()
+    if _proxy:
+        if "{session}" in _proxy:
+            import uuid as _uuid
+            _proxy = _proxy.replace("{session}", _uuid.uuid4().hex[:12])
+        opts["proxy"] = _proxy
+    _clients = _os.environ.get("YTDLP_PLAYER_CLIENT", "").strip()
+    if _clients:
+        opts.setdefault("extractor_args", {})["youtube"] = {
+            "player_client": [c.strip() for c in _clients.split(",") if c.strip()]
+        }
+    print(f"[extract] yt auth — proxy:{'yes' if _proxy else 'NO'} "
+          f"cookies:{'yes' if opts.get('cookiefile') else 'no'} "
+          f"client:{_clients or 'default'}", file=_sys.stderr, flush=True)
     with yt_dlp.YoutubeDL(opts) as ydl:
         info = ydl.extract_info(url, download=True)
         path = Path(ydl.prepare_filename(info))

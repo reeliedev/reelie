@@ -91,3 +91,8 @@ services:
         sync: false
       - key: STORAGE_REGION
         value: auto
+      # YouTube downloads run HERE (the worker), so YouTube-auth env goes on THIS
+      # service, not reelie-api. Set the value in the dashboard (sync:false).
+      #   YTDLP_PROXY = http://user:pass_country-us_session-{session}_lifetime-30m@geo.iproyal.com:12321
+      - key: YTDLP_PROXY
+        sync: false

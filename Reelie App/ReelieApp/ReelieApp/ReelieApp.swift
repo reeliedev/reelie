@@ -98,8 +98,11 @@ struct LaunchSplashView: View {
         ZStack {
             ZStack {
                 Color.white
+                // Glow fades in from pure white, so the very first frame is identical
+                // to the (pure white) OS launch screen — a seamless handoff.
                 RadialGradient(colors: [Palette.sun.opacity(0.22), .clear],
                                center: .center, startRadius: 0, endRadius: 520)
+                    .opacity(appear ? 1 : 0)
             }
             .ignoresSafeArea()
 

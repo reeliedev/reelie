@@ -74,26 +74,47 @@ def _download(url: str) -> tuple[Path, str]:
         _tf.write(_os.environ["YTDLP_COOKIES"])
         _tf.close()
         opts["cookiefile"] = _tf.name
-    _proxy = _os.environ.get("YTDLP_PROXY", "").strip()
-    if _proxy:
-        if "{session}" in _proxy:
-            import uuid as _uuid
-            _proxy = _proxy.replace("{session}", _uuid.uuid4().hex[:12])
-        opts["proxy"] = _proxy
+    _proxy_tmpl = _os.environ.get("YTDLP_PROXY", "").strip()
     _clients = _os.environ.get("YTDLP_PLAYER_CLIENT", "").strip()
     if _clients:
         opts.setdefault("extractor_args", {})["youtube"] = {
             "player_client": [c.strip() for c in _clients.split(",") if c.strip()]
         }
-    print(f"[extract] yt auth — proxy:{'yes' if _proxy else 'NO'} "
+    print(f"[extract] yt auth — proxy:{'yes' if _proxy_tmpl else 'NO'} "
           f"cookies:{'yes' if opts.get('cookiefile') else 'no'} "
           f"client:{_clients or 'default'}", file=_sys.stderr, flush=True)
-    with yt_dlp.YoutubeDL(opts) as ydl:
-        info = ydl.extract_info(url, download=True)
-        path = Path(ydl.prepare_filename(info))
-        if path.suffix != ".mp4":
-            path = path.with_suffix(".mp4")
-        return path, (info.get("title") or "").strip()
+
+    # YouTube bot-checks SOME residential IPs at random. A fresh proxy session gives
+    # a NEW IP, and most are clean — so on a bot-check (or a 403/connection blip,
+    # also IP-related) we rotate the IP and retry. Only retriable when the proxy URL
+    # has a {session} placeholder to vary.
+    import uuid as _uuid
+    _rotatable = bool(_proxy_tmpl) and "{session}" in _proxy_tmpl
+    _attempts = 6 if _rotatable else 1
+    _last = None
+    for _i in range(_attempts):
+        if _proxy_tmpl:
+            opts["proxy"] = (_proxy_tmpl.replace("{session}", _uuid.uuid4().hex[:12])
+                             if _rotatable else _proxy_tmpl)
+        try:
+            with yt_dlp.YoutubeDL(opts) as ydl:
+                info = ydl.extract_info(url, download=True)
+                path = Path(ydl.prepare_filename(info))
+                if path.suffix != ".mp4":
+                    path = path.with_suffix(".mp4")
+                return path, (info.get("title") or "").strip()
+        except Exception as e:  # noqa: BLE001
+            _last = e
+            _m = str(e).lower()
+            _retriable = ("not a bot" in _m or "sign in to confirm" in _m
+                          or "http error 403" in _m or "forbidden" in _m
+                          or "connection" in _m or "timed out" in _m)
+            if _retriable and _rotatable and _i < _attempts - 1:
+                print(f"[extract] blocked on attempt {_i + 1}/{_attempts} — "
+                      f"rotating proxy IP and retrying", file=_sys.stderr, flush=True)
+                continue
+            raise
+    raise _last
 
 
 def main() -> int:

@@ -131,14 +131,14 @@ struct LaunchSplashView: View {
     }
 
     private func run() {
-        withAnimation(.spring(response: 0.6, dampingFraction: 0.72)) { appear = true }
-        withAnimation(.easeInOut(duration: 1.15).repeatForever(autoreverses: false).delay(0.25)) {
+        withAnimation(.spring(response: 0.5, dampingFraction: 0.74)) { appear = true }
+        withAnimation(.easeInOut(duration: 0.85).repeatForever(autoreverses: false).delay(0.15)) {
             shine = 1
         }
         Task {
-            try? await Task.sleep(nanoseconds: 1_650_000_000)   // hold
-            await MainActor.run { withAnimation(.easeInOut(duration: 0.5)) { leaving = true } }
-            try? await Task.sleep(nanoseconds: 520_000_000)      // let the exit finish
+            try? await Task.sleep(nanoseconds: 850_000_000)   // brief hold (snappy)
+            await MainActor.run { withAnimation(.easeInOut(duration: 0.4)) { leaving = true } }
+            try? await Task.sleep(nanoseconds: 420_000_000)   // let the exit finish
             await MainActor.run { onFinished() }
         }
     }

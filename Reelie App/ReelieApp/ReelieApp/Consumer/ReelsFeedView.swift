@@ -278,7 +278,8 @@ struct ReelCell: View {
             }
             // The cell already stops at the tab bar, so only a small breathing gap
             // is needed — the shop card + action rail are guaranteed on-screen.
-            .padding(.horizontal, 16).padding(.bottom, 20)
+            // A little extra on the leading edge so the card/text aren't flush left.
+            .padding(.leading, 24).padding(.trailing, 16).padding(.bottom, 20)
         }
     }
 

@@ -38,7 +38,10 @@ VIDEO_LLM_VIDEOS = VIDEO_LLM_DIR / "videos"
 # --------------------------------------------------------------------------
 # Per-step video clips (rendered with PyAV — no system ffmpeg needed).
 # --------------------------------------------------------------------------
-CLIP_WIDTH = 480            # output width in px; height follows source aspect
+CLIP_WIDTH = 720            # output width in px; height follows source aspect.
+                            # 720 keeps full-screen phone playback sharp (a feed
+                            # video is shown ~1080–1200px wide); never upscales
+                            # past the source (see clips._target_size).
 CLIP_MIN_S = 1.6           # never shorter than this
 CLIP_MAX_S = 7.0           # never longer than this
 CLIP_LEAD_S = 0.3          # start a touch before the product's timestamp

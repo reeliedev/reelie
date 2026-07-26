@@ -103,7 +103,7 @@ def _write_clip(src: Path, start: float, end: float, out_mp4: Path,
         ostream = oc.add_stream("libx264", rate=rate)
         ostream.width, ostream.height = W, H
         ostream.pix_fmt = "yuv420p"
-        ostream.options = {"crf": "30", "preset": "veryfast"}
+        ostream.options = {"crf": "24", "preset": "veryfast"}
 
         # keep the clip's audio so viewers can unmute (clips start muted)
         a_rate = 48000

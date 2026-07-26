@@ -130,11 +130,29 @@ struct PickVideoView: View {
         phase = .generating; stage = "Preparing your video…"; genPhase = "upload"
         preview = []; revealed = 0; localVideoURL = nil
         guard let movie = try? await item.loadTransferable(type: PickedMovie.self) else { phase = .failed; return }
-        let toUpload = await exportToMP4(movie.url) ?? movie.url   // fall back to original if export fails
+        // Only re-encode when we must: an already-H.264 video is uploaded UNTOUCHED
+        // (no second compression pass → no quality loss). HEVC gets converted so the
+        // backend can process it.
+        let toUpload: URL
+        if await isH264(movie.url) {
+            toUpload = movie.url
+        } else {
+            toUpload = await exportToMP4(movie.url) ?? movie.url   // fall back to original if export fails
+        }
         localVideoURL = toUpload                                    // play it while we analyze
         let slug = await app.generatePage(uploadFileURL: toUpload, onProgress: onProgress)
         if movie.url != toUpload { try? FileManager.default.removeItem(at: movie.url) }
         if slug != nil { finish(slug: slug) } else { phase = .failed }
+    }
+
+    /// True if the video is already H.264 (avc1) — in which case we upload it as-is
+    /// and skip a lossy re-encode.
+    private func isH264(_ url: URL) async -> Bool {
+        let asset = AVURLAsset(url: url)
+        guard let track = try? await asset.loadTracks(withMediaType: .video).first,
+              let descs = try? await track.load(.formatDescriptions),
+              let desc = descs.first else { return false }
+        return CMFormatDescriptionGetMediaSubType(desc) == kCMVideoCodecType_H264
     }
 
     /// Re-encode to H.264/AAC MP4. The resolution presets output H.264 (not HEVC),

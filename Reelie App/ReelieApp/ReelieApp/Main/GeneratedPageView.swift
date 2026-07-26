@@ -74,14 +74,34 @@ struct GeneratedPageView: View {
                     header(page)
                     linkEditor(page: page, link: link)
 
-                    // Per-page analytics: views + AI answer-engine crawls + clicks.
-                    if let st = stats, (st.humanViews + st.aiCrawls + st.clicks) > 0 {
-                        SectionLabel(text: "PERFORMANCE").padding(.top, 22).padding(.bottom, 10)
+                    // Insights + earnings — shown for live pages so creators can see
+                    // how each page is performing and what it's earning.
+                    if page.published, let st = stats {
+                        SectionLabel(text: "INSIGHTS").padding(.top, 22).padding(.bottom, 10)
                         HStack(spacing: 10) {
                             pageStat("\(st.humanViews)", "VIEWS")
                             pageStat("\(st.aiCrawls)", "AI ANSWERS")
                             pageStat("\(st.clicks)", "CLICKS")
                         }
+                        // Per-page earnings banner.
+                        HStack(alignment: .center) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("EARNINGS")
+                                    .font(ReelieFont.ui(10, weight: .bold)).tracking(0.5).foregroundStyle(Palette.grey)
+                                Text(Money.string(st.earnings)).displayStyle(26)
+                            }
+                            Spacer()
+                            VStack(alignment: .trailing, spacing: 2) {
+                                Text("\(st.sales)")
+                                    .font(ReelieFont.ui(16, weight: .bold)).foregroundStyle(Palette.ink)
+                                Text(st.sales == 1 ? "SALE" : "SALES")
+                                    .font(ReelieFont.ui(10, weight: .bold)).tracking(0.5).foregroundStyle(Palette.faint)
+                            }
+                        }
+                        .padding(.horizontal, 16).padding(.vertical, 14)
+                        .frame(maxWidth: .infinity)
+                        .background(Palette.sun.opacity(0.16), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                        .padding(.top, 10)
                         if !st.aiByEngine.isEmpty {
                             ScrollView(.horizontal, showsIndicators: false) {
                                 HStack(spacing: 7) {

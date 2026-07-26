@@ -32,6 +32,8 @@ struct HomeView: View {
 
             if app.isPendingCreator {
                 PendingReviewState()
+            } else if app.usesAPIPages && !app.pagesLoaded {
+                PagesLoadingState()                 // loader, not a flash of mock pages
             } else if (app.showingAPIPages ? app.generatedPages.isEmpty : app.pages.isEmpty) {
                 HomeEmptyState()
             } else {
@@ -164,12 +166,18 @@ private struct HomeList: View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 0) {
                 if app.showingAPIPages {
-                    // Account-scoped: the creator's own published pages from the API.
-                    let active = app.generatedPages.filter { !$0.archived }
+                    // Account-scoped: the creator's own pages from the API, split by
+                    // state so live and draft pages are clearly distinct.
+                    let live = app.generatedPages.filter { $0.published && !$0.archived }
+                    let drafts = app.generatedPages.filter { !$0.published && !$0.archived }
                     let archived = app.generatedPages.filter { $0.archived }
-                    if !active.isEmpty {
-                        SectionLabel(text: "YOUR PAGES").padding(.top, 18).padding(.bottom, 10)
-                        ForEach(active) { page in GeneratedPageCard(page: page) }
+                    if !live.isEmpty {
+                        SectionLabel(text: "LIVE").padding(.top, 18).padding(.bottom, 10)
+                        ForEach(live) { page in GeneratedPageCard(page: page) }
+                    }
+                    if !drafts.isEmpty {
+                        SectionLabel(text: "DRAFTS").padding(.top, 18).padding(.bottom, 10)
+                        ForEach(drafts) { page in GeneratedPageCard(page: page) }
                     }
                     if !archived.isEmpty {
                         SectionLabel(text: "ARCHIVED").padding(.top, 18).padding(.bottom, 10)
@@ -267,9 +275,12 @@ private struct PageCard: View {
     }
 }
 
-/// A card for an auto-generated page — taps through to the generated-page preview.
+/// A card for a generated page. Live pages show a LIVE badge and an "Insights"
+/// CTA (views + earnings); drafts show a DRAFT badge and a "Preview" CTA. Both tap
+/// through to the page screen, which adapts to the page's state.
 private struct GeneratedPageCard: View {
     let page: GeneratedPage
+    private var isLive: Bool { page.published && !page.archived }
 
     var body: some View {
         NavigationLink(value: AppRoute.generatedPage(pageID: page.id)) {
@@ -278,7 +289,8 @@ private struct GeneratedPageCard: View {
                     .frame(width: 54, height: 54)
                     .overlay(Text(page.emoji).font(.system(size: 22)))
 
-                VStack(alignment: .leading, spacing: 3) {
+                VStack(alignment: .leading, spacing: 4) {
+                    PageStatusBadge(published: page.published, archived: page.archived)
                     Text(page.title)
                         .font(ReelieFont.ui(15, weight: .bold)).foregroundStyle(Palette.ink)
                         .lineLimit(1)
@@ -287,16 +299,50 @@ private struct GeneratedPageCard: View {
                         .lineLimit(1)
                 }
                 Spacer(minLength: 8)
-                Text("Preview")
+                Text(isLive ? "Insights" : "Preview")
                     .font(ReelieFont.ui(13.5, weight: .bold)).foregroundStyle(Palette.ink)
                     .padding(.horizontal, 16).padding(.vertical, 10)
-                    .background(Palette.sun, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .background(isLive ? Palette.soft : Palette.sun,
+                                in: RoundedRectangle(cornerRadius: 12, style: .continuous))
             }
             .padding(14)
-            .hairlineCard(color: Palette.ink)
+            .hairlineCard(color: isLive ? Palette.line : Palette.ink)
             .padding(.bottom, 10)
         }
         .buttonStyle(.plain)
+    }
+}
+
+/// LIVE / DRAFT / ARCHIVED pill so page state is obvious at a glance.
+private struct PageStatusBadge: View {
+    let published: Bool
+    let archived: Bool
+
+    private var label: String { archived ? "ARCHIVED" : (published ? "LIVE" : "DRAFT") }
+    private var tint: Color { archived ? Palette.faint : (published ? Color(hex: 0x1FA463) : Palette.grey) }
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Circle().fill(tint).frame(width: 5, height: 5)
+            Text(label)
+                .font(ReelieFont.ui(9.5, weight: .bold)).tracking(0.7).foregroundStyle(tint)
+        }
+        .padding(.horizontal, 7).padding(.vertical, 3)
+        .background(tint.opacity(0.12), in: Capsule())
+    }
+}
+
+/// Shown while the first /me/pages fetch is in flight — avoids flashing mock pages.
+private struct PagesLoadingState: View {
+    var body: some View {
+        VStack(spacing: 14) {
+            Spacer()
+            ProgressView().tint(Palette.ink)
+            Text("Loading your pages…")
+                .font(ReelieFont.ui(13.5, weight: .medium)).foregroundStyle(Palette.grey)
+            Spacer()
+        }
+        .frame(maxWidth: .infinity)
     }
 }
 

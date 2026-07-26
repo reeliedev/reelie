@@ -209,14 +209,23 @@ final class AppState {
     // The creator's own published pages, loaded from the API. When set, the studio
     // shows these instead of the mock sample pages.
     var showingAPIPages = false
+    // True once the first /me/pages fetch has returned, so the Pages tab can show a
+    // loader instead of briefly flashing the bundled mock pages before swapping.
+    var pagesLoaded = false
+
+    /// A real, signed-in creator whose pages come from the backend (not mock data).
+    var usesAPIPages: Bool { apiBaseURL != nil && isCreator && authToken != nil }
 
     @MainActor
     func loadMyPages() async {
-        guard let base = apiBaseURL, isCreator, let token = authToken else { return }
+        guard let base = apiBaseURL, isCreator, let token = authToken else {
+            pagesLoaded = true; return
+        }
         do {
             generatedPages = try await APIClient(baseURL: base).myPages(token: token)
             showingAPIPages = true
         } catch { print("[Reelie] loadMyPages: \(error)") }
+        pagesLoaded = true
     }
 
     /// Load the creator-authored FAQs for a page so the editor can edit them.

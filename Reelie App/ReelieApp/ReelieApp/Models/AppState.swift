@@ -31,11 +31,16 @@ final class AppState {
     private static let creatorStatusKey = "reelie.creatorStatus"
 
     init() {
-        // Only trust the cached role when a token is stored — a signed-out device
-        // is always a plain viewer.
+        // A stored token means the account signed in — and in this app ONLY
+        // creators sign in (consumers browse as guests). So a token implies at
+        // least creator role: show the 5 creator tabs from the first frame instead
+        // of flipping 3→5 once /me returns. The cached role refines viewer/both;
+        // restoreSession() then confirms against the server.
         if authToken != nil {
             if let r = UserDefaults.standard.string(forKey: Self.roleKey) {
                 currentUser.role = Role.from(r)
+            } else {
+                currentUser.role = .both
             }
             currentUser.creatorStatus = UserDefaults.standard.string(forKey: Self.creatorStatusKey)
         }

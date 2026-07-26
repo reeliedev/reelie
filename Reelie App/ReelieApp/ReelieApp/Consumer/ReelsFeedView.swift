@@ -38,22 +38,28 @@ extension APIClient {
     }
 }
 
-// MARK: - Aspect-fill video layer (SwiftUI's VideoPlayer only aspect-fits)
+// MARK: - Backing AVPlayerLayer view (gravity is configurable)
 
 struct PlayerLayerView: UIViewRepresentable {
     let player: AVPlayer
-    func makeUIView(context: Context) -> PlayerUIView { PlayerUIView(player: player) }
-    func updateUIView(_ view: PlayerUIView, context: Context) { view.playerLayer.player = player }
+    /// `.resizeAspect` shows the whole video (Instagram reels); `.resizeAspectFill`
+    /// crops to fill. Defaults to fill for callers that want cover behavior.
+    var gravity: AVLayerVideoGravity = .resizeAspectFill
+    func makeUIView(context: Context) -> PlayerUIView { PlayerUIView(player: player, gravity: gravity) }
+    func updateUIView(_ view: PlayerUIView, context: Context) {
+        view.playerLayer.player = player
+        view.playerLayer.videoGravity = gravity
+    }
 }
 
 final class PlayerUIView: UIView {
     override class var layerClass: AnyClass { AVPlayerLayer.self }
     var playerLayer: AVPlayerLayer { layer as! AVPlayerLayer }
-    init(player: AVPlayer) {
+    init(player: AVPlayer, gravity: AVLayerVideoGravity = .resizeAspectFill) {
         super.init(frame: .zero)
         playerLayer.player = player
-        playerLayer.videoGravity = .resizeAspectFill
-        backgroundColor = .black
+        playerLayer.videoGravity = gravity
+        backgroundColor = .clear
     }
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 }
@@ -206,14 +212,30 @@ struct ReelCell: View {
     var body: some View {
         ZStack {
             Color.black
-            PlayerLayerView(player: player).ignoresSafeArea()
 
-            // Poster frame covers the (black) player until the video renders its
-            // first frame — so you see the video instantly, never a black void.
-            if !item.poster.isEmpty, let purl = URL(string: item.poster) {
+            // Ambient blurred fill — the whole screen is covered even when the
+            // video isn't 9:16, so there's never a black band (Instagram/TikTok do
+            // exactly this). Cheap: a one-time blur of the poster, not the video.
+            if let purl = URL(string: item.poster), !item.poster.isEmpty {
                 AsyncImage(url: purl) { img in
                     img.resizable().aspectRatio(contentMode: .fill)
                 } placeholder: { Color.black }
+                    .ignoresSafeArea()
+                    .blur(radius: 34)
+                    .opacity(0.55)
+                    .allowsHitTesting(false)
+            }
+
+            // The video itself, aspect-FIT so the entire frame is visible — never
+            // cropped or zoomed past the edges. This is how reels are shown.
+            PlayerLayerView(player: player, gravity: .resizeAspect).ignoresSafeArea()
+
+            // Poster (also fit) covers the video until its first frame renders, so
+            // you see the video instantly, never a black void.
+            if !item.poster.isEmpty, let purl = URL(string: item.poster) {
+                AsyncImage(url: purl) { img in
+                    img.resizable().aspectRatio(contentMode: .fit)
+                } placeholder: { Color.clear }
                     .ignoresSafeArea()
                     .allowsHitTesting(false)
                     .opacity(ready ? 0 : 1)

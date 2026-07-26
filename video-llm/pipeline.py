@@ -98,6 +98,36 @@ def discover_local_videos(videos_dir: Path) -> list:
                   if p.is_file() and p.suffix.lower() in VIDEO_EXTS)
 
 
+def _apply_yt_auth(opts: dict) -> None:
+    """Best-effort auth to get past YouTube's 'Sign in to confirm you're not a bot'
+    block, which hits datacenter IPs (Render). All optional, via env:
+      YTDLP_COOKIES_FILE  — path to a Netscape cookies.txt (e.g. a Render Secret File)
+      YTDLP_COOKIES       — the cookies.txt CONTENT (written to a temp file)
+      YTDLP_PROXY         — http(s)/socks proxy URL (a residential proxy is ideal)
+      YTDLP_PLAYER_CLIENT — comma-separated yt-dlp player clients to try
+    Without at least one of these, YouTube will usually refuse a server download."""
+    import os
+    import tempfile
+    cf = os.environ.get("YTDLP_COOKIES_FILE", "").strip()
+    if cf and os.path.exists(cf):
+        opts["cookiefile"] = cf
+    else:
+        content = os.environ.get("YTDLP_COOKIES", "")
+        if content.strip():
+            tf = tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False)
+            tf.write(content)
+            tf.close()
+            opts["cookiefile"] = tf.name
+    proxy = os.environ.get("YTDLP_PROXY", "").strip()
+    if proxy:
+        opts["proxy"] = proxy
+    clients = os.environ.get("YTDLP_PLAYER_CLIENT", "").strip()
+    if clients:
+        opts.setdefault("extractor_args", {})["youtube"] = {
+            "player_client": [c.strip() for c in clients.split(",") if c.strip()]
+        }
+
+
 def download_youtube(url: str, videos_dir: Path) -> Path:
     """Download a YouTube URL via yt-dlp. Returns the local path."""
     import yt_dlp
@@ -115,6 +145,7 @@ def download_youtube(url: str, videos_dir: Path) -> Path:
         "no_warnings": True,
         "merge_output_format": "mp4",
     }
+    _apply_yt_auth(opts)
     with yt_dlp.YoutubeDL(opts) as ydl:
         info = ydl.extract_info(url, download=True)
         return Path(ydl.prepare_filename(info))

@@ -60,6 +60,11 @@ def _download(url: str) -> tuple[Path, str]:
         "quiet": True,
         "noplaylist": True,
     }
+    try:
+        from pipeline import _apply_yt_auth
+        _apply_yt_auth(opts)          # cookies / proxy / player-client from env
+    except Exception:
+        pass
     with yt_dlp.YoutubeDL(opts) as ydl:
         info = ydl.extract_info(url, download=True)
         path = Path(ydl.prepare_filename(info))

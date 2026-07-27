@@ -131,7 +131,7 @@ input[type=file]{padding:9px 12px}
 .az-body{display:grid;grid-template-columns:1.05fr .95fr;gap:22px;align-items:start}
 @media(max-width:720px){.az-body{grid-template-columns:1fr}}
 .az-stage{position:relative;border-radius:18px;overflow:hidden;background:#0c0a05;aspect-ratio:9/16;max-height:min(58vh,560px);margin:0 auto;width:100%;box-shadow:0 10px 30px rgba(32,27,10,.14)}
-.az-vid{width:100%;height:100%;object-fit:cover;display:block}
+.az-vid{width:100%;height:100%;object-fit:cover;display:block;border:0}
 .az-ph{display:flex;align-items:center;justify-content:center;font-size:66px;background:linear-gradient(135deg,#2a2740,#171528)}
 .az-scan{position:absolute;left:0;right:0;top:0;height:32%;pointer-events:none;
   background:linear-gradient(180deg,rgba(124,108,255,0),rgba(124,108,255,.12) 68%,rgba(150,135,255,.5));
@@ -558,7 +558,7 @@ async function doGenerate(){
   } else {
     var url = document.getElementById('url').value.trim();
     if(!url){ st.textContent='Paste a video link first.'; return; }
-    body.url = url; startAnalyzer(null);
+    body.url = url; startAnalyzer(url);
   }
   setAzLabel('Starting…');
   try {
@@ -573,18 +573,37 @@ var AZ = { revealed: 0 };
 function fmtT(t){ t=Math.max(0,Math.round(t||0)); return Math.floor(t/60)+':'+('0'+(t%60)).slice(-2); }
 
 var LOCAL_VIDEO_URL = null;
+function ytId(u){
+  if(!u) return null;
+  try {
+    var a=document.createElement('a'); a.href=u;
+    var host=(a.hostname||'').toLowerCase(), path=a.pathname||'', id=null;
+    if(host.indexOf('youtu.be')>=0){ id=(path.split('/')[1]||''); }
+    else if(host.indexOf('youtube.com')>=0){
+      if(path.indexOf('/shorts/')>=0){ id=path.split('/shorts/')[1].split('/')[0]; }
+      else if(path.indexOf('/embed/')>=0){ id=path.split('/embed/')[1].split('/')[0]; }
+      else { var q=(a.search||'').substring(1).split('&'); for(var i=0;i<q.length;i++){ if(q[i].indexOf('v=')===0){ id=q[i].substring(2); break; } } }
+    }
+    return (id && id.length) ? id.split('?')[0].split('&')[0] : null;
+  } catch(e){ return null; }
+}
 function startAnalyzer(videoURL){
   AZ = { revealed: 0 };
-  LOCAL_VIDEO_URL = videoURL || null;
+  var isBlob = videoURL && videoURL.indexOf('blob:')===0;
+  var yid = isBlob ? null : ytId(videoURL);
+  LOCAL_VIDEO_URL = isBlob ? videoURL : null;   // only local blobs are reusable in review
+  var stage = isBlob
+    ? '<video id="az-vid" class="az-vid" muted playsinline loop autoplay src="'+videoURL+'"></video>'
+    : (yid
+        ? '<iframe id="az-vid" class="az-vid" src="https://www.youtube.com/embed/'+yid+'?autoplay=1&mute=1&controls=0&loop=1&playlist='+yid+'&playsinline=1&modestbranding=1&rel=0&fs=0&disablekb=1&iv_load_policy=3" allow="autoplay; encrypted-media" allowfullscreen></iframe>'
+        : '<div class="az-vid az-ph">🎬</div>');
   app.innerHTML =
    '<div class="az">'+
      '<div class="az-head"><div class="az-dotwrap"><span class="az-dot"></span></div>'+
        '<h1 id="az-label" style="margin:6px 0 2px">Analyzing your video</h1>'+
        '<div class="az-sub" id="az-sub">Watching every second to find the products…</div></div>'+
      '<div class="az-body">'+
-       '<div class="az-stage" id="az-stage">'+
-         (videoURL ? '<video id="az-vid" class="az-vid" muted playsinline loop autoplay src="'+videoURL+'"></video>'
-                   : '<div class="az-vid az-ph">🎬</div>')+
+       '<div class="az-stage" id="az-stage">'+ stage +
          '<div class="az-scan"></div><div class="az-grid"></div>'+
        '</div>'+
        '<div class="az-panel">'+

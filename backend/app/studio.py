@@ -90,6 +90,9 @@ textarea{resize:vertical;min-height:64px}
 .gfilters{display:flex;gap:7px;margin:14px 0 2px;flex-wrap:wrap}
 .gf{background:#fff;border:1.5px solid var(--line);color:var(--grey);font-weight:600;font-size:13px;font-family:inherit;padding:6px 13px;border-radius:999px;cursor:pointer}
 .gf.on{border-color:var(--ink);color:var(--ink);background:var(--soft)}
+.eb-bal{text-align:center}
+.eb-lbl{font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--faint)}
+.eb-big{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:44px;color:var(--ink);margin:4px 0 12px}
 /* videos grid */
 .vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
 .vcell{cursor:pointer;border-radius:14px;overflow:hidden;background:#fff;border:1px solid var(--line);transition:transform .12s,box-shadow .12s}
@@ -472,11 +475,44 @@ window.viewPageDetail = viewPageDetail;
 
 // ---- (2) EARNINGS & STATS ----
 async function viewEarnings(){
-  app.innerHTML = studioTabs('earn')+'<div id="summary"></div>'+
-    '<h2 class="eh">By page</h2><div id="pgstats" class="card"><p class="muted">Loading…</p></div>';
-  loadSummary(); loadPageStats();
+  app.innerHTML = studioTabs('earn')+'<div id="earnbox"></div>'+'<div id="summary"></div>'+
+    '<h2 class="eh">Reach by page</h2><div id="pgstats" class="card"><p class="muted">Loading…</p></div>';
+  loadEarnings(); loadSummary(); loadPageStats();
 }
 window.viewEarnings = viewEarnings;
+function money(v){ v=v||0; return '$'+(Math.abs(v-Math.round(v))<0.005 ? Math.round(v) : v.toFixed(2)); }
+async function loadEarnings(){
+  var box=document.getElementById('earnbox'); if(!box||!me||!me.handle) return;
+  var e, po;
+  try { e = await api('GET','/creators/'+encodeURIComponent(me.handle)+'/earnings'); } catch(err){ return; }
+  try { po = await api('GET','/me/payouts'); } catch(err){ po = {ready:e.ready||0, history:[]}; }
+  var st=function(n,l){ return '<div class="sumstat"><div class="sn">'+n+'</div><div class="sl">'+l+'</div></div>'; };
+  var byPage=(e.byPage||[]).filter(function(x){return x.total>0;});
+  var sales=(e.recentSales||[]), hist=(po.history||[]);
+  var ready=po.ready||0, canCash=ready>0;
+  box.innerHTML = '<div class="card sumcard"><div class="eb-bal">'+
+      '<div class="eb-lbl">Ready to pay out</div><div class="eb-big">'+money(ready)+'</div>'+
+      (canCash ? '<button class="btn" id="cashout" onclick="cashOut()">Cash out '+money(ready)+'</button>'
+               : '<div class="muted">Earnings move to “ready” ~30–60 days after a sale, once returns close.</div>')+
+    '</div>'+
+    '<div class="sumgrid" style="margin-top:18px">'+ st(money(e.pending),'pending')+ st(money(ready),'ready')+ st(money(e.paidSoFar),'paid so far')+ '</div>'+
+    '<div class="sumgrid" style="margin-top:10px">'+ st(money(e.thisWeek),'this week')+ st(money(e.thisMonth),'this month')+ st(money(e.lifetime),'lifetime')+ '</div>'+
+  '</div>'+
+  (byPage.length ? '<h2 class="eh">Earnings by page</h2><div class="card">'+ byPage.map(function(x){
+      return '<div class="pg"><div class="t">'+esc(x.title)+'</div><div class="row"><b>'+money(x.total)+'</b></div></div>'; }).join('') +'</div>' : '')+
+  (sales.length ? '<h2 class="eh">Recent sales</h2><div class="card">'+ sales.map(function(s){
+      return '<div class="pg"><div><div class="t">'+esc(s.emoji||'')+' '+esc(s.name)+'</div><div class="pstat">'+esc(s.page)+'</div></div>'+
+        '<div class="row"><b>'+money(s.value)+'</b> <span class="pill '+(s.state==='ready'?'live':'draft')+'">'+(s.state==='ready'?'Ready':'Pending')+'</span></div></div>'; }).join('') +'</div>' : '')+
+  (hist.length ? '<h2 class="eh">Payouts</h2><div class="card">'+ hist.map(function(p){
+      return '<div class="pg"><div class="t">🏦 '+esc((p.date||'').slice(0,10))+'</div><div class="row"><b>'+money(p.amount)+'</b> <span class="pill live">'+esc(p.status)+'</span></div></div>'; }).join('') +'</div>' : '');
+}
+window.loadEarnings = loadEarnings;
+async function cashOut(){
+  var b=document.getElementById('cashout'); if(b){ b.disabled=true; b.textContent='…'; }
+  try { await api('POST','/me/payouts/withdraw',{}); } catch(e){ alert(e.message||'Could not cash out'); }
+  viewEarnings();
+}
+window.cashOut = cashOut;
 async function loadPageStats(){
   var box=document.getElementById('pgstats'); if(!box) return;
   var pages; try { pages=await api('GET','/me/pages'); } catch(e){ box.innerHTML='<p class="err">'+esc(e.message)+'</p>'; return; }
@@ -499,7 +535,7 @@ async function loadSummary(){
   box.innerHTML='<div class="card sumcard">'+
     '<div style="font-weight:600;color:var(--ink);margin-bottom:14px">Across all your pages</div>'+
     '<div class="sumgrid">'+ sumStat(fmtN(st.humanViews),'views')+ sumStat(fmtN(st.aiCrawls),'AI crawls')+
-      sumStat(fmtN(st.clicks),'clicks')+ sumStat('$'+(st.earnings||0).toFixed(0),'earned')+ '</div>'+
+      sumStat(fmtN(st.clicks),'clicks')+ '</div>'+
     (engines?'<div class="ai-crawls" style="margin-top:16px">'+engines+'</div>':'')+
     '</div>';
 }

@@ -11,8 +11,12 @@
     if (!tok) return;
     fetch("/me", { headers: { Authorization: "Bearer " + tok } })
       .then(function (r) {
-        if (!r.ok) {                      // stale/expired session — clear + keep "Sign in"
+        if (!r.ok) {                      // stale/expired session — clear + revert the nav
           try { localStorage.removeItem("reelie.token"); localStorage.removeItem("reelie.user"); } catch (e) {}
+          var s = document.getElementById("nav-signin");
+          if (s) { s.textContent = "Sign in"; s.href = "/studio"; }
+          var c = document.getElementById("nav-cta");
+          if (c) { c.textContent = "Become a creator →"; c.href = "/studio?signup=1"; }
           return null;
         }
         return r.json();

@@ -136,6 +136,23 @@
       <a class="btn btn-primary btn-small" href="/studio?signup=1" id="nav-cta">Become a creator →</a>
     </div>
   </header>
+  <script>
+    /* Optimistically show the signed-in nav from the CACHED user (no network), so
+       there's no signed-out flash. main.js then confirms via /me and reverts if
+       the session is stale. Runs inline right after the nav, before paint. */
+    (function () {
+      try {
+        if (!localStorage.getItem("reelie.token")) return;
+        var u = JSON.parse(localStorage.getItem("reelie.user") || "null");
+        if (!u) return;
+        var name = u.handle ? "@" + u.handle : (u.email || "My studio");
+        var s = document.getElementById("nav-signin");
+        if (s) { s.textContent = name; s.href = "/studio"; }
+        var c = document.getElementById("nav-cta");
+        if (c) { c.textContent = "Go to studio →"; c.href = "/studio"; }
+      } catch (e) {}
+    })();
+  </script>
 
   <main class="hero" id="top">
 

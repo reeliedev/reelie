@@ -218,7 +218,7 @@ var me = null; try { me = JSON.parse(localStorage.getItem('reelie.user')||'null'
 (function(){
   var q=new URLSearchParams(location.search), c=q.get('connected');
   if(c){ history.replaceState(null,'',location.pathname);
-    setTimeout(function(){ alert(q.get('ok')==='1' ? (c.charAt(0).toUpperCase()+c.slice(1)+' connected ✅') : ('We couldn\\'t connect '+c+'. Please try again.')); }, 350); }
+    setTimeout(function(){ alert(q.get('ok')==='1' ? (c.charAt(0).toUpperCase()+c.slice(1)+' connected ✅') : ('We had trouble connecting '+c+'. Please try again.')); }, 350); }
 })();
 var app = document.getElementById('app'), who = document.getElementById('whoami');
 // Capture the redirect params IMMEDIATELY (before supabase-js reads/clears the hash),

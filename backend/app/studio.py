@@ -87,6 +87,9 @@ textarea{resize:vertical;min-height:64px}
 .stabs{display:flex;gap:8px;margin-bottom:20px}
 .stab{background:#fff;border:1.5px solid var(--line);color:var(--grey);font-weight:600;font-size:14.5px;font-family:inherit;padding:9px 18px;border-radius:999px;cursor:pointer}
 .stab.on{border-color:var(--ink);color:var(--ink);background:var(--soft)}
+.gfilters{display:flex;gap:7px;margin:14px 0 2px;flex-wrap:wrap}
+.gf{background:#fff;border:1.5px solid var(--line);color:var(--grey);font-weight:600;font-size:13px;font-family:inherit;padding:6px 13px;border-radius:999px;cursor:pointer}
+.gf.on{border-color:var(--ink);color:var(--ink);background:var(--soft)}
 /* videos grid */
 .vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
 .vcell{cursor:pointer;border-radius:14px;overflow:hidden;background:#fff;border:1px solid var(--line);transition:transform .12s,box-shadow .12s}
@@ -391,6 +394,12 @@ async function viewVideos(){
    '<input id="ptitle" placeholder="Page name (optional — defaults to the video title)">'+
    '<div style="height:12px"></div><button class="btn" id="gen">Make page</button>'+
    '<div class="muted" id="genstatus" style="margin-top:10px"></div></div>'+
+   '<div id="gfilters" class="gfilters" style="display:none">'+
+     '<button class="gf on" data-f="all" onclick="setGridFilter(\'all\')">All</button>'+
+     '<button class="gf" data-f="live" onclick="setGridFilter(\'live\')">Live</button>'+
+     '<button class="gf" data-f="draft" onclick="setGridFilter(\'draft\')">Drafts</button>'+
+     '<button class="gf" data-f="arch" onclick="setGridFilter(\'arch\')">Archived</button>'+
+   '</div>'+
    '<div id="grid" class="vgrid"><p class="muted" style="padding:16px 0">Loading…</p></div>';
   GENTAB = 'link';
   document.getElementById('gen').onclick = doGenerate;
@@ -398,13 +407,27 @@ async function viewVideos(){
   loadGrid();
 }
 window.viewVideos = viewVideos;
+var GRIDFILTER='all', GRIDPAGES=null;
+function pageStatus(p){ return p.archived?'arch':((p.published!==false)?'live':'draft'); }
+function setGridFilter(f){ GRIDFILTER=f; renderGrid(); }
+window.setGridFilter=setGridFilter;
+function renderGrid(){
+  var box=document.getElementById('grid'), bar=document.getElementById('gfilters');
+  if(!box||!GRIDPAGES) return;
+  if(!GRIDPAGES.length){ if(bar) bar.style.display='none'; box.innerHTML='<p class="muted" style="padding:16px 0">No videos yet — make your first one above ✨</p>'; return; }
+  if(bar){
+    bar.style.display='flex';
+    var c={all:GRIDPAGES.length,live:0,draft:0,arch:0}, L={all:'All',live:'Live',draft:'Drafts',arch:'Archived'};
+    GRIDPAGES.forEach(function(p){ c[pageStatus(p)]++; });
+    [].forEach.call(bar.children, function(b){ var f=b.getAttribute('data-f'); b.textContent=L[f]+' ('+c[f]+')'; b.className='gf'+(f===GRIDFILTER?' on':''); });
+  }
+  var list = GRIDFILTER==='all' ? GRIDPAGES : GRIDPAGES.filter(function(p){ return pageStatus(p)===GRIDFILTER; });
+  box.innerHTML = list.length ? list.map(videoCell).join('') : '<p class="muted" style="padding:16px 0">Nothing '+(GRIDFILTER==='arch'?'archived':GRIDFILTER)+' yet.</p>';
+}
 async function loadGrid(){
   var box=document.getElementById('grid'); if(!box) return;
-  try {
-    var pages=await api('GET','/me/pages');
-    if(!pages.length){ box.innerHTML='<p class="muted" style="padding:16px 0">No videos yet — make your first one above ✨</p>'; return; }
-    box.innerHTML = pages.map(videoCell).join('');
-  } catch(e){ box.innerHTML='<p class="err">'+esc(e.message)+'</p>'; }
+  try { GRIDPAGES = await api('GET','/me/pages'); renderGrid(); }
+  catch(e){ box.innerHTML='<p class="err">'+esc(e.message)+'</p>'; }
 }
 function coverHTML(p){
   if(p.coverVideo) return '<video class="vcover" src="'+esc(p.coverVideo)+'" muted playsinline loop preload="metadata" onmouseenter="this.play&&this.play().catch(function(){})" onmouseleave="this.pause&&this.pause()"></video>';

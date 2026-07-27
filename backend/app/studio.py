@@ -214,6 +214,12 @@ input[type=file]{padding:9px 12px}
 var BASE = window.location.origin;
 var tok = localStorage.getItem('reelie.token') || '';
 var me = null; try { me = JSON.parse(localStorage.getItem('reelie.user')||'null'); } catch(e){}
+// Returned from a social OAuth connect → confirm + clean the URL.
+(function(){
+  var q=new URLSearchParams(location.search), c=q.get('connected');
+  if(c){ history.replaceState(null,'',location.pathname);
+    setTimeout(function(){ alert(q.get('ok')==='1' ? (c.charAt(0).toUpperCase()+c.slice(1)+' connected ✅') : ('We couldn\\'t connect '+c+'. Please try again.')); }, 350); }
+})();
 var app = document.getElementById('app'), who = document.getElementById('whoami');
 // Capture the redirect params IMMEDIATELY (before supabase-js reads/clears the hash),
 // so the login screen can report what came back after a magic-link/OAuth click.
@@ -403,12 +409,40 @@ async function viewVideos(){
      '<button class="gf" data-f="draft" onclick="setGridFilter(\'draft\')">Drafts</button>'+
      '<button class="gf" data-f="arch" onclick="setGridFilter(\'arch\')">Archived</button>'+
    '</div>'+
-   '<div id="grid" class="vgrid"><p class="muted" style="padding:16px 0">Loading…</p></div>';
+   '<div id="grid" class="vgrid"><p class="muted" style="padding:16px 0">Loading…</p></div>'+
+   '<div id="connbox"></div>';
   GENTAB = 'link';
   document.getElementById('gen').onclick = doGenerate;
   document.getElementById('url').addEventListener('keydown', function(e){ if(e.key==='Enter') doGenerate(); });
-  loadGrid();
+  loadGrid(); loadConnections();
 }
+async function loadConnections(){
+  var box=document.getElementById('connbox'); if(!box) return;
+  var conns=[]; try { conns=await api('GET','/me/connections'); } catch(e){ box.innerHTML=''; return; }
+  var byP={}; conns.forEach(function(c){ byP[c.platform]=c; });
+  var row=function(p,label,icon){
+    var c=byP[p];
+    var right = c
+      ? '<span class="muted">@'+esc(c.username||'connected')+(c.mock?' · demo':'')+'</span> <button class="btn ghost sm" onclick="disconnectPlatform(\''+p+'\')">Disconnect</button>'
+      : '<button class="btn ghost sm" onclick="connectPlatform(\''+p+'\')">Connect</button>';
+    return '<div class="pg"><div class="t">'+icon+' '+label+'</div><div class="row">'+right+'</div></div>';
+  };
+  box.innerHTML='<h2 class="eh">Connected accounts</h2><div class="card">'+
+    row('youtube','YouTube','▶️')+ row('instagram','Instagram','📸')+
+    '<div class="muted" style="margin-top:10px">Connect an account to pull in your videos and verify your identity.</div></div>';
+}
+window.loadConnections=loadConnections;
+async function connectPlatform(p){
+  try { var r=await api('GET','/me/connect/'+p+'?web=1'); if(r&&r.authorizeUrl) location.href=r.authorizeUrl; }
+  catch(e){ alert(e.message||'Could not start connect.'); }
+}
+window.connectPlatform=connectPlatform;
+async function disconnectPlatform(p){
+  if(!confirm('Disconnect '+p+'?')) return;
+  try { await api('DELETE','/me/connections/'+p); } catch(e){}
+  loadConnections();
+}
+window.disconnectPlatform=disconnectPlatform;
 window.viewVideos = viewVideos;
 var GRIDFILTER='all', GRIDPAGES=null;
 function pageStatus(p){ return p.archived?'arch':((p.published!==false)?'live':'draft'); }

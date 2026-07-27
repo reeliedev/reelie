@@ -38,9 +38,9 @@ def _require_creator(user: User) -> None:
         raise HTTPException(403, "Become a creator first.")
 
 
-def _sign_state(user_id: str, platform: str) -> str:
+def _sign_state(user_id: str, platform: str, web: bool = False) -> str:
     now = int(time.time())
-    return jwt.encode({"uid": user_id, "platform": platform, "purpose": "oauth_state",
+    return jwt.encode({"uid": user_id, "platform": platform, "web": web, "purpose": "oauth_state",
                        "iat": now, "exp": now + _STATE_TTL},
                       config.JWT_SECRET, algorithm=config.JWT_ALGORITHM)
 
@@ -62,23 +62,38 @@ def _conn_dict(c: SocialConnection) -> dict:
 
 # --- start ----------------------------------------------------------------
 @router.get("/me/connect/{platform}")
-def start_connect(platform: str, user: User = Depends(current_user)):
+def start_connect(platform: str, web: int = 0, user: User = Depends(current_user)):
     _require_creator(user)
     if platform not in oauth.SUPPORTED:
         raise HTTPException(404, "Unsupported platform.")
     prov = oauth.provider_for(platform)
-    url = prov.authorize_url(_sign_state(user.id, platform), oauth.redirect_uri_for(platform))
+    url = prov.authorize_url(_sign_state(user.id, platform, web=bool(web)),
+                             oauth.redirect_uri_for(platform))
     return {"authorizeUrl": url, "mock": oauth.is_mock(platform),
             "callbackScheme": config.APP_CALLBACK_SCHEME}
 
 
-# --- callback (provider → us → app) ---------------------------------------
+# --- callback (provider → us → app OR web studio) -------------------------
 @router.get("/connect/{platform}/callback")
 def oauth_callback(platform: str, state: str = "", code: str = "", error: str = "",
                    session: Session = Depends(get_session)):
-    scheme = config.APP_CALLBACK_SCHEME
+    # The signed state tells us whether the connect started from the web studio
+    # (redirect back to /studio) or the app (deep-link to the custom scheme).
+    web = False
+    try:
+        _p = jwt.decode(state, config.JWT_SECRET, algorithms=[config.JWT_ALGORITHM])
+        web = bool(_p.get("web"))
+    except jwt.PyJWTError:
+        pass
+
+    def _back(ok: int) -> RedirectResponse:
+        if web:
+            return RedirectResponse(f"/studio?connected={platform}&ok={ok}", status_code=302)
+        return RedirectResponse(f"{config.APP_CALLBACK_SCHEME}://connected/{platform}?ok={ok}",
+                                status_code=302)
+
     if error or not code:
-        return RedirectResponse(f"{scheme}://connected/{platform}?ok=0", status_code=302)
+        return _back(0)
     if platform not in oauth.SUPPORTED:
         raise HTTPException(404, "Unsupported platform.")
     user_id = _read_state(state, platform)
@@ -87,7 +102,7 @@ def oauth_callback(platform: str, state: str = "", code: str = "", error: str = 
         tok = prov.exchange_code(code, oauth.redirect_uri_for(platform))
         ident = prov.fetch_identity(tok.access_token)
     except Exception as e:  # noqa: BLE001
-        return RedirectResponse(f"{scheme}://connected/{platform}?ok=0", status_code=302)
+        return _back(0)
 
     existing = session.exec(select(SocialConnection).where(
         SocialConnection.user_id == user_id,
@@ -102,7 +117,7 @@ def oauth_callback(platform: str, state: str = "", code: str = "", error: str = 
     conn.connected_at = _now()
     session.add(conn)
     session.commit()
-    return RedirectResponse(f"{scheme}://connected/{platform}?ok=1", status_code=302)
+    return _back(1)
 
 
 # --- list / disconnect -----------------------------------------------------

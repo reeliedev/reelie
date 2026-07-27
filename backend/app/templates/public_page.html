@@ -137,6 +137,21 @@
   .footer .brandmark{font-size:19px}
   .ftext{font-size:12.5px;color:var(--grey);line-height:1.6}
   .ftext a{font-weight:700;text-decoration:none;color:var(--ink);border-bottom:2px solid var(--sun)}
+  .report-link{background:none;border:none;color:var(--grey);opacity:.75;font:inherit;font-size:12px;cursor:pointer;text-decoration:underline;padding:0;margin-top:6px}
+
+  /* ---------- report modal ---------- */
+  .rpt-modal{position:fixed;inset:0;background:rgba(20,18,10,.5);display:flex;align-items:center;justify-content:center;z-index:200;padding:20px}
+  .rpt-modal[hidden]{display:none}
+  .rpt-box{background:#fff;border-radius:20px;max-width:420px;width:100%;padding:24px;box-shadow:0 30px 70px -30px rgba(20,20,20,.5)}
+  .rpt-h{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:20px;color:var(--ink)}
+  .rpt-sub{color:var(--grey);font-size:13.5px;margin:6px 0 16px}
+  .rpt-reasons{display:flex;flex-direction:column;gap:8px}
+  .rpt-reasons button{text-align:left;background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font:inherit;font-size:14px;color:var(--ink);cursor:pointer}
+  .rpt-reasons button:hover{border-color:var(--ink)}
+  .rpt-box textarea{width:100%;margin-top:12px;min-height:60px;font:inherit;font-size:14px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;resize:vertical;box-sizing:border-box}
+  .rpt-actions{margin-top:14px;text-align:right}
+  .rpt-cancel{background:none;border:none;color:var(--grey);font:inherit;font-weight:600;cursor:pointer}
+  .rpt-done{margin-top:14px;color:#2C8C4A;font-weight:600;font-size:14px;text-align:center}
 
   /* ---------- save button + also-used-by + similar creators ---------- */
   .top-actions{display:flex;align-items:center;gap:16px}
@@ -259,9 +274,28 @@
   <footer class="footer">
     <div class="wrap">
       <a class="brandmark" href="{{BASE_URL}}">{{BRAND}}<span class="dot">.</span></a>
-      <p class="ftext">This page was made automatically from {{CREATOR_FIRST}}'s video.<br>Are you a creator? <a href="{{BASE_URL}}">Claim your page →</a></p>
+      <p class="ftext">This page was made automatically from {{CREATOR_FIRST}}'s video.<br>Are you a creator? <a href="{{BASE_URL}}">Claim your page →</a><br><button class="report-link" type="button" onclick="openReport()">Report this page</button></p>
     </div>
   </footer>
+
+  <div class="rpt-modal" id="rptModal" hidden>
+    <div class="rpt-box">
+      <div class="rpt-h">Report this page</div>
+      <p class="rpt-sub">Tell us what's wrong — our team reviews every report.</p>
+      <div class="rpt-reasons">
+        <button data-r="spam">Spam or scam</button>
+        <button data-r="offensive">Offensive or inappropriate</button>
+        <button data-r="nudity">Nudity or sexual content</button>
+        <button data-r="violence">Violence</button>
+        <button data-r="hate">Hate or harassment</button>
+        <button data-r="ip">Copyright / intellectual property</button>
+        <button data-r="other">Something else</button>
+      </div>
+      <textarea id="rptDetail" placeholder="Add details (optional)"></textarea>
+      <div class="rpt-actions"><button class="rpt-cancel" type="button" onclick="closeReport()">Cancel</button></div>
+      <div class="rpt-done" id="rptDone" hidden>Thanks — we've received your report.</div>
+    </div>
+  </div>
 
   <script>
     // Step clips: play only while on screen (muted autoplay), tap to unmute one.
@@ -321,6 +355,28 @@
           save(list); render();
         });
         render();
+      });
+    })();
+  </script>
+
+  <script>
+    // UGC report (App Store Guideline 1.2 parity with the app). Guest-ok.
+    (function(){
+      var modal = document.getElementById('rptModal');
+      if(!modal) return;
+      var REF = "{{SAVE_KEY}}";
+      window.openReport = function(){ document.getElementById('rptDone').hidden = true; modal.hidden = false; };
+      window.closeReport = function(){ modal.hidden = true; };
+      modal.addEventListener('click', function(e){ if(e.target === modal) window.closeReport(); });
+      modal.querySelectorAll('.rpt-reasons button').forEach(function(b){
+        b.addEventListener('click', function(){
+          var reason = b.getAttribute('data-r');
+          var d = document.getElementById('rptDetail');
+          fetch('/reports', { method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ kind:'page', ref: REF, reason: reason, detail: (d && d.value) || '' }) }).catch(function(){});
+          document.getElementById('rptDone').hidden = false;
+          setTimeout(window.closeReport, 1400);
+        });
       });
     })();
   </script>

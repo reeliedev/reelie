@@ -276,18 +276,22 @@ final class AppState {
     /// Save edits. `customFaqs` (when non-nil) REPLACES the page's custom-FAQ list;
     /// pass nil to leave FAQs untouched (the editor only sends them once loaded).
     @MainActor
-    func savePageEdits(_ page: GeneratedPage, customFaqs: [[String: String]]? = nil) async {
+    func savePageEdits(_ page: GeneratedPage, customFaqs: [[String: String]]? = nil,
+                       removedProductIds: [String] = []) async {
         guard let base = apiBaseURL, let token = authToken else {
             OverridesStore.save(page); return
         }
         var fields: [String: Any] = ["title": page.title, "intro": page.intro, "disclosure": page.disclosure]
-        let products: [[String: Any]] = page.products.compactMap { p in
-            guard let sid = p.serverId else { return nil }
-            var d: [String: Any] = ["id": sid, "name": p.name]
+        // Existing products carry their id (update); new ones omit it (backend adds
+        // them); removed ones are sent as {id, remove:true}.
+        var products: [[String: Any]] = page.products.map { p -> [String: Any] in
+            var d: [String: Any] = ["brand": p.brand, "name": p.name]
+            if let sid = p.serverId { d["id"] = sid }
             if let n = p.note { d["note"] = n }
             if let g = p.guide { d["guide"] = g }
             return d
         }
+        for id in removedProductIds { products.append(["id": id, "remove": true]) }
         if !products.isEmpty { fields["products"] = products }
         if let customFaqs { fields["customFaqs"] = customFaqs }
         do {

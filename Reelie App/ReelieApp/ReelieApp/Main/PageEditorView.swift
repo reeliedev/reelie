@@ -11,6 +11,7 @@ struct PageEditorView: View {
     struct EditableFAQ: Identifiable { let id = UUID(); var q: String; var a: String }
     @State private var faqs: [EditableFAQ] = []
     @State private var faqsLoaded = false
+    @State private var removedServerIds: [String] = []   // products removed → PATCH remove
 
     private var idx: Int? { app.generatedPages.firstIndex { $0.id == pageID } }
 
@@ -37,9 +38,11 @@ struct PageEditorView: View {
                         editor("DISCLOSURE", text: $app.generatedPages[idx].disclosure)
 
                         SectionLabel(text: "PRODUCTS").padding(.top, 24).padding(.bottom, 4)
-                        ForEach(app.generatedPages[idx].products.indices, id: \.self) { i in
-                            productEditor(pageIndex: idx, productIndex: i)
+                        ForEach($app.generatedPages[idx].products) { $product in
+                            productEditor(product: $product,
+                                          onRemove: { removeProduct($product.wrappedValue, pageIndex: idx) })
                         }
+                        addProductButton(pageIndex: idx)
 
                         faqSection
                     }
@@ -55,7 +58,7 @@ struct PageEditorView: View {
                             ? faqs.filter { !$0.q.trimmingCharacters(in: .whitespaces).isEmpty }
                                   .map { ["q": $0.q, "a": $0.a] }
                             : nil
-                        Task { await app.savePageEdits(page, customFaqs: faqPayload); dismiss() }
+                        Task { await app.savePageEdits(page, customFaqs: faqPayload, removedProductIds: removedServerIds); dismiss() }
                     }
                     .padding(.horizontal, 28).padding(.top, 12)
                 }
@@ -151,25 +154,29 @@ struct PageEditorView: View {
         .padding(.top, 18)
     }
 
-    private func productEditor(pageIndex: Int, productIndex i: Int) -> some View {
-        @Bindable var app = app
-        return VStack(alignment: .leading, spacing: 10) {
+    private func productEditor(product: Binding<Product>, onRemove: @escaping () -> Void) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 10) {
-                EmojiThumb(emoji: app.generatedPages[pageIndex].products[i].emoji, size: 34, corner: 9)
-                Text(app.generatedPages[pageIndex].products[i].brand.uppercased())
-                    .font(ReelieFont.ui(11, weight: .bold)).tracking(0.6).foregroundStyle(Palette.grey)
-                Spacer()
+                EmojiThumb(emoji: product.wrappedValue.emoji, size: 34, corner: 9)
+                TextField("Brand", text: product.brand)
+                    .font(ReelieFont.ui(13, weight: .semibold)).foregroundStyle(Palette.ink)
+                    .textInputAutocapitalization(.words)
+                Spacer(minLength: 6)
+                Button(action: onRemove) {
+                    Image(systemName: "trash").font(.system(size: 13, weight: .bold)).foregroundStyle(Palette.grey)
+                }
+                .buttonStyle(.plain)
             }
-            TextField("Product name", text: $app.generatedPages[pageIndex].products[i].name)
+            TextField("Product name", text: product.name)
                 .font(ReelieFont.ui(14, weight: .medium)).foregroundStyle(Palette.ink)
                 .padding(.horizontal, 12).padding(.vertical, 10)
                 .hairlineCard(cornerRadius: 12)
-            TextField("Note (short)", text: optional($app.generatedPages[pageIndex].products[i].note), axis: .vertical)
+            TextField("Note (short)", text: optional(product.note), axis: .vertical)
                 .lineLimit(1...3)
                 .font(ReelieFont.ui(13)).foregroundStyle(Palette.ink)
                 .padding(.horizontal, 12).padding(.vertical, 10)
                 .hairlineCard(cornerRadius: 12)
-            TextField("Narration (how you use it)", text: optional($app.generatedPages[pageIndex].products[i].guide), axis: .vertical)
+            TextField("Narration (how you use it)", text: optional(product.guide), axis: .vertical)
                 .lineLimit(2...5)
                 .font(ReelieFont.ui(13)).foregroundStyle(Palette.ink)
                 .padding(.horizontal, 12).padding(.vertical, 10)
@@ -178,6 +185,27 @@ struct PageEditorView: View {
         .padding(14)
         .hairlineCard(cornerRadius: 16)
         .padding(.bottom, 11)
+    }
+
+    private func addProductButton(pageIndex: Int) -> some View {
+        Button {
+            app.generatedPages[pageIndex].products.append(
+                Product(brand: "", name: "", emoji: "🛍️", evidence: .shown, timestamp: "", link: .reelie(rate: 8)))
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: "plus").font(.system(size: 13, weight: .bold))
+                Text("Add a product").font(ReelieFont.ui(13.5, weight: .bold))
+            }
+            .foregroundStyle(Palette.ink)
+            .frame(maxWidth: .infinity).padding(.vertical, 13)
+            .hairlineCard(cornerRadius: 14, color: Palette.line)
+        }
+        .buttonStyle(.plain).padding(.bottom, 4)
+    }
+
+    private func removeProduct(_ p: Product, pageIndex: Int) {
+        if let sid = p.serverId { removedServerIds.append(sid) }
+        app.generatedPages[pageIndex].products.removeAll { $0.id == p.id }
     }
 
     /// Bridge an optional String binding to a non-optional TextField binding.

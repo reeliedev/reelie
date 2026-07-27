@@ -24,8 +24,15 @@ struct ProfileView: View {
                     SectionLabel(text: "APP").padding(.top, 22).padding(.bottom, 10)
                     SettingsGroup {
                         SettingsRow(icon: "🔔", title: "Notifications", subtitle: "Pages ready, money earned")
-                        SettingsRow(icon: "💬", title: "Help & support", subtitle: nil)
-                        SettingsRow(icon: "📄", title: "Terms & privacy", subtitle: nil)
+                        Link(destination: URL(string: "mailto:hello@reelie.io")!) {
+                            SettingsRow(icon: "💬", title: "Help & support", subtitle: "hello@reelie.io")
+                        }.buttonStyle(.plain)
+                        Link(destination: URL(string: "https://reelie.io/terms")!) {
+                            SettingsRow(icon: "📄", title: "Terms of Service", subtitle: nil)
+                        }.buttonStyle(.plain)
+                        Link(destination: URL(string: "https://reelie.io/privacy")!) {
+                            SettingsRow(icon: "🔒", title: "Privacy Policy", subtitle: nil)
+                        }.buttonStyle(.plain)
                     }
 
                     // Blocked accounts (UGC safety) — undo a block.

@@ -141,7 +141,8 @@ struct GeneratedPageView: View {
 
                     // Rich preview — plays the per-step clip, exactly like the public page.
                     ForEach(Array(page.products.enumerated()), id: \.element.id) { i, product in
-                        PreviewStepRow(number: i + 1, product: product).padding(.bottom, 11)
+                        PreviewStepRow(number: i + 1, product: product,
+                                       pageHandle: page.handle, pageSlug: page.pathSlug).padding(.bottom, 11)
                     }
 
                     Text(page.disclosure)
@@ -270,6 +271,16 @@ private struct PreviewStepRow: View {
     @Environment(AppState.self) private var app
     let number: Int
     let product: Product
+    var pageHandle: String = ""
+    var pageSlug: String = ""
+
+    /// The affiliate redirect for this product — lets the creator verify where the
+    /// Shop button actually goes before publishing (same as the web "Test link ↗").
+    private var testLinkURL: URL? {
+        guard !pageHandle.isEmpty, !pageSlug.isEmpty else { return nil }
+        return (app.apiBaseURL ?? URL(string: "https://reelie.io"))?
+            .appendingPathComponent("r/\(pageHandle)/\(pageSlug)/\(number)")
+    }
 
     /// Per-step clip + poster, absolute-ized (same as the consumer RoutineView).
     private var clipURL: URL? { absolutize(product.clipUrl) }
@@ -327,7 +338,7 @@ private struct PreviewStepRow: View {
                     .fixedSize(horizontal: false, vertical: true).padding(.top, 8)
             }
 
-            HStack(alignment: .center) {
+            HStack(alignment: .center, spacing: 8) {
                 if let price = product.priceDisplay {
                     HStack(spacing: 4) {
                         Text(price).font(ReelieFont.ui(14, weight: .bold)).foregroundStyle(Palette.ink)
@@ -337,6 +348,18 @@ private struct PreviewStepRow: View {
                     }
                 }
                 Spacer()
+                if let t = testLinkURL {
+                    Link(destination: t) {
+                        HStack(spacing: 3) {
+                            Text("Test link").font(ReelieFont.ui(12, weight: .semibold))
+                            Image(systemName: "arrow.up.right").font(.system(size: 10, weight: .bold))
+                        }
+                        .foregroundStyle(Palette.ink)
+                        .padding(.horizontal, 12).padding(.vertical, 10)
+                        .hairlineCard(cornerRadius: 12)
+                    }
+                    .buttonStyle(.plain)
+                }
                 shopButton
             }
             .padding(.top, 12)

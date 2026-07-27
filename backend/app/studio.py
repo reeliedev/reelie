@@ -78,7 +78,7 @@ textarea{resize:vertical;min-height:64px}
 .aichip{background:var(--accent-soft);color:var(--accent-deep);border-radius:999px;padding:6px 13px;font-size:13px;font-weight:500}
 .aichip b{font-weight:700}
 .sumcard{background:linear-gradient(135deg,#fff,#FBF7E6)}
-.sumgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.sumgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 @media(max-width:520px){.sumgrid{grid-template-columns:repeat(2,1fr)}}
 .sumstat{text-align:center;padding:6px 4px}
 .sumstat .sn{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:26px;color:var(--ink)}

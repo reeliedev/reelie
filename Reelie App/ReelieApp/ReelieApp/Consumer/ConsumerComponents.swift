@@ -94,6 +94,8 @@ extension View {
                 CreatorProfileView(handle: handle)
             case .routine(let key):
                 RoutineView(pageKey: key)
+            case .search:
+                SearchView()
             }
         }
     }

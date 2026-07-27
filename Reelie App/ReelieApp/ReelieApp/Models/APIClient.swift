@@ -23,6 +23,10 @@ extension Color {
     }
 }
 
+private struct SearchDTO: Decodable {
+    let creators: [CreatorDTO]
+    let routines: [GeneratedPageDTO]
+}
 private struct CreatorDTO: Decodable {
     let handle: String
     let displayName: String
@@ -132,6 +136,13 @@ struct APIClient {
 
     func routines() async throws -> [GeneratedPage] {
         try await get("routines", as: [GeneratedPageDTO].self).map { $0.toGeneratedPage() }
+    }
+
+    /// Search published routines + creators (GET /search?q=).
+    func search(query: String) async throws -> (creators: [Creator], routines: [GeneratedPage]) {
+        let q = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+        let r = try await get("search?q=\(q)", as: SearchDTO.self)
+        return (r.creators.map { $0.toCreator() }, r.routines.map { $0.toGeneratedPage() })
     }
 
     /// One routine by handle/slug — used when a tapped reel isn't in the loaded catalog.

@@ -204,6 +204,14 @@ final class AppState {
         } catch { print("[Reelie] fetchRoutine: \(error)"); return nil }
     }
 
+    /// Search published routines + creators via the backend.
+    @MainActor
+    func search(_ query: String) async -> (creators: [Creator], routines: [GeneratedPage]) {
+        guard let base = apiBaseURL else { return ([], []) }
+        do { return try await APIClient(baseURL: base).search(query: query) }
+        catch { print("[Reelie] search: \(error)"); return ([], []) }
+    }
+
     // ---- Backend (optional) ----------------------------------------------
     // When REELIE_API_URL is set, load creators/routines from the API; otherwise
     // the seeded mock corpus is used. Failures fall back silently to the mock.

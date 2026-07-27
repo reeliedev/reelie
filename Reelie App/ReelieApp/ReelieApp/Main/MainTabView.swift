@@ -14,6 +14,7 @@ enum AppRoute: Hashable {
 enum ConsumerRoute: Hashable {
     case creatorProfile(handle: String)
     case routine(key: String)
+    case search
 }
 
 /// The main app. Consumers get Discover / Saved / Profile; creators additionally

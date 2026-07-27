@@ -36,6 +36,28 @@ def creator_routines(handle: str, session: Session = Depends(get_session)):
     return [_page_payload(p, session) for p in sorted(pages, key=lambda x: x.slug)]
 
 
+@router.get("/search")
+def search(q: str = "", session: Session = Depends(get_session)):
+    """Search published routines + creators. Matches ALL query tokens against a
+    page's title, creator, handle, and its products' brand/name/retailer."""
+    tokens = [t for t in (q or "").strip().lower().split() if t]
+    if not tokens:
+        return {"creators": [], "routines": []}
+    creators = {c.handle: c for c in session.exec(select(Creator)).all()}
+    pages = session.exec(select(Page).where(Page.archived == False, Page.published == True)).all()  # noqa: E712
+    routines = []
+    for p in sorted(pages, key=lambda x: (x.handle, x.slug)):
+        prods = session.exec(select(Product).where(Product.page_id == p.id)).all()
+        c = creators.get(p.handle)
+        hay = " ".join([p.title or "", p.handle or "", (c.display_name if c else "")]
+                       + [f"{pr.brand} {pr.name} {pr.retailer or ''}" for pr in prods]).lower()
+        if all(t in hay for t in tokens):
+            routines.append(page_app(p, prods, c))
+    matching_creators = [creator_dict(c) for c in creators.values()
+                         if all(t in f"{c.display_name} {c.handle}".lower() for t in tokens)]
+    return {"creators": matching_creators[:20], "routines": routines[:40]}
+
+
 @router.get("/routines")
 def all_routines(session: Session = Depends(get_session)):
     pages = session.exec(select(Page).where(Page.archived == False, Page.published == True)).all()  # noqa: E712

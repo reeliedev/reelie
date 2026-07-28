@@ -180,6 +180,12 @@ def build_extraction_messages(transcript_text, frames, chunk_note=None):
     )
     if chunk_note:
         header += f"\nNOTE: {chunk_note}\n"
+    if any(fr.get("vision") for fr in frames):
+        header += ("\nSome keyframes are followed by an \"[image analysis @ Ns]\" block "
+                   "containing OCR (on-pack text), detected brand logos, and web image-match "
+                   "results from a vision system. Treat these as STRONG evidence for the exact "
+                   "brand and product name (especially the on-pack text and logos) — but still "
+                   "use your judgment and the transcript, and ignore any that are clearly wrong.\n")
     content.append({"type": "text", "text": header})
 
     # Transcript block.
@@ -211,6 +217,11 @@ def build_extraction_messages(transcript_text, frames, chunk_note=None):
                 },
             }
         )
+        if fr.get("vision"):
+            content.append(
+                {"type": "text",
+                 "text": f"[image analysis @ {fr['timestamp_s']:.1f}s: {fr['vision']}]"}
+            )
 
     return [{"role": "user", "content": content}]
 

@@ -422,12 +422,27 @@ def extract_products(client: anthropic.Anthropic, model: str,
     all_products = []
     usage = {"input_tokens": 0, "output_tokens": 0, "api_calls": 0}
 
+    # Google Vision grounding (OCR + logo + web match) → per-frame hint text.
+    # Fully defensive: any import/error leaves vis_text empty and extraction runs
+    # exactly as before (and it's a no-op unless GOOGLE_VISION_API_KEY is set).
+    vis_text: dict = {}
+    try:
+        import vision
+        if vision.enabled():
+            raw = vision.annotate([fr["path"] for fr in frames])
+            vis_text = {p: vision.hint_text(h) for p, h in raw.items()}
+            if vis_text:
+                print(f"[vision] annotated {len(vis_text)}/{len(frames)} frames", flush=True)
+    except Exception as e:  # noqa: BLE001
+        print(f"[vision] skipped: {type(e).__name__}: {e}", flush=True)
+
     frame_chunks = list(_chunk(frames, MAX_FRAMES_PER_CALL)) or [[]]
     multi = len(frame_chunks) > 1
 
     for ci, chunk in enumerate(frame_chunks):
         payload = [{
             "timestamp_s": fr["timestamp_s"],
+            "vision": vis_text.get(fr["path"], ""),
             **_encode_frame(fr["path"]),
         } for fr in chunk]
 

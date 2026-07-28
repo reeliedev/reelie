@@ -57,7 +57,10 @@ FREEZE_NOISE = "-30dB"           # freezedetect noise tolerance (more negative =
 FREEZE_MIN_DUR = 0.25            # min still duration (s) to count as a hold
 HOLD_MERGE_GAP = 0.20            # merge freeze segments closer than this (s) into one hold
 HOLD_MAX = 14                    # cap distinct hold SEGMENTS considered (longest first)
-HOLD_SHARPEST_OF = 3             # sample this many instants per window; keep the sharpest
+HOLD_SHARPEST_OF = 5             # probe this many instants per window; keep the sharpest.
+                                 # Denser probing hits the crisp product-facing instant that
+                                 # a coarse start/mid/end sample falls between (cheap: probes
+                                 # are parallel and don't add output frames or tokens)
 HOLD_SAMPLE_EVERY = 1.2          # tile each hold into windows ~this wide (s) and keep one
                                  # sharp frame per window — a multi-second product show must
                                  # not collapse to a single (often product-turning) frame

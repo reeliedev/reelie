@@ -144,16 +144,17 @@ def download_youtube(url: str, videos_dir: Path) -> Path:
         # single progressive "mp4" stream, which on YouTube is only 360p (itag 18).
         # Prefer H.264 (avc1) so the file plays everywhere; fall back to any codec,
         # then to a progressive stream, then to whatever exists.
-        "format": ("bestvideo[height<=1080][vcodec^=avc1]+bestaudio[ext=m4a]/"
-                   "bestvideo[height<=1080]+bestaudio/"
-                   "best[height<=1080]/best"),
+        # Request YouTube's 1080p/720p itags EXPLICITLY (137/136) so yt-dlp solves
+        # their n-challenge signature on download. Plain format *selection* leaves
+        # them out (n-sig unsolved at listing time) and silently drops to 480p.
+        "format": ("137+140/137+bestaudio/136+140/136+bestaudio/"
+                   "bestvideo[height<=1080]+bestaudio/best[height<=1080]/best"),
         "outtmpl": str(videos_dir / "%(id)s.%(ext)s"),
         "quiet": True,
         "no_warnings": True,
         "merge_output_format": "mp4",
-        # YouTube gates 720p/1080p behind a JS "n-challenge". yt-dlp only solves it
-        # with the EJS solver + a JS runtime (Deno is in the worker image). Without
-        # this, YouTube serves <=480p — too low-res to read product packaging text.
+        # YouTube gates 720p/1080p behind a JS "n-challenge"; yt-dlp needs the EJS
+        # solver + a JS runtime (Deno is in the worker image) to unlock them.
         "remote_components": ["ejs:github"],
     }
     _apply_yt_auth(opts)

@@ -58,21 +58,26 @@ def _download(url: str) -> tuple[Path, str]:
     # Forward yt-dlp's own warnings/errors (normally stderr, hidden by the worker)
     # to stdout with an [extract] marker so we can see WHY the challenge fails.
     class _YtLog:
-        def debug(self, m):
+        # Accept any extra args/kwargs — yt-dlp calls these with things like
+        # only_once=True in some code paths; a strict signature would crash it.
+        def debug(self, m="", *a, **k):
             m = str(m)
-            if any(k in m.lower() for k in ("challenge", "ejs", "remote component", "nsig", "n-sig")):
+            if any(kk in m.lower() for kk in ("challenge", "ejs", "remote component", "nsig", "n-sig")):
                 print(f"[extract] yt: {m[:220]}", flush=True)
-        def info(self, m): pass
-        def warning(self, m): print(f"[extract] yt-WARN: {str(m)[:220]}", flush=True)
-        def error(self, m): print(f"[extract] yt-ERR: {str(m)[:220]}", flush=True)
+        def info(self, m="", *a, **k): pass
+        def warning(self, m="", *a, **k): print(f"[extract] yt-WARN: {str(m)[:220]}", flush=True)
+        def error(self, m="", *a, **k): print(f"[extract] yt-ERR: {str(m)[:220]}", flush=True)
 
     opts = {
         "outtmpl": str(VIDEOS / "%(id)s.%(ext)s"),
         # Best video up to 1080p + best audio (H.264 preferred), NOT the 360p
         # progressive "mp4" stream. See download_youtube in pipeline.py.
-        "format": ("bestvideo[height<=1080][vcodec^=avc1]+bestaudio[ext=m4a]/"
-                   "bestvideo[height<=1080]+bestaudio/"
-                   "best[height<=1080]/best"),
+        # Request YouTube's 1080p/720p itags EXPLICITLY (137/136) so yt-dlp solves
+        # their n-challenge signature on download. Plain format *selection* leaves
+        # them out (n-sig unsolved at listing time) and silently drops to 480p.
+        # Non-YouTube URLs skip these itags and use the generic branches.
+        "format": ("137+140/137+bestaudio/136+140/136+bestaudio/"
+                   "bestvideo[height<=1080]+bestaudio/best[height<=1080]/best"),
         "merge_output_format": "mp4",
         "quiet": True,
         "noplaylist": True,

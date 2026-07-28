@@ -395,11 +395,17 @@ CRITICAL: subtitle/caption text that was burned in during EDITING reads NORMALLY
 even in a mirrored video. IGNORE all subtitles and caption overlays — judge ONLY \
 text that is on physical objects in the scene.
 
+Selfie/front-camera footage is VERY common in beauty tutorials, so mirroring is \
+frequent — look carefully, examining each held product's label letter by letter.
+
 Decide whether the video is horizontally mirrored:
-- mirrored = true ONLY if you can see text on a physical object that is clearly \
-reversed/backwards.
-- mirrored = false if physical-object text reads normally, OR if there isn't \
-enough legible physical-object text to tell (when unsure, say false).
+- mirrored = true if ANY text on a physical object (even a single brand name or \
+word on a held product) appears reversed/backwards — e.g. a brand rendered as its \
+mirror image, or letters that only spell a real word when flipped. One clear \
+instance is enough.
+- mirrored = false only if the physical-object text you can read clearly reads \
+normally (forwards). If there is genuinely no legible physical-object text at all, \
+say false.
 Return {"mirrored": bool, "reason": "..."}.\
 """
 

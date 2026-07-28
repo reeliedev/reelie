@@ -40,7 +40,8 @@ WHISPER_API_PER_MIN = 0.006      # $/min (OpenAI whisper-1)
 
 SCENE_THRESHOLD = 0.3            # ffmpeg scene-change sensitivity (0-1, lower = more frames)
 FLOOR_INTERVAL_S = 30            # guaranteed one frame every N seconds
-FRAME_LONG_EDGE = 1280           # downscale frames so the long edge <= this (bounds image tokens)
+FRAME_LONG_EDGE = 1920           # keep full 1080p detail — small on-pack text needs it for
+                                 # OCR + Claude (Claude's vision API uses up to ~1568px anyway)
 MAX_FRAMES_PER_CALL = 25         # NO cap on total frames; this only splits API calls for long videos
 DEDUPE_THRESHOLD = 88            # fuzzy threshold for cross-chunk product dedupe
 
@@ -365,7 +366,7 @@ def load_or_extract_frames(path: Path, video_id: str, cache_dir: Path,
                            hold: bool = HOLD_FRAMES) -> list:
     """Returns [{'timestamp_s': float, 'path': str, 'kind': str}] with disk caching.
     Cache dir is keyed by the selection settings so different settings coexist."""
-    fdir = cache_dir / video_id / f"frames_s{scene_threshold}_f{floor_interval}_h{int(hold)}"
+    fdir = cache_dir / video_id / f"frames_s{scene_threshold}_f{floor_interval}_h{int(hold)}_e{FRAME_LONG_EDGE}"
     manifest = fdir / "frames.json"
     if manifest.exists():
         return json.loads(manifest.read_text())
@@ -536,7 +537,7 @@ def dedupe_products(products: list) -> list:
 # Bump when the detection logic changes so stale mirror.json verdicts (e.g. a
 # wrong "not mirrored" from the old Claude-only check) are recomputed on re-run.
 # REELIE_REMIRROR=1 forces recomputation regardless of version.
-_MIRROR_V = 3
+_MIRROR_V = 4
 _ZERO_USAGE = {"input_tokens": 0, "output_tokens": 0, "api_calls": 0}
 
 

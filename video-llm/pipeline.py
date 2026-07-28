@@ -511,14 +511,33 @@ def dedupe_products(products: list) -> list:
 # --------------------------------------------------------------------------
 # mirror detection + correction (selfie-camera videos film text backwards)
 # --------------------------------------------------------------------------
+# Bump when the detection logic changes so stale mirror.json verdicts (e.g. a
+# wrong "not mirrored" from the old Claude-only check) are recomputed on re-run.
+# REELIE_REMIRROR=1 forces recomputation regardless of version.
+_MIRROR_V = 2
+_ZERO_USAGE = {"input_tokens": 0, "output_tokens": 0, "api_calls": 0}
+
+
 def detect_mirror(client, model, frames, cache_dir, video_id):
-    """Ask the model whether the video is horizontally mirrored (packaging text
-    reversed). Cached. Returns {'mirrored': bool, 'reason': str, 'usage': {...}}."""
+    """Decide whether the video is horizontally mirrored (packaging text reversed).
+
+    Two signals, in order:
+      1. OBJECTIVE OCR vote (Google Vision) — read the on-screen text and count
+         tokens that spell a real word *backwards*. Two or more backwards words is
+         a decisive 'mirrored'; a couple of forwards words with none backwards is
+         a decisive 'not mirrored'. Immune to burned-in captions (they read
+         forwards) and needs no subjective judgement. Requires GOOGLE_VISION_API_KEY.
+      2. Claude fallback — only when OCR is inconclusive (little legible physical
+         text, or Vision disabled). Same conservative check as before.
+
+    Cached (versioned). Returns {'mirrored': bool, 'reason': str, 'usage': {...}}."""
     cache = cache_dir / video_id / "mirror.json"
-    if cache.exists():
+    force = os.environ.get("REELIE_REMIRROR", "").strip().lower() in ("1", "true", "yes")
+    if cache.exists() and not force:
         r = json.loads(cache.read_text())
-        r.setdefault("usage", {"input_tokens": 0, "output_tokens": 0, "api_calls": 0})
-        return r
+        if r.get("v") == _MIRROR_V:
+            r.setdefault("usage", dict(_ZERO_USAGE))
+            return r
 
     # Held-product frames are where physical packaging text is most likely; fall
     # back to an even spread. Cap at 4 to keep the check cheap.
@@ -526,8 +545,34 @@ def detect_mirror(client, model, frames, cache_dir, video_id):
     pool = holds or frames
     pick = pool[:4] if len(pool) <= 4 else [pool[i] for i in
             (0, len(pool) // 3, 2 * len(pool) // 3, len(pool) - 1)]
-    payload = [{"timestamp_s": f["timestamp_s"], **_encode_frame(f["path"])} for f in pick]
 
+    def _save(result):
+        result["v"] = _MIRROR_V
+        cache.parent.mkdir(parents=True, exist_ok=True)
+        cache.write_text(json.dumps(result, indent=2))
+        return result
+
+    # ---- 1. Objective OCR orientation vote --------------------------------
+    try:
+        import vision
+        if vision.enabled():
+            texts = vision.ocr_only([f["path"] for f in pick])
+            rev, fwd = vision.mirror_signal(texts)
+            print(f"[mirror] ocr vote: backwards-words={rev} forwards-words={fwd}", flush=True)
+            if rev >= 2:
+                return _save({"mirrored": True, "source": "ocr",
+                              "reason": f"OCR: {rev} on-screen words read backwards",
+                              "usage": dict(_ZERO_USAGE)})
+            if fwd >= 2 and rev == 0:
+                return _save({"mirrored": False, "source": "ocr",
+                              "reason": f"OCR: {fwd} on-screen words read forwards, none backwards",
+                              "usage": dict(_ZERO_USAGE)})
+            # else: not enough legible physical text — defer to Claude.
+    except Exception as e:  # noqa: BLE001
+        print(f"[mirror] ocr vote skipped: {type(e).__name__}: {e}", flush=True)
+
+    # ---- 2. Claude fallback (inconclusive OCR or Vision disabled) ----------
+    payload = [{"timestamp_s": f["timestamp_s"], **_encode_frame(f["path"])} for f in pick]
     resp = client.messages.create(
         model=model, max_tokens=500,
         system=MIRROR_DETECT_SYSTEM_PROMPT,
@@ -536,15 +581,13 @@ def detect_mirror(client, model, frames, cache_dir, video_id):
     )
     text = next((b.text for b in resp.content if b.type == "text"), "{}")
     data = json.loads(text)
-    result = {
+    return _save({
         "mirrored": bool(data.get("mirrored", False)),
         "reason": data.get("reason", ""),
+        "source": "claude",
         "usage": {"input_tokens": resp.usage.input_tokens,
                   "output_tokens": resp.usage.output_tokens, "api_calls": 1},
-    }
-    cache.parent.mkdir(parents=True, exist_ok=True)
-    cache.write_text(json.dumps(result, indent=2))
-    return result
+    })
 
 
 def flip_frames(frames, cache_dir, video_id):

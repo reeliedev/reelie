@@ -17,6 +17,7 @@ from __future__ import annotations
 import base64
 import json
 import os
+import re
 import ssl
 import urllib.error
 import urllib.request
@@ -78,6 +79,67 @@ def annotate(frame_paths: list) -> dict:
         except Exception as e:  # noqa: BLE001
             print(f"[vision] batch failed: {type(e).__name__}: {e}", flush=True)
     return out
+
+
+def ocr_only(frame_paths: list) -> dict:
+    """Return {frame_path: full_ocr_text}. TEXT_DETECTION only — cheap (one
+    feature), used for objective mirror detection. Empty if disabled/on error."""
+    if not enabled() or not frame_paths:
+        return {}
+    feats = [{"type": "TEXT_DETECTION"}]
+    out: dict = {}
+    for i in range(0, len(frame_paths), _BATCH):
+        batch = frame_paths[i:i + _BATCH]
+        try:
+            reqs = []
+            for p in batch:
+                with open(p, "rb") as f:
+                    data = base64.standard_b64encode(f.read()).decode()
+                reqs.append({"image": {"content": data}, "features": feats})
+            resp = _post({"requests": reqs})
+            for p, r in zip(batch, resp.get("responses", [])):
+                txt = (((r or {}).get("fullTextAnnotation") or {}).get("text") or "")
+                out[p] = " ".join(txt.split())
+        except Exception as e:  # noqa: BLE001
+            print(f"[vision] ocr batch failed: {type(e).__name__}: {e}", flush=True)
+    return out
+
+
+# Common English + beauty-packaging words. Used ONLY to score text orientation:
+# a token whose REVERSE is a real word (but itself isn't) is backwards on-screen
+# text — the tell-tale of a mirrored selfie video. Burned-in captions read
+# forwards even in a mirrored video, so they land in the "forward" bucket and
+# never masquerade as a mirror signal.
+_LEXICON = frozenset("""
+the and for you your with this that not was are have from they will what
+new use using love best daily morning night routine step first then next
+finish look here just like really little because favorite favourite
+make makeup beauty skin face lip lips gloss balm cream serum oil water
+light matte glow shade shine color colour foundation powder blush bronzer
+concealer mascara liner brow eye eyes tint stick pen kit set pro plus max
+soft nude rose pink gold rich deep clear pure fresh clean natural velvet
+silk dew tone spray mist gel hair nail brush blend tinted radiant hydrating
+moisturizer moisturiser sunscreen cleanser toner essence primer setting
+professional butter honey sugar vanilla peach berry coconut brown black white
+""".split())
+
+
+def mirror_signal(texts: dict) -> tuple:
+    """Given {path: ocr_text}, count (reversed_hits, forward_hits) across all
+    frames. A reversed hit = a token that spells a real word backwards but not
+    forwards (physical packaging text in a mirrored video). A forward hit = a
+    normal real word. reversed_hits >= 2 is a strong 'mirrored' signal that is
+    immune to burned-in captions (which read forwards)."""
+    rev = fwd = 0
+    for t in (texts or {}).values():
+        for tok in re.findall(r"[A-Za-z]{3,}", (t or "").lower()):
+            in_fwd = tok in _LEXICON
+            in_rev = tok[::-1] in _LEXICON
+            if in_rev and not in_fwd:
+                rev += 1
+            elif in_fwd and not in_rev:
+                fwd += 1
+    return rev, fwd
 
 
 def hint_text(h: dict) -> str:

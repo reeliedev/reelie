@@ -79,7 +79,7 @@ def _load_preview(video_id: str) -> tuple[list[dict], float]:
 def _log_timings(label: str, elapsed: float, stdout: str) -> None:
     """Surface the pipeline's per-stage ⏱ lines plus vision/mirror diagnostics
     (captured, else discarded) so the real breakdown shows up in the worker log."""
-    keep = ("⏱", "[vision]", "[mirror]")
+    keep = ("⏱", "[vision]", "[mirror]", "[extract]")
     stages = [ln.strip() for ln in stdout.splitlines() if any(k in ln for k in keep)]
     print(f"[worker] {label} took {elapsed:.1f}s" + ("" if not stages else
           "\n    " + "\n    ".join(stages)), flush=True)

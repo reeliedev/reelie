@@ -106,6 +106,10 @@ def _download(url: str) -> tuple[Path, str]:
                 path = Path(ydl.prepare_filename(info))
                 if path.suffix != ".mp4":
                     path = path.with_suffix(".mp4")
+                # STDOUT (not stderr) + [extract] marker so it survives the worker's
+                # log filter — tells us the real download resolution.
+                print(f"[extract] downloaded {info.get('width')}x{info.get('height')} "
+                      f"fmt={info.get('format_id')}", flush=True)
                 return path, (info.get("title") or "").strip()
         except Exception as e:  # noqa: BLE001
             _last = e

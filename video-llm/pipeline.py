@@ -578,6 +578,12 @@ def detect_mirror(client, model, frames, cache_dir, video_id):
             rev, _ = vision.mirror_signal({p: texts.get(p, "") for p in orig_paths})
             print(f"[mirror] ocr vote: as-is-words={as_is} flipped-words={flipped} "
                   f"backwards-tokens={rev}", flush=True)
+            # Show what OCR actually read per frame (as-is ¦ flipped, truncated) so a
+            # 0/0 result is diagnosable: low-res (∅ both), or product not in sample.
+            for op, fp in zip(orig_paths, flip_paths):
+                _a = (texts.get(op, "") or "∅")[:45]
+                _f = (texts.get(fp, "") or "∅")[:45]
+                print(f"[mirror]   {Path(op).stem}: as-is='{_a}' ¦ flip='{_f}'", flush=True)
             if (flipped >= as_is + 2 and flipped >= 2) or rev >= 2:
                 return _save({"mirrored": True, "source": "ocr",
                               "reason": (f"OCR: flipping reveals {flipped} real words vs "

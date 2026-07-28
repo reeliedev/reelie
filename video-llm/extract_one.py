@@ -47,8 +47,25 @@ MODEL = "claude-sonnet-4-6"
 def _download(url: str) -> tuple[Path, str]:
     """Download the video; return (path, title). The title is the platform's own
     video title, used as the page's default name."""
+    import shutil as _shutil
     import yt_dlp
     VIDEOS.mkdir(parents=True, exist_ok=True)
+    # Confirm a JS runtime is actually on PATH for the download subprocess — yt-dlp
+    # needs it to run the EJS n-challenge solver that unlocks 720p/1080p.
+    print(f"[extract] js-runtime deno={_shutil.which('deno')} node={_shutil.which('node')} "
+          f"yt-dlp={yt_dlp.version.__version__}", flush=True)
+
+    # Forward yt-dlp's own warnings/errors (normally stderr, hidden by the worker)
+    # to stdout with an [extract] marker so we can see WHY the challenge fails.
+    class _YtLog:
+        def debug(self, m):
+            m = str(m)
+            if any(k in m.lower() for k in ("challenge", "ejs", "remote component", "nsig", "n-sig")):
+                print(f"[extract] yt: {m[:220]}", flush=True)
+        def info(self, m): pass
+        def warning(self, m): print(f"[extract] yt-WARN: {str(m)[:220]}", flush=True)
+        def error(self, m): print(f"[extract] yt-ERR: {str(m)[:220]}", flush=True)
+
     opts = {
         "outtmpl": str(VIDEOS / "%(id)s.%(ext)s"),
         # Best video up to 1080p + best audio (H.264 preferred), NOT the 360p
@@ -59,6 +76,7 @@ def _download(url: str) -> tuple[Path, str]:
         "merge_output_format": "mp4",
         "quiet": True,
         "noplaylist": True,
+        "logger": _YtLog(),
         # YouTube gates 720p/1080p behind a JS "n-challenge". yt-dlp only solves it
         # with the EJS solver + a JS runtime (Deno is in the worker image). Without
         # this, YouTube serves <=480p — too low-res to read product packaging text.

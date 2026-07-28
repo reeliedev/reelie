@@ -151,6 +151,10 @@ def download_youtube(url: str, videos_dir: Path) -> Path:
         "quiet": True,
         "no_warnings": True,
         "merge_output_format": "mp4",
+        # YouTube gates 720p/1080p behind a JS "n-challenge". yt-dlp only solves it
+        # with the EJS solver + a JS runtime (Deno is in the worker image). Without
+        # this, YouTube serves <=480p — too low-res to read product packaging text.
+        "remote_components": ["ejs:github"],
     }
     _apply_yt_auth(opts)
     with yt_dlp.YoutubeDL(opts) as ydl:

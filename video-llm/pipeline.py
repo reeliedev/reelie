@@ -9,6 +9,7 @@ or frame extraction.
 
 import base64
 import json
+import math
 import os
 import re
 import subprocess
@@ -55,8 +56,12 @@ HOLD_FRAMES = True               # add stillness-based "held product" keyframes
 FREEZE_NOISE = "-30dB"           # freezedetect noise tolerance (more negative = stricter)
 FREEZE_MIN_DUR = 0.25            # min still duration (s) to count as a hold
 HOLD_MERGE_GAP = 0.20            # merge freeze segments closer than this (s) into one hold
-HOLD_MAX = 14                    # cap hold frames per video (bounds token cost on long videos)
-HOLD_SHARPEST_OF = 3             # sample this many instants per hold; keep the sharpest
+HOLD_MAX = 14                    # cap distinct hold SEGMENTS considered (longest first)
+HOLD_SHARPEST_OF = 3             # sample this many instants per window; keep the sharpest
+HOLD_SAMPLE_EVERY = 1.2          # tile each hold into windows ~this wide (s) and keep one
+                                 # sharp frame per window — a multi-second product show must
+                                 # not collapse to a single (often product-turning) frame
+HOLD_WINDOW_MAX = 18             # total cap on hold frames (bounds tokens on long videos)
 SHARP_SIZE = 256                 # grayscale square edge for the Laplacian focus measure
 
 # ── Brand recovery (last-resort identification of brand-null shown products) ──
@@ -309,23 +314,34 @@ def _hold_timestamps(path: Path, noise: str, min_dur: float) -> list:
     holds = _merge_segments(_freeze_segments(path, noise, min_dur), HOLD_MERGE_GAP)
     holds.sort(key=lambda se: se[1] - se[0], reverse=True)
     holds = holds[:HOLD_MAX]
-    # Build every (hold, candidate-timestamp) probe, measure all in parallel.
+    # Tile each hold into ~HOLD_SAMPLE_EVERY-second windows so a long product-show
+    # yields several frames across its span (the product often only faces the camera
+    # for a fraction of the hold — one frame per multi-second hold misses it). Longest
+    # holds contribute their windows first, up to HOLD_WINDOW_MAX total.
+    windows = []  # (win_start, win_end)
+    for (s, e) in holds:
+        span = e - s
+        n = max(1, int(math.ceil(span / HOLD_SAMPLE_EVERY)))
+        for w in range(n):
+            windows.append((s + span * w / n, s + span * (w + 1) / n))
+    windows = windows[:HOLD_WINDOW_MAX]
+    # Build every (window, candidate-timestamp) probe, measure sharpness in parallel.
     cand = []
-    for hi, (s, e) in enumerate(holds):
+    for wi, (s, e) in enumerate(windows):
         if e <= s or HOLD_SHARPEST_OF <= 1:
-            cand.append((hi, (s + e) / 2))
+            cand.append((wi, (s + e) / 2))
         else:
             for i in range(HOLD_SHARPEST_OF):
-                cand.append((hi, s + (e - s) * i / (HOLD_SHARPEST_OF - 1)))
+                cand.append((wi, s + (e - s) * i / (HOLD_SHARPEST_OF - 1)))
     if not cand:
         return []
     with ThreadPoolExecutor(max_workers=min(_POOL, len(cand))) as ex:
         sharp = list(ex.map(lambda c: _sharpness_at(path, c[1]), cand))
     best: dict[int, tuple[float, float]] = {}
-    for (hi, ts), sh in zip(cand, sharp):
-        if hi not in best or sh > best[hi][1]:
-            best[hi] = (ts, sh)
-    return sorted(round(best[hi][0], 2) for hi in best)
+    for (wi, ts), sh in zip(cand, sharp):
+        if wi not in best or sh > best[wi][1]:
+            best[wi] = (ts, sh)
+    return sorted(round(best[wi][0], 2) for wi in best)
 
 
 # Priority governs which frame survives when two land within 1s of each other:

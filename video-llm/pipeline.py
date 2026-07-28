@@ -90,6 +90,19 @@ def ffprobe_duration(path: Path) -> float:
         return 0.0
 
 
+def ffprobe_width(path: Path) -> int:
+    """Video width in px (0 if unknown). Used to key resolution-dependent caches
+    so a 1080p re-download never reuses stale 480p frames/mirror verdicts."""
+    cp = _run([
+        "ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries",
+        "stream=width", "-of", "default=noprint_wrappers=1:nokey=1", str(path),
+    ])
+    try:
+        return int(cp.stdout.strip().splitlines()[0])
+    except (ValueError, AttributeError, IndexError):
+        return 0
+
+
 # --------------------------------------------------------------------------
 # ingest
 # --------------------------------------------------------------------------
@@ -774,7 +787,14 @@ def process_video(path: Path, client: anthropic.Anthropic, model: str,
     print(f"\n=== {video_id} ({path.name}) ===")
 
     duration = ffprobe_duration(path)
-    print(f"  duration: {duration:.0f}s")
+    # Resolution-scoped cache id for the frame/mirror caches: the SAME YouTube video
+    # can download at 480p or 1080p (n-challenge is intermittent), and frames + the
+    # mirror verdict depend on resolution. Nesting them under r<width> means a 1080p
+    # download never reuses stale 480p frames. Transcript/description are res-
+    # independent, so they stay on the plain video_id.
+    _vw = ffprobe_width(path)
+    cache_id = f"{video_id}/r{_vw}" if _vw else video_id
+    print(f"  duration: {duration:.0f}s · {_vw}px wide")
 
     # Transcription (CPU) and keyframe extraction (ffmpeg) are independent — run
     # them concurrently so wall-clock is the slower of the two, not the sum.
@@ -785,7 +805,7 @@ def process_video(path: Path, client: anthropic.Anthropic, model: str,
         _s = _time.time(); r = transcribe(path, video_id, cache_dir, use_api, whisper_size)
         return r, _time.time() - _s
     def _do_fr():
-        _s = _time.time(); r = load_or_extract_frames(path, video_id, cache_dir,
+        _s = _time.time(); r = load_or_extract_frames(path, cache_id, cache_dir,
                                                       scene_threshold, floor_interval, hold)
         return r, _time.time() - _s
     with _TPE(max_workers=2) as _ex:
@@ -811,7 +831,7 @@ def process_video(path: Path, client: anthropic.Anthropic, model: str,
     mirror = {"mirrored": False, "usage": {"input_tokens": 0, "output_tokens": 0, "api_calls": 0}}
     if auto_mirror and frames:
         _t = _time.time()
-        mirror = detect_mirror(client, model, frames, cache_dir, video_id)
+        mirror = detect_mirror(client, model, frames, cache_dir, cache_id)
         print(f"  ⏱ mirror-detect (Claude): {_time.time()-_t:.1f}s")
         if mirror["mirrored"]:
             frames = flip_frames(frames, cache_dir, video_id)

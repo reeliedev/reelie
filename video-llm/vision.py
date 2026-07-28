@@ -124,6 +124,19 @@ professional butter honey sugar vanilla peach berry coconut brown black white
 """.split())
 
 
+def real_word_count(texts: dict) -> int:
+    """Total tokens across all frames that are real (forward-reading) words. Used
+    to compare a frame's readability against its horizontally-flipped copy: OCR
+    cannot read reversed text, so if flipping a frame yields materially MORE real
+    words, the original was mirrored."""
+    n = 0
+    for t in (texts or {}).values():
+        for tok in re.findall(r"[A-Za-z]{3,}", (t or "").lower()):
+            if tok in _LEXICON:
+                n += 1
+    return n
+
+
 def mirror_signal(texts: dict) -> tuple:
     """Given {path: ocr_text}, count (reversed_hits, forward_hits) across all
     frames. A reversed hit = a token that spells a real word backwards but not

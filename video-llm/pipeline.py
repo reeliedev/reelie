@@ -518,7 +518,7 @@ def dedupe_products(products: list) -> list:
 # Bump when the detection logic changes so stale mirror.json verdicts (e.g. a
 # wrong "not mirrored" from the old Claude-only check) are recomputed on re-run.
 # REELIE_REMIRROR=1 forces recomputation regardless of version.
-_MIRROR_V = 2
+_MIRROR_V = 3
 _ZERO_USAGE = {"input_tokens": 0, "output_tokens": 0, "api_calls": 0}
 
 
@@ -557,21 +557,29 @@ def detect_mirror(client, model, frames, cache_dir, video_id):
         return result
 
     # ---- 1. Objective OCR orientation vote --------------------------------
+    # OCR each sampled frame AND its horizontally-flipped copy. Vision's OCR cannot
+    # read reversed text, so on a mirrored video the packaging text is invisible
+    # as-is but legible once flipped: flipping yields materially MORE real words.
+    # We only let OCR conclude *mirrored* (a positive, reliable signal) — forward
+    # words alone can't prove "not mirrored" (they're burned-in captions, which
+    # read forwards either way), so anything inconclusive defers to Claude.
     try:
         import vision
         if vision.enabled():
-            texts = vision.ocr_only([f["path"] for f in pick])
-            rev, fwd = vision.mirror_signal(texts)
-            print(f"[mirror] ocr vote: backwards-words={rev} forwards-words={fwd}", flush=True)
-            if rev >= 2:
+            orig_paths = [f["path"] for f in pick]
+            flip_paths = _flip_copies(orig_paths)
+            texts = vision.ocr_only(orig_paths + flip_paths)
+            as_is = vision.real_word_count({p: texts.get(p, "") for p in orig_paths})
+            flipped = vision.real_word_count({p: texts.get(p, "") for p in flip_paths})
+            rev, _ = vision.mirror_signal({p: texts.get(p, "") for p in orig_paths})
+            print(f"[mirror] ocr vote: as-is-words={as_is} flipped-words={flipped} "
+                  f"backwards-tokens={rev}", flush=True)
+            if (flipped >= as_is + 2 and flipped >= 2) or rev >= 2:
                 return _save({"mirrored": True, "source": "ocr",
-                              "reason": f"OCR: {rev} on-screen words read backwards",
+                              "reason": (f"OCR: flipping reveals {flipped} real words vs "
+                                         f"{as_is} as-is (backwards-tokens={rev})"),
                               "usage": dict(_ZERO_USAGE)})
-            if fwd >= 2 and rev == 0:
-                return _save({"mirrored": False, "source": "ocr",
-                              "reason": f"OCR: {fwd} on-screen words read forwards, none backwards",
-                              "usage": dict(_ZERO_USAGE)})
-            # else: not enough legible physical text — defer to Claude.
+            # Inconclusive (reversed text is invisible to OCR) — defer to Claude.
     except Exception as e:  # noqa: BLE001
         print(f"[mirror] ocr vote skipped: {type(e).__name__}: {e}", flush=True)
 
@@ -592,6 +600,19 @@ def detect_mirror(client, model, frames, cache_dir, video_id):
         "usage": {"input_tokens": resp.usage.input_tokens,
                   "output_tokens": resp.usage.output_tokens, "api_calls": 1},
     })
+
+
+def _flip_copies(paths):
+    """Horizontally-flipped copies of the given frame paths (for the mirror OCR
+    comparison). Cached on disk by a _mcheck suffix."""
+    out = []
+    for p in paths:
+        src = Path(p)
+        dst = src.with_name(src.stem + "_mcheck" + src.suffix)
+        if not dst.exists() or dst.stat().st_size == 0:
+            _run(["ffmpeg", "-y", "-i", str(src), "-vf", "hflip", str(dst)])
+        out.append(str(dst))
+    return out
 
 
 def flip_frames(frames, cache_dir, video_id):

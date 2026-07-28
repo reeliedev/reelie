@@ -537,7 +537,7 @@ def dedupe_products(products: list) -> list:
 # Bump when the detection logic changes so stale mirror.json verdicts (e.g. a
 # wrong "not mirrored" from the old Claude-only check) are recomputed on re-run.
 # REELIE_REMIRROR=1 forces recomputation regardless of version.
-_MIRROR_V = 4
+_MIRROR_V = 5
 _ZERO_USAGE = {"input_tokens": 0, "output_tokens": 0, "api_calls": 0}
 
 

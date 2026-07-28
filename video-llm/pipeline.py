@@ -428,6 +428,10 @@ def extract_products(client: anthropic.Anthropic, model: str,
     vis_text: dict = {}
     try:
         import vision
+        # Unconditional status line so a silent run is never ambiguous: it tells us
+        # whether THIS code is deployed at all, and whether the key reached the worker.
+        _klen = len(os.environ.get("GOOGLE_VISION_API_KEY", "").strip())
+        print(f"[vision] status: enabled={vision.enabled()} key_len={_klen}", flush=True)
         if vision.enabled():
             raw = vision.annotate([fr["path"] for fr in frames])
             vis_text = {p: vision.hint_text(h) for p, h in raw.items()}

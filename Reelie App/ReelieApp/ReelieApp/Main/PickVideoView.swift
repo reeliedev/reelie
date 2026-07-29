@@ -60,9 +60,11 @@ struct PickVideoView: View {
 
     /// Single progress sink passed to `generatePage`: updates the stage label and,
     /// once products arrive, kicks off the staggered reveal (one every 0.8s).
-    private func onProgress(_ stage: String, _ phase: String?, _ newPreview: [GenPreviewItem]) {
+    private func onProgress(_ stage: String, _ phase: String?, _ newPreview: [GenPreviewItem], _ posterUrl: String?) {
         self.stage = stage
         if let phase { self.genPhase = phase }
+        // A real video frame from the backend beats the resolved platform thumbnail.
+        if let posterUrl, let u = URL(string: posterUrl) { analyzePosterURL = u }
         if preview.isEmpty, !newPreview.isEmpty {
             preview = newPreview
             startReveal()

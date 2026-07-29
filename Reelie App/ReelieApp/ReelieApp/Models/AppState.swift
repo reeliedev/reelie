@@ -573,7 +573,7 @@ final class AppState {
     @MainActor @discardableResult
     func generatePage(videoId: String? = nil, url: String? = nil,
                       uploadFileURL: URL? = nil, title: String? = nil,
-                      onProgress: ((_ stage: String, _ phase: String?, _ preview: [GenPreviewItem]) -> Void)? = nil) async -> GenerationOutcome {
+                      onProgress: ((_ stage: String, _ phase: String?, _ preview: [GenPreviewItem], _ posterUrl: String?) -> Void)? = nil) async -> GenerationOutcome {
         guard let base = apiBaseURL, let token = authToken else { return .failed(reason: nil) }
         let client = APIClient(baseURL: base)
         // A pasted link or upload runs live extraction (download → transcribe → find
@@ -598,14 +598,14 @@ final class AppState {
         do {
             var uploadKey: String? = nil
             if let f = uploadFileURL {
-                onProgress?("Uploading your video…", "upload", [])
+                onProgress?("Uploading your video…", "upload", [], nil)
                 uploadKey = try await client.uploadVideo(fileURL: f, token: token)
             }
             let jobId = try await client.startGeneration(videoId: videoId, url: url,
                                                          uploadKey: uploadKey, title: title, token: token)
             for _ in 0..<maxPolls {
                 let st = try await client.generationStatus(jobId: jobId, token: token)
-                onProgress?(st.stage, st.phase, st.preview ?? [])
+                onProgress?(st.stage, st.phase, st.preview ?? [], st.posterUrl)
                 if st.status == "done" {
                     await refreshFromAPI()
                     await loadMyPages()

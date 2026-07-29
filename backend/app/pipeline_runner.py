@@ -76,6 +76,46 @@ def _load_preview(video_id: str) -> tuple[list[dict], float]:
     return items, float(d.get("duration_s") or 0)
 
 
+def _probe_dur(path: str) -> float:
+    try:
+        r = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration",
+                            "-of", "default=nw=1:nk=1", path],
+                           capture_output=True, text=True, timeout=15)
+        return float(r.stdout.strip())
+    except Exception:  # noqa: BLE001
+        return 0.0
+
+
+def _upload_poster(job_id: str, video_id: str) -> None:
+    """Grab a representative still from the source video and upload it to the
+    deterministic key posters/<job_id>.jpg, so the app can show a REAL frame of the
+    video while the page builds (works for every platform, unlike inline embeds).
+    Best-effort — never fails the job. The status endpoint returns the URL once the
+    object exists, so no DB column is needed."""
+    if not config.STORAGE_ENABLED:
+        return
+    src = config.VIDEO_LLM_DIR / "videos" / f"{video_id}.mp4"
+    if not src.exists():
+        return
+    out = config.VIDEO_LLM_DIR / "videos" / f"{job_id}_poster.jpg"
+    try:
+        dur = _probe_dur(str(src))
+        ts = max(0.5, dur / 3.0) if dur else 1.0   # ~1/3 in: usually a clear product/creator shot
+        subprocess.run(["ffmpeg", "-y", "-ss", str(ts), "-i", str(src), "-frames:v", "1",
+                        "-vf", "scale='min(720,iw)':-2", "-q:v", "4", str(out)],
+                       capture_output=True, timeout=30)
+        if out.exists() and out.stat().st_size > 0:
+            storage.put_file(f"posters/{job_id}.jpg", str(out), "image/jpeg")
+            print(f"[worker] poster uploaded posters/{job_id}.jpg", flush=True)
+    except Exception as e:  # noqa: BLE001
+        print(f"[worker] poster skipped: {type(e).__name__}: {e}", flush=True)
+    finally:
+        try:
+            out.unlink(missing_ok=True)
+        except Exception:  # noqa: BLE001
+            pass
+
+
 def _log_timings(label: str, elapsed: float, stdout: str) -> None:
     """Surface the pipeline's per-stage ⏱ lines plus vision/mirror diagnostics
     (captured, else discarded) so the real breakdown shows up in the worker log."""
@@ -163,6 +203,10 @@ def process_job(job_id: str) -> None:
                 video_id = _extract(job_id, src)
         elif not video_id:
             raise RuntimeError("No video source on this job.")
+
+        # Upload a real poster frame so the app can show the actual video (not a
+        # platform thumbnail) while the page builds.
+        _upload_poster(job_id, video_id)
 
         # Surface the products the moment extraction finishes → the studio reveals
         # them one-by-one over the video while the build/clip step continues.

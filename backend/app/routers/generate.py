@@ -182,8 +182,17 @@ def generation_status(job_id: str, user: User = Depends(current_user),
         preview = json.loads(job.preview) if job.preview else []
     except Exception:
         preview = []
+    # Real poster frame (uploaded by the worker to a deterministic key). Returned
+    # once it exists — no DB column needed. Only checked while the job is active.
+    poster_url = None
+    if job.status == "running" and config.STORAGE_ENABLED:
+        try:
+            if storage.exists(f"posters/{job.id}.jpg"):
+                poster_url = storage.public_url(f"posters/{job.id}.jpg")
+        except Exception:
+            poster_url = None
     return {
         "jobId": job.id, "status": job.status, "stage": job.stage,
         "phase": job.phase, "preview": preview, "durationS": job.duration_s,
-        "pageSlug": job.page_slug, "error": job.error,
+        "pageSlug": job.page_slug, "error": job.error, "posterUrl": poster_url,
     }

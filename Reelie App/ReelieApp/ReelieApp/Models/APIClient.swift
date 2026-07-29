@@ -346,6 +346,7 @@ struct GenStatus: Decodable {
     // the products detected so far, revealed one-by-one in the UI like the web.
     let phase: String?
     let preview: [GenPreviewItem]?
+    let posterUrl: String?   // a real frame of the video, shown while it processes
 }
 
 /// One product surfaced during live analysis (job.preview items).

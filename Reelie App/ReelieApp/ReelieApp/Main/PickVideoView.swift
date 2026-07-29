@@ -2,7 +2,6 @@ import SwiftUI
 import UniformTypeIdentifiers
 import PhotosUI
 import AVFoundation
-import WebKit
 
 /// A video picked from the Photos library, copied into our sandbox as a temp file.
 struct PickedMovie: Transferable {
@@ -44,7 +43,7 @@ struct PickVideoView: View {
     @State private var preview: [GenPreviewItem] = []   // products detected so far
     @State private var revealed = 0                     // how many are shown in the list
     @State private var localVideoURL: URL?              // the uploaded clip, shown while analyzing
-    @State private var analyzeYouTubeID: String?        // link source's YouTube id, embedded while analyzing
+    @State private var analyzePosterURL: URL?           // link source's thumbnail, shown while analyzing
     @State private var revealTask: Task<Void, Never>?
     @State private var failReason: String?              // creator-facing failure message
 
@@ -342,9 +341,36 @@ struct PickVideoView: View {
     private func runGeneration(url: String) async {
         guard !url.isEmpty else { return }
         phase = .generating; stage = "Fetching your video…"; genPhase = ""
-        preview = []; revealed = 0; localVideoURL = nil
-        analyzeYouTubeID = youtubeID(from: url)   // embed + play the YouTube video while analyzing
+        preview = []; revealed = 0; localVideoURL = nil; analyzePosterURL = nil
+        // Resolve a thumbnail to show while the server processes the video. A still
+        // is reliable for every platform; inline embeds are not (YouTube blocks
+        // embedding on many videos, TikTok/IG don't embed in a WKWebView).
+        Task { analyzePosterURL = await resolvePosterURL(from: url) }
         handle(await app.generatePage(url: url, onProgress: onProgress))
+    }
+
+    /// A still thumbnail for a pasted link, shown (under the scan line) during
+    /// analysis. YouTube exposes a direct thumbnail by id; TikTok/Instagram provide
+    /// one via their public oEmbed endpoint. Returns nil if none can be resolved.
+    private func resolvePosterURL(from raw: String) async -> URL? {
+        if let yt = youtubeID(from: raw) {
+            return URL(string: "https://img.youtube.com/vi/\(yt)/hqdefault.jpg")
+        }
+        let lower = raw.lowercased()
+        guard lower.contains("tiktok.com") || lower.contains("instagram.com") else { return nil }
+        let endpoint = lower.contains("tiktok.com")
+            ? "https://www.tiktok.com/oembed?url="
+            : "https://api.instagram.com/oembed?url="   // public for public posts
+        guard let enc = raw.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+              let u = URL(string: endpoint + enc) else { return nil }
+        do {
+            let (data, _) = try await URLSession.shared.data(from: u)
+            if let obj = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let thumb = obj["thumbnail_url"] as? String {
+                return URL(string: thumb)
+            }
+        } catch { }
+        return nil
     }
 
     private func tile(_ v: AvailableVideo) -> some View {
@@ -395,7 +421,7 @@ struct PickVideoView: View {
             }
             .padding(.top, 6).padding(.bottom, 16).padding(.horizontal, 20)
 
-            AnalyzingStage(videoURL: localVideoURL, youtubeID: analyzeYouTubeID, ping: revealed)
+            AnalyzingStage(videoURL: localVideoURL, posterURL: analyzePosterURL, ping: revealed)
                 .frame(height: 280)
                 .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                 .padding(.horizontal, 28)
@@ -523,35 +549,6 @@ struct PickVideoView: View {
 
 // MARK: - Embedded YouTube player (for link sources, whose file is server-side)
 
-/// Muted, autoplaying, looping YouTube embed — plays the actual video during
-/// analysis when the creator pasted a link (works for Shorts too). Non-interactive
-/// so the scan overlay + product reveal sit cleanly on top.
-private struct YouTubeEmbedView: UIViewRepresentable {
-    let videoID: String
-
-    func makeUIView(context: Context) -> WKWebView {
-        let cfg = WKWebViewConfiguration()
-        cfg.allowsInlineMediaPlayback = true
-        cfg.mediaTypesRequiringUserActionForPlayback = []   // allow muted autoplay
-        let web = WKWebView(frame: .zero, configuration: cfg)
-        web.isOpaque = false
-        web.backgroundColor = .black
-        web.scrollView.isScrollEnabled = false
-        web.isUserInteractionEnabled = false
-        let html = """
-        <html><head><meta name='viewport' content='initial-scale=1, maximum-scale=1'>
-        <style>html,body{margin:0;background:#000;height:100%;overflow:hidden}
-        iframe{position:absolute;inset:0;width:100%;height:100%;border:0}</style></head>
-        <body><iframe src='https://www.youtube.com/embed/\(videoID)?autoplay=1&mute=1&controls=0&loop=1&playlist=\(videoID)&playsinline=1&modestbranding=1&rel=0&fs=0&disablekb=1&iv_load_policy=3'
-        allow='autoplay; encrypted-media' allowfullscreen></iframe></body></html>
-        """
-        web.loadHTMLString(html, baseURL: URL(string: "https://www.youtube.com"))
-        return web
-    }
-
-    func updateUIView(_ web: WKWebView, context: Context) {}
-}
-
 // MARK: - Analyzing stage (the video being scanned)
 
 /// The uploaded clip playing (muted, looping) under a sweeping scan line — or a
@@ -559,7 +556,7 @@ private struct YouTubeEmbedView: UIViewRepresentable {
 /// border flashes each time a new product is detected. Mirrors the web `.az-stage`.
 private struct AnalyzingStage: View {
     let videoURL: URL?
-    var youtubeID: String? = nil
+    var posterURL: URL? = nil
     var ping: Int
     @State private var player = AVPlayer()
     @State private var scan = false
@@ -574,13 +571,17 @@ private struct AnalyzingStage: View {
                 PlayerLayerView(player: player, gravity: .resizeAspect)
                     .onAppear { start(url) }
                     .onDisappear { player.pause() }
-            } else if let yt = youtubeID {
-                // Link source: the file is on the server, so embed + play the actual
-                // YouTube video (thumbnail shows underneath until it starts).
-                AsyncImage(url: URL(string: "https://img.youtube.com/vi/\(yt)/hqdefault.jpg")) { img in
+            } else if let poster = posterURL {
+                // Link source: the file lives on the server, so show the platform
+                // thumbnail (aspect-fill) under the scan line. A still is reliable
+                // for every platform, unlike inline embeds.
+                AsyncImage(url: poster) { img in
                     img.resizable().aspectRatio(contentMode: .fill)
-                } placeholder: { Color.black }
-                YouTubeEmbedView(videoID: yt)
+                } placeholder: {
+                    LinearGradient(colors: [Color(hex: 0xE8E4DA), Color(hex: 0xD8D2C4)],
+                                   startPoint: .top, endPoint: .bottom)
+                }
+                .clipped()
             } else {
                 LinearGradient(colors: [Color(hex: 0xE8E4DA), Color(hex: 0xD8D2C4)],
                                startPoint: .top, endPoint: .bottom)

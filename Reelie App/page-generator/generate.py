@@ -24,6 +24,8 @@ Examples
 from __future__ import annotations
 
 import argparse
+import json
+import os
 import sys
 from pathlib import Path
 
@@ -59,13 +61,45 @@ def _client():
     return anthropic.Anthropic(api_key=key)
 
 
+def _rerender_public_pages(pages: list, skip_url: str | None = None) -> int:
+    """Re-render every page's static HTML from the registry so cross-page reco
+    modules reflect the full catalogue. O(total pages) — only for STATIC exports,
+    NOT the per-video build (prod serves reco dynamically from the API)."""
+    n = 0
+    for entry in pages:
+        if skip_url and entry["url"] == skip_url:
+            continue
+        cp = config.OUT_DIR / "pages" / f"{entry['handle']}-{entry['slug']}.json"
+        if cp.exists():
+            web.write_public_page(Page.load(cp), config.OUT_PUBLIC, pages)
+            n += 1
+    return n
+
+
+def _rerender_all() -> int:
+    """Standalone full static re-render (run periodically / on demand), decoupled
+    from per-video builds."""
+    pages = json.loads(config.PAGES_INDEX.read_text()) if config.PAGES_INDEX.exists() else []
+    n = _rerender_public_pages(pages)
+    site_files.write_all(pages)
+    creator_page.write_creator_pages(pages, config.OUT_PUBLIC)
+    directory.write_directory(pages, config.OUT_PUBLIC)
+    recommend.write_reco_json(pages)
+    print(f"· re-rendered {n} page(s) + site files from the registry")
+    return 0
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="Generate a Reelie page from a video.")
-    src = ap.add_mutually_exclusive_group(required=True)
+    ap.add_argument("--rerender-all", action="store_true",
+                    help="re-render every public page's static HTML from the registry "
+                         "(refresh cross-page recommendation modules) and exit. Run "
+                         "periodically for static exports — NOT needed per build.")
+    src = ap.add_mutually_exclusive_group(required=False)
     src.add_argument("--from-output", metavar="ID_OR_PATH",
                      help="video id (in video-llm/output) or path to an output JSON")
     src.add_argument("--video", metavar="PATH", help="raw video file (full extraction)")
-    ap.add_argument("--handle", required=True, help="creator handle, e.g. glowbyjess")
+    ap.add_argument("--handle", help="creator handle, e.g. glowbyjess")
     ap.add_argument("--name", help="creator display name (default: derived from handle)")
     ap.add_argument("--platforms", nargs="*", default=["YouTube", "Instagram"])
     ap.add_argument("--video-url", default="", help="public URL of the source video")
@@ -80,6 +114,13 @@ def main(argv=None) -> int:
     ap.add_argument("--bundle-sample", action="store_true",
                     help="also copy the app JSON to the iOS app bundle sample path")
     args = ap.parse_args(argv)
+
+    if args.rerender_all:
+        return _rerender_all()
+    if not (args.from_output or args.video):
+        ap.error("one of --from-output/--video is required (or use --rerender-all)")
+    if not args.handle:
+        ap.error("--handle is required")
 
     client = None if args.mock else _client()
 
@@ -151,14 +192,14 @@ def main(argv=None) -> int:
     # Optional: push to the backend API (source of truth) if REELIE_API_URL is set.
     api_status = api_sync.sync_page(page)
 
-    # Recommendations reference the WHOLE catalogue, so adding this page can change
-    # earlier pages' "also used by" / "similar creators" modules. Re-render every
-    # public page from the final registry to keep them in sync (HTML only — clips
-    # and canonical data are untouched).
-    for entry in pages:
-        cp = config.OUT_DIR / "pages" / f"{entry['handle']}-{entry['slug']}.json"
-        if cp.exists() and entry["url"] != page.url:
-            web.write_public_page(Page.load(cp), config.OUT_PUBLIC, pages)
+    # Adding this page can change earlier pages' "also used by" / "similar creators"
+    # modules. In prod those modules are served DYNAMICALLY by the API's
+    # /recommendations endpoints (from the DB), so re-rendering every page's static
+    # HTML here is unnecessary and O(total pages) — it made every build slower as the
+    # catalogue grew. Skip it by default; run `generate.py --rerender-all` (or set
+    # REELIE_RERENDER_ALL=1) when producing a full STATIC export.
+    if os.environ.get("REELIE_RERENDER_ALL") == "1":
+        _rerender_public_pages(pages, skip_url=page.url)
 
     if args.bundle_sample:
         config.APP_BUNDLE_SAMPLE.parent.mkdir(parents=True, exist_ok=True)

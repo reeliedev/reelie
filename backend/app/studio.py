@@ -685,11 +685,14 @@ function startAnalyzer(videoURL){
   var isBlob = videoURL && videoURL.indexOf('blob:')===0;
   var yid = isBlob ? null : ytId(videoURL);
   LOCAL_VIDEO_URL = isBlob ? videoURL : null;   // only local blobs are reusable in review
+  // A still thumbnail is reliable for every source; inline embeds are not (YouTube
+  // blocks embedding on many videos, TikTok/IG don't embed). The backend upgrades
+  // this to a REAL video frame (posterUrl) partway through — see setStagePoster.
   var stage = isBlob
     ? '<video id="az-vid" class="az-vid" muted playsinline loop autoplay src="'+videoURL+'"></video>'
     : (yid
-        ? '<iframe id="az-vid" class="az-vid" src="https://www.youtube.com/embed/'+yid+'?autoplay=1&mute=1&controls=0&loop=1&playlist='+yid+'&playsinline=1&modestbranding=1&rel=0&fs=0&disablekb=1&iv_load_policy=3" allow="autoplay; encrypted-media" allowfullscreen></iframe>'
-        : '<div class="az-vid az-ph">🎬</div>');
+        ? '<img id="az-vid" class="az-vid" alt="" src="https://img.youtube.com/vi/'+yid+'/hqdefault.jpg">'
+        : '<div id="az-vid" class="az-vid az-ph">🎬</div>');
   app.innerHTML =
    '<div class="az">'+
      '<div class="az-head"><div class="az-dotwrap"><span class="az-dot"></span></div>'+
@@ -707,6 +710,16 @@ function startAnalyzer(videoURL){
      '<div class="az-foot" id="az-foot"></div>'+
    '</div>';
   var v=document.getElementById('az-vid'); if(v&&v.play){ v.play().catch(function(){}); }
+}
+// Swap the stage over to the REAL video frame the worker uploaded (posterUrl),
+// upgrading the platform thumbnail / placeholder. Skipped for local uploads (the
+// actual video is already playing there).
+function setStagePoster(url){
+  if(!url || LOCAL_VIDEO_URL) return;
+  var el=document.getElementById('az-vid'); if(!el) return;
+  if(el.tagName==='IMG'){ if(el.getAttribute('src')!==url) el.setAttribute('src',url); return; }
+  var img=document.createElement('img'); img.id='az-vid'; img.className='az-vid'; img.alt=''; img.src=url;
+  if(el.parentNode) el.parentNode.replaceChild(img, el);
 }
 function setAzLabel(t){ var e=document.getElementById('az-label'); if(e) e.textContent=t; }
 function setAzSub(t){ var e=document.getElementById('az-sub'); if(e) e.textContent=t||''; }
@@ -739,6 +752,7 @@ async function pollAnalyze(job){
   for(var i=0;i<400;i++){
     await new Promise(function(res){setTimeout(res,2500);});
     var s; try { s = await api('GET','/me/generate/'+job); } catch(e){ continue; }
+    if(s.posterUrl) setStagePoster(s.posterUrl);   // upgrade to the real video frame
     if(s.phase==='analyzing' && lastPhase!=='analyzing'){
       setAzLabel('Analyzing your video');
       if(!ambient) ambient=setInterval(function(){ setAzSub(AMBIENT[ai++ % AMBIENT.length]); }, 2100);

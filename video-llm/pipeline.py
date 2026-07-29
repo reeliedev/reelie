@@ -9,7 +9,6 @@ or frame extraction.
 
 import base64
 import json
-import math
 import os
 import re
 import subprocess
@@ -57,13 +56,11 @@ FREEZE_NOISE = "-30dB"           # freezedetect noise tolerance (more negative =
 FREEZE_MIN_DUR = 0.25            # min still duration (s) to count as a hold
 HOLD_MERGE_GAP = 0.20            # merge freeze segments closer than this (s) into one hold
 HOLD_MAX = 14                    # cap distinct hold SEGMENTS considered (longest first)
-HOLD_SHARPEST_OF = 5             # probe this many instants per window; keep the sharpest.
-                                 # Denser probing hits the crisp product-facing instant that
-                                 # a coarse start/mid/end sample falls between (cheap: probes
-                                 # are parallel and don't add output frames or tokens)
-HOLD_SAMPLE_EVERY = 1.2          # tile each hold into windows ~this wide (s) and keep one
-                                 # sharp frame per window — a multi-second product show must
-                                 # not collapse to a single (often product-turning) frame
+HOLD_SAMPLE_EVERY = 0.6          # uniformly sample each hold at this stride (s). Dense &
+                                 # uniform GUARANTEES a frame lands in each product's hold
+                                 # window; we deliberately do NOT rank by sharpness — glossy /
+                                 # low-texture products score "less sharp" than a face and got
+                                 # skipped, which is exactly what we must not do.
 HOLD_WINDOW_MAX = 18             # total cap on hold frames (bounds tokens on long videos)
 SHARP_SIZE = 256                 # grayscale square edge for the Laplacian focus measure
 
@@ -282,69 +279,27 @@ def _merge_segments(segs: list, gap: float) -> list:
     return merged
 
 
-def _sharpness_at(path: Path, ts: float, size: int = SHARP_SIZE) -> float:
-    """Focus measure (variance of the Laplacian) of one grayscale frame at `ts`.
-    Higher = sharper / more in-focus. ffmpeg -> raw gray bytes -> numpy; no image
-    libs needed. Returns 0.0 if the frame can't be read."""
-    cp = subprocess.run(
-        ["ffmpeg", "-v", "error", "-ss", f"{ts}", "-i", str(path),
-         "-frames:v", "1", "-vf", f"scale={size}:{size},format=gray",
-         "-f", "rawvideo", "-"],
-        capture_output=True,
-    )
-    buf = cp.stdout
-    if len(buf) < size * size:
-        return 0.0
-    a = np.frombuffer(buf[:size * size], dtype=np.uint8).astype(np.float32).reshape(size, size)
-    lap = (4 * a[1:-1, 1:-1] - a[:-2, 1:-1] - a[2:, 1:-1]
-           - a[1:-1, :-2] - a[1:-1, 2:])
-    return float(lap.var())
-
-
-def _sharpest_ts(path: Path, start: float, end: float, n: int = HOLD_SHARPEST_OF) -> float:
-    """Timestamp of the sharpest frame sampled across a hold window [start, end]."""
-    if end <= start or n <= 1:
-        return (start + end) / 2
-    cands = [start + (end - start) * i / (n - 1) for i in range(n)]
-    return max(cands, key=lambda t: _sharpness_at(path, t))
-
-
 def _hold_timestamps(path: Path, noise: str, min_dur: float) -> list:
-    """Sharpest instant of each distinct 'held product' still-window, capped to
-    HOLD_MAX (longest holds first — a longer hold = a more deliberate product show).
-    Sharpness probes (one ffmpeg each) run in parallel — independent, GIL-released."""
-    from concurrent.futures import ThreadPoolExecutor
+    """Uniformly sample each merged 'held product' still-window at HOLD_SAMPLE_EVERY
+    stride, so every product held that long yields at least one frame across its span.
+
+    We deliberately DON'T rank candidates by sharpness: a glossy tube / low-texture
+    package scores as "less sharp" than the creator's face, so sharpness-picking
+    skipped exactly the product frames we need (verified on real footage). Holds are
+    near-static by construction (freezedetect), so uniform sampling won't land on
+    motion blur. Longest holds contribute first, capped at HOLD_WINDOW_MAX points."""
     holds = _merge_segments(_freeze_segments(path, noise, min_dur), HOLD_MERGE_GAP)
     holds.sort(key=lambda se: se[1] - se[0], reverse=True)
     holds = holds[:HOLD_MAX]
-    # Tile each hold into ~HOLD_SAMPLE_EVERY-second windows so a long product-show
-    # yields several frames across its span (the product often only faces the camera
-    # for a fraction of the hold — one frame per multi-second hold misses it). Longest
-    # holds contribute their windows first, up to HOLD_WINDOW_MAX total.
-    windows = []  # (win_start, win_end)
-    for (s, e) in holds:
-        span = e - s
-        n = max(1, int(math.ceil(span / HOLD_SAMPLE_EVERY)))
-        for w in range(n):
-            windows.append((s + span * w / n, s + span * (w + 1) / n))
-    windows = windows[:HOLD_WINDOW_MAX]
-    # Build every (window, candidate-timestamp) probe, measure sharpness in parallel.
-    cand = []
-    for wi, (s, e) in enumerate(windows):
-        if e <= s or HOLD_SHARPEST_OF <= 1:
-            cand.append((wi, (s + e) / 2))
-        else:
-            for i in range(HOLD_SHARPEST_OF):
-                cand.append((wi, s + (e - s) * i / (HOLD_SHARPEST_OF - 1)))
-    if not cand:
-        return []
-    with ThreadPoolExecutor(max_workers=min(_POOL, len(cand))) as ex:
-        sharp = list(ex.map(lambda c: _sharpness_at(path, c[1]), cand))
-    best: dict[int, tuple[float, float]] = {}
-    for (wi, ts), sh in zip(cand, sharp):
-        if wi not in best or sh > best[wi][1]:
-            best[wi] = (ts, sh)
-    return sorted(round(best[wi][0], 2) for wi in best)
+    pts: list[float] = []
+    for s, e in holds:
+        if len(pts) >= HOLD_WINDOW_MAX:
+            break
+        k = 0
+        while s + k * HOLD_SAMPLE_EVERY <= e + 1e-6 and len(pts) < HOLD_WINDOW_MAX:
+            pts.append(round(s + k * HOLD_SAMPLE_EVERY, 2))
+            k += 1
+    return sorted(set(pts))
 
 
 # Priority governs which frame survives when two land within 1s of each other:
@@ -366,16 +321,23 @@ def _frame_timestamps(path: Path, scene_threshold: float, floor_interval: int,
     tagged = ([(t, 2) for t in holds] + [(t, 1) for t in scene]
               + [(t, 0) for t in floor])
     tagged = [(float(t), p) for t, p in tagged if 0 <= t <= max(duration, 1)]
-    # Sort by time, higher priority first on ties, then dedupe within 1s keeping
-    # the highest-priority frame in each cluster.
-    tagged.sort(key=lambda tp: (tp[0], -tp[1]))
-    out = []  # [(ts, priority)]
-    for t, p in tagged:
-        if out and t - out[-1][0] <= 1.0:
-            if p > out[-1][1]:
-                out[-1] = (round(t, 2), p)
+    # Keep ALL hold frames — _hold_timestamps tiles each hold densely so a multi-second
+    # product show yields several shots across its span. A blanket 1s dedup (the old
+    # behaviour) collapsed adjacent hold frames and threw away exactly the clear
+    # product-facing moments (e.g. a product held ~0.7s after another). Only merge true
+    # hold duplicates (< HOLD_DEDUP_S apart); then add scene/floor frames where they
+    # don't sit within FILLER_DEDUP_S of an already-kept frame.
+    HOLD_DEDUP_S, FILLER_DEDUP_S = 0.4, 1.0   # keep 0.6-spaced hold frames; drop near-dupes
+    kept_ts: list[float] = []
+    out: list[tuple[float, int]] = []
+    for t in sorted(t for t, p in tagged if p == 2):
+        if any(abs(t - k) < HOLD_DEDUP_S for k in kept_ts):
             continue
-        out.append((round(t, 2), p))
+        kept_ts.append(t); out.append((round(t, 2), 2))
+    for t, p in sorted(((t, p) for t, p in tagged if p < 2), key=lambda tp: (-tp[1], tp[0])):
+        if all(abs(t - k) >= FILLER_DEDUP_S for k in kept_ts):
+            kept_ts.append(t); out.append((round(t, 2), p))
+    out.sort()
     return [(t, _KIND[p]) for t, p in out]
 
 
@@ -385,7 +347,7 @@ def load_or_extract_frames(path: Path, video_id: str, cache_dir: Path,
                            hold: bool = HOLD_FRAMES) -> list:
     """Returns [{'timestamp_s': float, 'path': str, 'kind': str}] with disk caching.
     Cache dir is keyed by the selection settings so different settings coexist."""
-    fdir = cache_dir / video_id / f"frames_s{scene_threshold}_f{floor_interval}_h{int(hold)}_e{FRAME_LONG_EDGE}"
+    fdir = cache_dir / video_id / f"frames_s{scene_threshold}_f{floor_interval}_h{int(hold)}_e{FRAME_LONG_EDGE}_v2"
     manifest = fdir / "frames.json"
     if manifest.exists():
         return json.loads(manifest.read_text())

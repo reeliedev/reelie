@@ -666,6 +666,7 @@ var AZ = { revealed: 0 };
 function fmtT(t){ t=Math.max(0,Math.round(t||0)); return Math.floor(t/60)+':'+('0'+(t%60)).slice(-2); }
 
 var LOCAL_VIDEO_URL = null;
+var ANALYZE_POSTER = null;   // the real video frame captured during analysis (link sources)
 function ytId(u){
   if(!u) return null;
   try {
@@ -685,6 +686,7 @@ function startAnalyzer(videoURL){
   var isBlob = videoURL && videoURL.indexOf('blob:')===0;
   var yid = isBlob ? null : ytId(videoURL);
   LOCAL_VIDEO_URL = isBlob ? videoURL : null;   // only local blobs are reusable in review
+  ANALYZE_POSTER = null;
   // A still thumbnail is reliable for every source; inline embeds are not (YouTube
   // blocks embedding on many videos, TikTok/IG don't embed). The backend upgrades
   // this to a REAL video frame (posterUrl) partway through — see setStagePoster.
@@ -752,7 +754,7 @@ async function pollAnalyze(job){
   for(var i=0;i<400;i++){
     await new Promise(function(res){setTimeout(res,2500);});
     var s; try { s = await api('GET','/me/generate/'+job); } catch(e){ continue; }
-    if(s.posterUrl) setStagePoster(s.posterUrl);   // upgrade to the real video frame
+    if(s.posterUrl){ ANALYZE_POSTER=s.posterUrl; setStagePoster(s.posterUrl); }   // upgrade to the real frame
     if(s.phase==='analyzing' && lastPhase!=='analyzing'){
       setAzLabel('Analyzing your video');
       if(!ambient) ambient=setInterval(function(){ setAzSub(AMBIENT[ai++ % AMBIENT.length]); }, 2100);
@@ -800,9 +802,18 @@ async function showProductReview(slug){
   REVIEW.slug = slug;
   var page; try { page = await api('GET','/me/pages/'+slug); } catch(e){ azError(e.message); return; }
   REVIEW.page = page;
+  // Link sources have no local file, so show the built page's first real clip
+  // (looping) — or its poster, or the frame we captured during analysis — so the
+  // preview doesn't vanish when processing finishes.
+  var clip=(page.products||[]).map(function(p){return p.clipUrl;}).filter(Boolean)[0]||'';
+  var cpos=(page.products||[]).map(function(p){return p.clipPoster;}).filter(Boolean)[0]||ANALYZE_POSTER||'';
   var vid = LOCAL_VIDEO_URL
     ? '<video class="rv-vid" src="'+LOCAL_VIDEO_URL+'" muted playsinline loop autoplay></video>'
-    : '<div class="rv-vid rv-vidph">🎬</div>';
+    : (clip
+        ? '<video class="rv-vid" src="'+esc(clip)+'" '+(cpos?'poster="'+esc(cpos)+'" ':'')+'muted playsinline loop autoplay preload="metadata"></video>'
+        : (cpos
+            ? '<img class="rv-vid" src="'+esc(cpos)+'" alt="">'
+            : '<div class="rv-vid rv-vidph">🎬</div>'));
   app.innerHTML =
     '<div class="rv2">'+
     '<div class="rv-head"><h1>Found '+page.products.length+' product'+(page.products.length!==1?'s':'')+' ✨</h1>'+

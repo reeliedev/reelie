@@ -23,7 +23,6 @@ struct ProfileView: View {
                     // App (both).
                     SectionLabel(text: "APP").padding(.top, 22).padding(.bottom, 10)
                     SettingsGroup {
-                        SettingsRow(icon: "🔔", title: "Notifications", subtitle: "Pages ready, money earned")
                         Link(destination: URL(string: "mailto:hello@reelie.io")!) {
                             SettingsRow(icon: "💬", title: "Help & support", subtitle: "hello@reelie.io")
                         }.buttonStyle(.plain)
@@ -132,23 +131,27 @@ struct ProfileView: View {
     @ViewBuilder private var creatorSections: some View {
         SectionLabel(text: "MY PAGE").padding(.top, 22).padding(.bottom, 10)
         SettingsGroup {
-            SettingsRow(icon: "👤", title: "Page details", subtitle: "Name, photo, bio line")
-            SettingsRow(icon: "🌐", title: "View my public page", subtitle: "What your viewers see")
+            Link(destination: URL(string: app.profileURL) ?? URL(string: "https://reelie.io")!) {
+                SettingsRow(icon: "🌐", title: "View my public page", subtitle: "What your viewers see")
+            }.buttonStyle(.plain)
         }
 
         SectionLabel(text: "CONNECTED ACCOUNTS").padding(.top, 22).padding(.bottom, 10)
         SettingsGroup {
-            SettingsRow(icon: "▶️", title: "YouTube", subtitle: "@\(app.handle)", trailing: .watching)
-            SettingsRow(icon: "📷", title: "Instagram",
-                        subtitle: "Connection expired — we can't see new posts", trailing: .reconnect)
-            SettingsRow(icon: "🎵", title: "TikTok", subtitle: nil, trailing: .soon)
+            connectionRow("youtube", "▶️", "YouTube")
+            connectionRow("instagram", "📷", "Instagram")
+            SettingsRow(icon: "🎵", title: "TikTok", subtitle: "Coming soon", trailing: .soon)
         }
+        .task { await app.loadConnections() }
+    }
 
-        SectionLabel(text: "LINKS & MONEY").padding(.top, 22).padding(.bottom, 10)
-        SettingsGroup {
-            SettingsRow(icon: "🔗", title: "Link preferences", subtitle: "Default: Reelie picks the best rate")
-            SettingsRow(icon: "🏦", title: "Payouts", subtitle: "Monthly to •••• 4821")
-        }
+    /// Real connection status — connected shows the linked @username, otherwise
+    /// "Not connected" (managed in the New-page flow). No fake/hardcoded state.
+    private func connectionRow(_ platform: String, _ icon: String, _ label: String) -> some View {
+        let conn = app.connection(platform)
+        return SettingsRow(icon: icon, title: label,
+                           subtitle: conn.map { "@\($0.username)" } ?? "Not connected",
+                           trailing: conn != nil ? .connected : .blank)
     }
 }
 
@@ -163,7 +166,7 @@ private struct SettingsGroup<Content: View>: View {
 }
 
 private struct SettingsRow: View {
-    enum Trailing { case chevron, watching, reconnect, soon }
+    enum Trailing { case chevron, watching, reconnect, soon, connected, blank }
     let icon: String
     let title: String
     let subtitle: String?
@@ -203,6 +206,13 @@ private struct SettingsRow: View {
                 .background(Palette.sun, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
         case .soon:
             Text("SOON").font(ReelieFont.ui(11, weight: .bold)).tracking(0.5).foregroundStyle(Palette.faint)
+        case .connected:
+            HStack(spacing: 5) {
+                SunTick(size: 16)
+                Text("Connected").font(ReelieFont.ui(11.5, weight: .bold)).foregroundStyle(Palette.grey)
+            }
+        case .blank:
+            EmptyView()
         }
     }
 }

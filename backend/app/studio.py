@@ -410,12 +410,30 @@ async function viewVideos(){
      '<button class="gf" data-f="arch" onclick="setGridFilter(\'arch\')">Archived</button>'+
    '</div>'+
    '<div id="grid" class="vgrid"><p class="muted" style="padding:16px 0">Loading…</p></div>'+
-   '<div id="connbox"></div>';
+   '<div id="connbox"></div>'+
+   '<div id="acctbox"></div>';
   GENTAB = 'link';
   document.getElementById('gen').onclick = doGenerate;
   document.getElementById('url').addEventListener('keydown', function(e){ if(e.key==='Enter') doGenerate(); });
-  loadGrid(); loadConnections();
+  loadGrid(); loadConnections(); renderAccount();
 }
+function renderAccount(){
+  var box=document.getElementById('acctbox'); if(!box) return;
+  box.innerHTML='<h2 class="eh" style="margin-top:22px">Account</h2><div class="card">'+
+    '<div class="pg"><div class="t">Delete account</div>'+
+    '<div class="row"><button class="btn danger" onclick="deleteAccount()">Delete account</button></div></div>'+
+    '<div class="muted" style="margin-top:10px">Permanently deletes your account, pages, and earnings — this cannot be undone.</div></div>';
+}
+window.renderAccount=renderAccount;
+async function deleteAccount(){
+  if(!confirm('Delete your account? This permanently removes your account, all pages, and earnings. This cannot be undone.')) return;
+  if(!confirm('Are you absolutely sure? This is your last chance — everything will be deleted.')) return;
+  try { await api('DELETE','/me'); }
+  catch(e){ alert(e.message||'Could not delete your account.'); return; }
+  alert('Your account has been deleted.');
+  signOut();
+}
+window.deleteAccount=deleteAccount;
 async function loadConnections(){
   var box=document.getElementById('connbox'); if(!box) return;
   var conns=[]; try { conns=await api('GET','/me/connections'); } catch(e){ box.innerHTML=''; return; }

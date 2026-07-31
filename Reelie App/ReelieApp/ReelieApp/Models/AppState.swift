@@ -249,10 +249,12 @@ final class AppState {
 
     // The creator's own published pages, loaded from the API. When set, the studio
     // shows these instead of the mock sample pages.
-    var showingAPIPages = false
     // True once the first /me/pages fetch has returned, so the Pages tab can show a
-    // loader instead of briefly flashing the bundled mock pages before swapping.
+    // loader instead of an empty flash before the real pages arrive.
     var pagesLoaded = false
+    // Set when the /me/pages fetch fails, so the tab shows a retry state instead of a
+    // misleading "no pages yet" empty (or, previously, a fallback to bundled mock pages).
+    var pagesLoadError = false
 
     /// A real, signed-in creator whose data comes from the backend (not mock data).
     var isBackedCreator: Bool { apiBaseURL != nil && isCreator && authToken != nil }
@@ -266,10 +268,13 @@ final class AppState {
         guard let base = apiBaseURL, isCreator, let token = authToken else {
             pagesLoaded = true; return
         }
+        pagesLoadError = false
         do {
             generatedPages = try await APIClient(baseURL: base).myPages(token: token)
-            showingAPIPages = true
-        } catch { print("[Reelie] loadMyPages: \(error)") }
+        } catch {
+            print("[Reelie] loadMyPages: \(error)")
+            pagesLoadError = true
+        }
         pagesLoaded = true
     }
 
@@ -630,13 +635,7 @@ final class AppState {
         SocialAccount(platform: .tiktok, status: .comingSoon),
     ]
     var videos: [SourceVideo] = SampleData.videos
-    var pages: [Page] = SampleData.pages
     var generatedPages: [GeneratedPage] = GeneratedPageStore.loadAll()
-
-    var pagesNeedingReview: [Page] { pages.filter { $0.status == .needsReview } }
-    var pagesProcessing: [Page] { pages.filter { $0.status == .processing } }
-    var pagesLive: [Page] { pages.filter { $0.status == .live } }
-    var pagesArchived: [Page] { pages.filter { $0.status == .archived } }
 
     func fullURL(for slug: String) -> String { "\(baseURL)\(handle)/\(slug)" }
     var profileURL: String { "\(baseURL)\(handle)" }
@@ -767,23 +766,6 @@ enum SampleData {
         Product(brand: "Banila Co", name: "Banila Co Clean It Zero Balm", emoji: "🧼",
                 evidence: .spoken, timestamp: "0:05", link: .reelie(rate: 7),
                 earned: "$4.80", clicks: 40),
-    ]
-
-    static let pages: [Page] = [
-        Page(title: "Your morning skincare routine", emoji: "🎬", slug: "morning-skincare",
-             status: .needsReview, meta: "From your Reel, yesterday · 6 products",
-             products: morningRoutineProducts),
-        Page(title: "New YouTube video", emoji: "🎬", slug: "new-video",
-             status: .processing, meta: "Watching \"GRWM: date night\" · posted 2h ago"),
-        Page(title: "Everyday \"no makeup\" makeup", emoji: "💄", slug: "no-makeup-makeup",
-             status: .live, meta: "1.2k views · 214 shop clicks",
-             views: "1.2k", shopClicks: "214", earned: "$41.10"),
-        Page(title: "My K-beauty night routine", emoji: "🧴", slug: "k-beauty-night",
-             status: .live, meta: "3.8k views · 689 shop clicks",
-             views: "3.8k", shopClicks: "689", earned: "$84.20", products: kBeautyProducts),
-        Page(title: "Summer SPF favourites", emoji: "🌞", slug: "summer-spf",
-             status: .live, meta: "640 views · 96 shop clicks",
-             views: "640", shopClicks: "96", earned: "$18.40"),
     ]
 
     // Dated sales so month/week/per-page rollups are computable.

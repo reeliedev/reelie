@@ -54,7 +54,7 @@ struct GeneratedPageView: View {
                         .foregroundStyle(Palette.ink)
                     }
                     .buttonStyle(.plain)
-                    if app.showingAPIPages, let idx = pageIndex {
+                    if let idx = pageIndex {
                         Menu {
                             let page = app.generatedPages[idx]
                             Button {
@@ -171,8 +171,7 @@ struct GeneratedPageView: View {
                         guard !publishing else { return }
                         publishing = true
                         Task {
-                            // Real API pages go live via the backend; mock/offline just closes.
-                            if app.showingAPIPages { await app.setPublished(page, published: true) }
+                            await app.setPublished(page, published: true)
                             publishing = false
                             dismiss()
                         }

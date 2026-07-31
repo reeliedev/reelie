@@ -3,9 +3,6 @@ import SwiftUI
 /// Routes pushed within a tab's NavigationStack.
 enum AppRoute: Hashable {
     case pickVideo
-    case approve(pageID: UUID)
-    case pageLive(slug: String, title: String)
-    case pageDetail(pageID: UUID)
     case generatedPage(pageID: UUID)
     case pageEditor(pageID: UUID)
 }

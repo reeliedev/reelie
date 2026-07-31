@@ -33,8 +33,10 @@ struct HomeView: View {
             if app.isPendingCreator {
                 PendingReviewState()
             } else if app.usesAPIPages && !app.pagesLoaded {
-                PagesLoadingState()                 // loader, not a flash of mock pages
-            } else if (app.showingAPIPages ? app.generatedPages.isEmpty : app.pages.isEmpty) {
+                PagesLoadingState()                 // loader, not an empty flash
+            } else if app.pagesLoadError {
+                HomeErrorState { Task { await app.loadMyPages() } }
+            } else if app.generatedPages.isEmpty {
                 HomeEmptyState()
             } else {
                 HomeList()
@@ -49,12 +51,6 @@ struct HomeView: View {
             switch route {
             case .pickVideo:
                 PickVideoView()
-            case .approve(let id):
-                ApprovePageView(pageID: id)
-            case .pageLive(let slug, let title):
-                PageLiveView(slug: slug, title: title)
-            case .pageDetail(let id):
-                PageDetailView(pageID: id)
             case .generatedPage(let id):
                 GeneratedPageView(pageID: id)
             case .pageEditor(let id):
@@ -97,6 +93,33 @@ private struct PendingReviewState: View {
             Spacer(); Spacer()
         }
         .frame(maxWidth: .infinity)
+    }
+}
+
+/// Shown when the /me/pages fetch fails — a retry instead of a misleading empty
+/// state (and never a fallback to bundled sample pages).
+private struct HomeErrorState: View {
+    let retry: () -> Void
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Spacer()
+            Text("😕").font(.system(size: 44))
+            Text("Couldn't load\nyour pages")
+                .displayStyle(26).multilineTextAlignment(.center).padding(.top, 14)
+            Text("Check your connection and try again.")
+                .font(ReelieFont.ui(15)).foregroundStyle(Palette.grey)
+                .multilineTextAlignment(.center).frame(maxWidth: 260).lineSpacing(2).padding(.top, 10)
+            Button(action: retry) {
+                Text("Try again")
+                    .font(ReelieFont.ui(14.5, weight: .bold)).foregroundStyle(Palette.ink)
+                    .padding(.horizontal, 22).padding(.vertical, 12)
+                    .background(Palette.sun, in: Capsule())
+            }
+            .buttonStyle(.plain).padding(.top, 24)
+            Spacer(); Spacer()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 
@@ -165,112 +188,26 @@ private struct HomeList: View {
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 0) {
-                if app.showingAPIPages {
-                    // Account-scoped: the creator's own pages from the API, split by
-                    // state so live and draft pages are clearly distinct.
-                    let live = app.generatedPages.filter { $0.published && !$0.archived }
-                    let drafts = app.generatedPages.filter { !$0.published && !$0.archived }
-                    let archived = app.generatedPages.filter { $0.archived }
-                    if !live.isEmpty {
-                        SectionLabel(text: "LIVE").padding(.top, 18).padding(.bottom, 10)
-                        ForEach(live) { page in GeneratedPageCard(page: page) }
-                    }
-                    if !drafts.isEmpty {
-                        SectionLabel(text: "DRAFTS").padding(.top, 18).padding(.bottom, 10)
-                        ForEach(drafts) { page in GeneratedPageCard(page: page) }
-                    }
-                    if !archived.isEmpty {
-                        SectionLabel(text: "ARCHIVED").padding(.top, 18).padding(.bottom, 10)
-                        ForEach(archived) { page in GeneratedPageCard(page: page).opacity(0.6) }
-                    }
-                } else {
-                    mockSections
+                // The creator's own pages from the API, split by state so live and
+                // draft pages are clearly distinct.
+                let live = app.generatedPages.filter { $0.published && !$0.archived }
+                let drafts = app.generatedPages.filter { !$0.published && !$0.archived }
+                let archived = app.generatedPages.filter { $0.archived }
+                if !live.isEmpty {
+                    SectionLabel(text: "LIVE").padding(.top, 18).padding(.bottom, 10)
+                    ForEach(live) { page in GeneratedPageCard(page: page) }
+                }
+                if !drafts.isEmpty {
+                    SectionLabel(text: "DRAFTS").padding(.top, 18).padding(.bottom, 10)
+                    ForEach(drafts) { page in GeneratedPageCard(page: page) }
+                }
+                if !archived.isEmpty {
+                    SectionLabel(text: "ARCHIVED").padding(.top, 18).padding(.bottom, 10)
+                    ForEach(archived) { page in GeneratedPageCard(page: page).opacity(0.6) }
                 }
             }
             .padding(.horizontal, 28)
             .padding(.bottom, 16)
-        }
-    }
-
-    @ViewBuilder private var mockSections: some View {
-        Group {
-            if !app.generatedPages.isEmpty {
-                SectionLabel(text: "JUST GENERATED").padding(.top, 18).padding(.bottom, 10)
-                ForEach(app.generatedPages) { page in GeneratedPageCard(page: page) }
-            }
-                if !app.pagesNeedingReview.isEmpty {
-                    SectionLabel(text: "NEEDS YOUR OK").padding(.top, 18).padding(.bottom, 10)
-                    ForEach(app.pagesNeedingReview) { page in PageCard(page: page) }
-                }
-                if !app.pagesProcessing.isEmpty {
-                    SectionLabel(text: "WORKING ON IT").padding(.top, 18).padding(.bottom, 10)
-                    ForEach(app.pagesProcessing) { page in PageCard(page: page) }
-                }
-                if !app.pagesLive.isEmpty {
-                    SectionLabel(text: "LIVE").padding(.top, 18).padding(.bottom, 10)
-                    ForEach(app.pagesLive) { page in PageCard(page: page) }
-                }
-            if !app.pagesArchived.isEmpty {
-                SectionLabel(text: "ARCHIVED").padding(.top, 18).padding(.bottom, 10)
-                ForEach(app.pagesArchived) { page in PageCard(page: page) }
-            }
-        }
-    }
-}
-
-/// One card in the Home list. Trailing control depends on status.
-private struct PageCard: View {
-    let page: Page
-
-    var body: some View {
-        let content = HStack(spacing: 13) {
-            GradientPoster(colors: [Color(hex: 0xE8E4DA), Color(hex: 0xD8D2C4)], corner: 14)
-                .frame(width: 54, height: 54)
-                .overlay(Text(page.emoji).font(.system(size: 22)))
-
-            VStack(alignment: .leading, spacing: 3) {
-                Text(page.title)
-                    .font(ReelieFont.ui(15, weight: .bold)).foregroundStyle(Palette.ink)
-                    .lineLimit(1)
-                Text(page.meta)
-                    .font(ReelieFont.ui(12.5)).foregroundStyle(Palette.grey)
-                    .lineLimit(1)
-            }
-            Spacer(minLength: 8)
-            trailing
-        }
-        .padding(14)
-        .hairlineCard(color: page.status == .needsReview ? Palette.ink : Palette.line)
-        .padding(.bottom, 10)
-
-        // Live pages navigate to detail; others aren't tappable at the row level.
-        switch page.status {
-        case .live:
-            NavigationLink(value: AppRoute.pageDetail(pageID: page.id)) { content }
-                .buttonStyle(.plain)
-        default:
-            content
-        }
-    }
-
-    @ViewBuilder private var trailing: some View {
-        switch page.status {
-        case .needsReview:
-            NavigationLink(value: AppRoute.approve(pageID: page.id)) {
-                Text("Review")
-                    .font(ReelieFont.ui(13.5, weight: .bold)).foregroundStyle(Palette.ink)
-                    .padding(.horizontal, 16).padding(.vertical, 10)
-                    .background(Palette.sun, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-            }
-            .buttonStyle(.plain)
-        case .processing:
-            ProcessingDots()
-        case .live:
-            Image(systemName: "chevron.right")
-                .font(.system(size: 15, weight: .bold)).foregroundStyle(Color(hex: 0xD5D5D5))
-        case .archived:
-            Text("ARCHIVED")
-                .font(ReelieFont.ui(10.5, weight: .bold)).tracking(0.6).foregroundStyle(Palette.faint)
         }
     }
 }

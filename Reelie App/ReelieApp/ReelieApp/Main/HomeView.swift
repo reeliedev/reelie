@@ -35,7 +35,7 @@ struct HomeView: View {
             } else if app.usesAPIPages && !app.pagesLoaded {
                 PagesLoadingState()                 // loader, not an empty flash
             } else if app.pagesLoadError {
-                HomeErrorState { Task { await app.loadMyPages() } }
+                LoadErrorState(title: "Couldn't load\nyour pages") { Task { await app.loadMyPages() } }
             } else if app.generatedPages.isEmpty {
                 HomeEmptyState()
             } else {
@@ -93,33 +93,6 @@ private struct PendingReviewState: View {
             Spacer(); Spacer()
         }
         .frame(maxWidth: .infinity)
-    }
-}
-
-/// Shown when the /me/pages fetch fails — a retry instead of a misleading empty
-/// state (and never a fallback to bundled sample pages).
-private struct HomeErrorState: View {
-    let retry: () -> Void
-
-    var body: some View {
-        VStack(spacing: 0) {
-            Spacer()
-            Text("😕").font(.system(size: 44))
-            Text("Couldn't load\nyour pages")
-                .displayStyle(26).multilineTextAlignment(.center).padding(.top, 14)
-            Text("Check your connection and try again.")
-                .font(ReelieFont.ui(15)).foregroundStyle(Palette.grey)
-                .multilineTextAlignment(.center).frame(maxWidth: 260).lineSpacing(2).padding(.top, 10)
-            Button(action: retry) {
-                Text("Try again")
-                    .font(ReelieFont.ui(14.5, weight: .bold)).foregroundStyle(Palette.ink)
-                    .padding(.horizontal, 22).padding(.vertical, 12)
-                    .background(Palette.sun, in: Capsule())
-            }
-            .buttonStyle(.plain).padding(.top, 24)
-            Spacer(); Spacer()
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 

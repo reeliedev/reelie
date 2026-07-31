@@ -1,5 +1,34 @@
 import SwiftUI
 
+// MARK: - Load error state
+
+/// Shared "couldn't load" state with a retry button — used by API-backed tabs so a
+/// failed fetch shows a graceful retry instead of a blank screen or stale/zeroed data.
+struct LoadErrorState: View {
+    var title: String = "Something went wrong"
+    var message: String = "Check your connection and try again."
+    let retry: () -> Void
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Spacer()
+            Text("😕").font(.system(size: 44))
+            Text(title).displayStyle(24).multilineTextAlignment(.center).padding(.top, 14)
+            Text(message)
+                .font(ReelieFont.ui(15)).foregroundStyle(Palette.grey)
+                .multilineTextAlignment(.center).frame(maxWidth: 260).lineSpacing(2).padding(.top, 10)
+            Button(action: retry) {
+                Text("Try again")
+                    .font(ReelieFont.ui(14.5, weight: .bold)).foregroundStyle(Palette.ink)
+                    .padding(.horizontal, 22).padding(.vertical, 12).background(Palette.sun, in: Capsule())
+            }
+            .buttonStyle(.plain).padding(.top, 24)
+            Spacer(); Spacer()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
 // MARK: - Wordmark
 
 /// "Reelie." with a sun-yellow dot.

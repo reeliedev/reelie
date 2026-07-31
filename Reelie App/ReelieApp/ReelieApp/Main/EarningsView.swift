@@ -60,6 +60,11 @@ struct EarningsView: View {
                     Spacer()
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if app.isBackedCreator && app.earningsLoadError && app.earningsSummary == nil {
+                // Failed to load — retry instead of showing misleading zeros.
+                LoadErrorState(title: "Couldn't load\nyour earnings") {
+                    Task { await app.loadEarnings(); await app.loadPayouts(); await app.loadStats() }
+                }
             } else {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {

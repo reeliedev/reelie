@@ -278,12 +278,6 @@ final class AppState {
         pagesLoaded = true
     }
 
-    @MainActor
-    func loadConnections() async {
-        guard let base = apiBaseURL, isCreator, let token = authToken else { return }
-        if let c = try? await APIClient(baseURL: base).connections(token: token) { connections = c }
-    }
-
     /// Load the creator-authored FAQs for a page so the editor can edit them.
     @MainActor
     func loadCustomFaqs(slug: String) async -> [(q: String, a: String)] {

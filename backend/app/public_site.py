@@ -533,6 +533,7 @@ h1{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(34px,5
 .search{margin-top:26px;width:100%;max-width:520px;padding:15px 18px;font:inherit;font-size:16px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink);outline:none;box-shadow:0 6px 16px rgba(32,27,10,.08)}
 .search:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(111,93,240,.18)}
 .noresults{padding:20px 0 72px;color:var(--grey)}
+.sec{font:600 13px/1 'Space Grotesk',ui-sans-serif,sans-serif;color:var(--grey);text-transform:uppercase;letter-spacing:.05em;margin:28px 2px 12px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px;padding:8px 0 72px}
 .card{display:block;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:22px 22px;box-shadow:0 6px 16px rgba(32,27,10,.06);transition:transform .15s cubic-bezier(.16,1,.3,1),box-shadow .15s}
 .card:hover{transform:translateY(-3px);box-shadow:0 16px 34px rgba(90,71,224,.18)}
@@ -561,6 +562,7 @@ def _list_shell(title: str, desc: str, canonical: str, hero: str, cards: str,
     ld = (f'<script type="application/ld+json">{json.dumps(jsonld, ensure_ascii=False)}</script>'
           if jsonld else "")
     grid = f'<section class="wrap"><div class="grid" id="grid">{cards}</div>' \
+           f'<div id="results"></div>' \
            f'<p class="noresults" id="noresults" hidden>No matches.</p></section>' if cards else \
            '<section class="wrap"><p style="padding:44px 0;color:#8A8A8A">No pages yet.</p></section>'
     return f"""<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
@@ -752,18 +754,41 @@ def terms_html() -> str:
 
 _SEARCH_JS = """<script>
 (function(){
-  var q=document.getElementById('q'), cards=[].slice.call(document.querySelectorAll('#grid .card')),
-      none=document.getElementById('noresults');
+  var q=document.getElementById('q'), grid=document.getElementById('grid'),
+      results=document.getElementById('results'), none=document.getElementById('noresults');
   if(!q) return;
-  function apply(){
-    var t=q.value.trim().toLowerCase(), shown=0;
-    cards.forEach(function(c){
-      var hit=!t||c.getAttribute('data-search').indexOf(t)!==-1;
-      c.style.display=hit?'':'none'; if(hit) shown++;
-    });
-    if(none) none.hidden=shown>0;
+  var timer=null, seq=0;
+  function esc(s){ return (s==null?'':String(s)).replace(/[&<>"]/g,function(m){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]; }); }
+  function routineCard(r){
+    var url=r.publicURL||('/'+r.handle+'/'+r.slug);
+    var n=(r.products||[]).length, sub=esc(r.creatorName||'')+' · '+n+' product'+(n===1?'':'s');
+    return '<a class="card" href="'+esc(url)+'"><div class="ci">🛍️</div><h3>'+esc(r.title||'Routine')+
+           '</h3><div class="m">'+sub+'</div></a>';
   }
-  q.addEventListener('input', apply);
+  function creatorCard(c){
+    return '<a class="card" href="/'+esc(c.handle)+'"><div class="ci">👤</div><h3>'+
+           esc(c.displayName||('@'+c.handle))+'</h3><div class="m">@'+esc(c.handle)+'</div></a>';
+  }
+  function showDefault(){ if(grid) grid.style.display=''; if(results) results.innerHTML=''; if(none) none.hidden=true; }
+  async function run(t){
+    var mine=++seq, data;
+    try { data=await (await fetch('/search?q='+encodeURIComponent(t))).json(); } catch(e){ return; }
+    if(mine!==seq) return;                       // a newer keystroke already fired
+    var creators=data.creators||[], routines=data.routines||[];
+    if(grid) grid.style.display='none';
+    var html='';
+    if(creators.length) html+='<div class="sec">Creators</div><div class="grid">'+creators.map(creatorCard).join('')+'</div>';
+    if(routines.length) html+='<div class="sec">Routines</div><div class="grid">'+routines.map(routineCard).join('')+'</div>';
+    if(results) results.innerHTML=html;
+    if(none) none.hidden=(creators.length+routines.length)>0;
+  }
+  q.addEventListener('input', function(){
+    var t=q.value.trim();
+    if(timer) clearTimeout(timer);
+    if(t.length<2){ showDefault(); return; }
+    timer=setTimeout(function(){ run(t); }, 250);
+  });
 })();
 </script>"""
 

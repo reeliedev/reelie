@@ -858,6 +858,17 @@ def process_video(path: Path, client: anthropic.Anthropic, model: str,
             print(f"  description: {n_desc} products  ->  merged comprehensive: "
                   f"{len(products)}  (video alone: {n_video})")
 
+    # Consistency floor: drop the lowest-confidence products — the borderline items
+    # that flicker in/out across runs. Confident products always survive; the noise is
+    # cut the same way every time, so counts stabilise. Tunable via
+    # REELIE_MIN_CONFIDENCE (0 disables and keeps everything).
+    _min_conf = float(os.environ.get("REELIE_MIN_CONFIDENCE", "0.35") or 0.35)
+    if _min_conf > 0:
+        _before = len(products)
+        products = [p for p in products if float(p.get("confidence", 1) or 0) >= _min_conf]
+        if len(products) < _before:
+            print(f"  ⏱ confidence floor {_min_conf}: kept {len(products)}/{_before} products", flush=True)
+
     ext_cost = extraction_cost(usage)
     tx_cost = (duration / 60 * WHISPER_API_PER_MIN) if use_api else 0.0
     total_cost = ext_cost + tx_cost

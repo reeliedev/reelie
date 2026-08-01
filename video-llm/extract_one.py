@@ -139,7 +139,12 @@ def _download(url: str) -> tuple[Path, str]:
             _m = str(e).lower()
             _retriable = ("not a bot" in _m or "sign in to confirm" in _m
                           or "http error 403" in _m or "forbidden" in _m
-                          or "connection" in _m or "timed out" in _m)
+                          or "connection" in _m or "timed out" in _m
+                          # Instagram rate-limits / login-walls per IP — a fresh proxy
+                          # IP usually clears "rate-limited, or requires login".
+                          or "rate-limit" in _m or "requires login" in _m
+                          or "login required" in _m or "not available" in _m
+                          or "http error 429" in _m)
             if _retriable and _rotatable and _i < _attempts - 1:
                 print(f"[extract] blocked on attempt {_i + 1}/{_attempts} — "
                       f"rotating proxy IP and retrying", file=_sys.stderr, flush=True)

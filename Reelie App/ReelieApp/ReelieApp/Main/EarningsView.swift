@@ -75,7 +75,9 @@ struct EarningsView: View {
                         Text(readyToPayout).displayStyle(52).padding(.top, 8)
                         HStack(spacing: 6) {
                             Circle().fill(Palette.sun).frame(width: 7, height: 7)
-                            Text("Pays out Aug 1 · to your bank")
+                            Text((app.payoutsSummary?.connected ?? false)
+                                 ? "Paid out monthly to your bank"
+                                 : "Connect a bank to get paid")
                                 .font(ReelieFont.ui(12.5, weight: .bold)).foregroundStyle(Palette.ink)
                         }
                         .padding(.horizontal, 14).padding(.vertical, 7)
@@ -199,15 +201,18 @@ struct EarningsView: View {
                         Rectangle().fill(Color(hex: 0xF5F5F5)).frame(height: 1.5)
                     }
 
-                    // Payout method.
+                    // Payout method — real connection state, no fake bank details.
                     HStack(spacing: 12) {
                         Text("🏦").font(.system(size: 18))
                         VStack(alignment: .leading, spacing: 1) {
-                            Text("Payouts to •••• 4821").font(ReelieFont.ui(13.5, weight: .bold)).foregroundStyle(Palette.ink)
-                            Text("Monthly, on the 1st · via Stripe").font(ReelieFont.ui(11.5)).foregroundStyle(Palette.grey)
+                            Text((app.payoutsSummary?.connected ?? false) ? "Payout method connected" : "No payout method yet")
+                                .font(ReelieFont.ui(13.5, weight: .bold)).foregroundStyle(Palette.ink)
+                            Text((app.payoutsSummary?.connected ?? false)
+                                 ? "Paid out monthly via Stripe"
+                                 : "Connect a bank to cash out your earnings")
+                                .font(ReelieFont.ui(11.5)).foregroundStyle(Palette.grey)
                         }
                         Spacer()
-                        Image(systemName: "chevron.right").font(.system(size: 14, weight: .bold)).foregroundStyle(Color(hex: 0xD5D5D5))
                     }
                     .padding(.horizontal, 15).padding(.vertical, 13)
                     .hairlineCard(cornerRadius: 16)

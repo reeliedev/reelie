@@ -371,8 +371,9 @@ final class AppState {
     // backend is reachable; otherwise the dashboard uses local mock rollups.
     var earningsSummary: EarningsSummary?
 
-    @MainActor
     var earningsLoadError = false
+
+    @MainActor
     func loadEarnings() async {
         guard let base = apiBaseURL, isCreator, let token = authToken else { earningsLoaded = true; return }
         earningsLoadError = false
@@ -662,7 +663,7 @@ final class AppState {
     }
     /// Per-page rollup for the "Earnings by page" list, richest first.
     var earningsByPage: [(slug: String, title: String, total: Double)] {
-        let live = pages.filter { $0.status == .live }
+        let live = generatedPages.filter { $0.published && !$0.archived }
         return live.map { pg in (pg.slug, pg.title, earnings(forPageSlug: pg.slug)) }
             .sorted { $0.total > $1.total }
     }

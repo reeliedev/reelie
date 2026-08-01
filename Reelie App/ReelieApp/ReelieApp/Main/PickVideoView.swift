@@ -197,8 +197,10 @@ struct PickVideoView: View {
             .appendingPathComponent("export-\(UUID().uuidString).mp4")
         try? FileManager.default.removeItem(at: dst)
         let preset = AVAssetExportPreset1920x1080
-        guard AVAssetExportSession.exportPresets(compatibleWith: asset).contains(preset),
-              let export = AVAssetExportSession(asset: asset, presetName: preset) else { return nil }
+        // The init returns nil for an incompatible preset, and status == .completed
+        // below catches any export failure — so no pre-flight compatibility check
+        // (AVAssetExportSession.exportPresets(compatibleWith:) is deprecated in iOS 16).
+        guard let export = AVAssetExportSession(asset: asset, presetName: preset) else { return nil }
         export.outputURL = dst
         export.outputFileType = .mp4
         export.shouldOptimizeForNetworkUse = true

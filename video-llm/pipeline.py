@@ -400,7 +400,7 @@ def reconcile_products(client: anthropic.Anthropic, model: str,
         return products, usage
     resp = client.messages.create(
         model=model,
-        max_tokens=4096,
+        max_tokens=4096, temperature=0,
         system=RECONCILE_SYSTEM_PROMPT,
         messages=build_reconcile_messages(products),
         output_config={"format": {"type": "json_schema", "schema": EXTRACTION_SCHEMA}},
@@ -458,7 +458,7 @@ def extract_products(client: anthropic.Anthropic, model: str,
 
         resp = client.messages.create(
             model=model,
-            max_tokens=4096,
+            max_tokens=4096, temperature=0,
             system=SYSTEM_PROMPT,
             messages=build_extraction_messages(transcript_text, payload, note),
             output_config={"format": {"type": "json_schema",
@@ -592,7 +592,7 @@ def detect_mirror(client, model, frames, cache_dir, video_id):
     # ---- 2. Claude fallback (inconclusive OCR or Vision disabled) ----------
     payload = [{"timestamp_s": f["timestamp_s"], **_encode_frame(f["path"])} for f in pick]
     resp = client.messages.create(
-        model=model, max_tokens=500,
+        model=model, max_tokens=500, temperature=0,
         system=MIRROR_DETECT_SYSTEM_PROMPT,
         messages=build_mirror_detect_messages(payload),
         output_config={"format": {"type": "json_schema", "schema": MIRROR_SCHEMA}},
@@ -652,7 +652,7 @@ def recover_brands(client, model, products, frames):
         payload = [{"timestamp_s": f["timestamp_s"], **_encode_frame(f["path"])}
                    for f in near]
         resp = client.messages.create(
-            model=model, max_tokens=600,
+            model=model, max_tokens=600, temperature=0,
             system=RECOVER_SYSTEM_PROMPT,
             messages=build_recover_messages(p, payload),
             output_config={"format": {"type": "json_schema", "schema": RECOVER_SCHEMA}},
@@ -700,7 +700,7 @@ def get_description(video_id: str, cache_dir: Path) -> str:
 
 def _structured_call(client, model, system, messages):
     resp = client.messages.create(
-        model=model, max_tokens=4096, system=system, messages=messages,
+        model=model, max_tokens=4096, temperature=0, system=system, messages=messages,
         output_config={"format": {"type": "json_schema", "schema": EXTRACTION_SCHEMA}},
     )
     usage = {"input_tokens": resp.usage.input_tokens,

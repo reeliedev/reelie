@@ -450,6 +450,15 @@ struct PickVideoView: View {
                 .padding(.horizontal, 28).padding(.top, 4).padding(.bottom, 20)
             }
             .animation(.spring(response: 0.35, dampingFraction: 0.82), value: revealed)
+
+            if genPhase != "done" {
+                // Reassurance, not a warning: generation runs on our servers, so it
+                // finishes and lands in Drafts even if they leave.
+                Text("You can leave anytime — we'll finish your page and save it to your Drafts.")
+                    .font(ReelieFont.ui(11.5)).foregroundStyle(Palette.faint)
+                    .multilineTextAlignment(.center).lineSpacing(1)
+                    .padding(.horizontal, 32).padding(.bottom, 12)
+            }
         }
         .onDisappear { revealTask?.cancel() }
     }

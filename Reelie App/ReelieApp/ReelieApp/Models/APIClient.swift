@@ -86,6 +86,16 @@ struct AuthConfigDTO: Decodable {
 struct APIClient {
     let baseURL: URL
 
+    /// Shared session with a per-request idle timeout, so a stalled connection (e.g.
+    /// after the app resumes from background) fails fast instead of hanging the
+    /// caller — which is what left actions like Publish stuck. Idle-based, so a
+    /// continuously-streaming video upload isn't affected.
+    static let session: URLSession = {
+        let cfg = URLSessionConfiguration.default
+        cfg.timeoutIntervalForRequest = 30
+        return URLSession(configuration: cfg)
+    }()
+
     struct APIError: LocalizedError {
         let status: Int; let body: String
         var errorDescription: String? { "HTTP \(status): \(body.prefix(160))" }
@@ -94,7 +104,7 @@ struct APIClient {
     func get<T: Decodable>(_ path: String, as type: T.Type, token: String? = nil) async throws -> T {
         var req = URLRequest(url: baseURL.appendingPathComponent(path))
         if let token { req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization") }
-        let (data, resp) = try await URLSession.shared.data(for: req)
+        let (data, resp) = try await APIClient.session.data(for: req)
         if let http = resp as? HTTPURLResponse, !(200...299).contains(http.statusCode) {
             throw APIError(status: http.statusCode, body: String(data: data, encoding: .utf8) ?? "")
         }
@@ -108,7 +118,7 @@ struct APIClient {
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         if let token { req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization") }
         req.httpBody = try JSONSerialization.data(withJSONObject: body)
-        let (data, _) = try await URLSession.shared.data(for: req)
+        let (data, _) = try await APIClient.session.data(for: req)
         return try JSONDecoder().decode(T.self, from: data)
     }
 
@@ -195,7 +205,7 @@ struct APIClient {
         var req = URLRequest(url: putURL)
         req.httpMethod = "PUT"
         req.setValue(ctype, forHTTPHeaderField: "Content-Type")
-        let (_, resp) = try await URLSession.shared.upload(for: req, fromFile: fileURL)
+        let (_, resp) = try await APIClient.session.upload(for: req, fromFile: fileURL)
         guard let http = resp as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
             throw URLError(.badServerResponse)
         }
@@ -287,7 +297,7 @@ struct APIClient {
             req.setValue("application/json", forHTTPHeaderField: "Content-Type")
             req.httpBody = try JSONSerialization.data(withJSONObject: body)
         }
-        let (data, _) = try await URLSession.shared.data(for: req)
+        let (data, _) = try await APIClient.session.data(for: req)
         return try JSONDecoder().decode(T.self, from: data)
     }
 }

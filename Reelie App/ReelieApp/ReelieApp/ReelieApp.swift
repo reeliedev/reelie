@@ -52,13 +52,26 @@ struct ReelieMainApp: App {
 /// never sign in. Auth happens only on the creator path (Become a creator).
 struct RootView: View {
     @Environment(AppState.self) private var app
+    @Environment(\.scenePhase) private var scenePhase
     @State private var showSplash = true
+    @State private var didInitialLoad = false
 
     var body: some View {
         ZStack {
             MainTabView()
+            // Returning from background (e.g. after a generation ran while away): refresh
+            // the (possibly expired) session + the creator's pages, so actions like
+            // Publish work against a live token instead of silently failing/hanging.
+            .onChange(of: scenePhase) { _, phase in
+                guard phase == .active, didInitialLoad else { return }
+                Task {
+                    await app.restoreSession()
+                    if app.isCreator { await app.loadMyPages() }
+                }
+            }
             .task {
                 await app.restoreSession()   // if a creator token is stored
+                didInitialLoad = true
                 await app.refreshFromAPI()   // catalog from API (no-op unless a base URL is set)
                 #if DEBUG
                 // Dev-only hooks to exercise the auth + generation paths for verification.

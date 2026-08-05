@@ -11,6 +11,7 @@ Monetization core (Phase 3):
 from __future__ import annotations
 
 import random
+from urllib.parse import quote
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Request
 from fastapi.responses import RedirectResponse
@@ -59,17 +60,20 @@ def redirect(handle: str, slug: str, nn: str, request: Request,
     # own region (their country from the CDN geo header), attributed to this click.
     if product.link_kind in ("own", "auto") and (product.url or "").startswith("http"):
         dest = product.url
-        # A feed-matched AWIN deep link ('auto') needs THIS click's ref appended so the
-        # conversion attributes back to the right creator/page. ('own' links are the
-        # creator's own — we don't touch their tracking.)
+        # A feed-matched AWIN deep link ('auto') gets THIS click's ref (exact
+        # attribution) + the creator handle as clickref2 (a per-creator SubID, so
+        # AWIN's reports break sales down per creator). ('own' links are the creator's
+        # own — we don't touch their tracking.)
         if product.link_kind == "auto" and "awin1.com" in dest and "clickref=" not in dest:
-            dest += ("&" if "?" in dest else "?") + f"clickref={click.id}"
+            dest += ("&" if "?" in dest else "?") + (
+                f"clickref={click.id}&clickref2={quote(handle, safe='')}")
     else:
         country = (request.headers.get("cf-ipcountry")            # Cloudflare
                    or request.headers.get("x-vercel-ip-country")  # Vercel
                    or request.headers.get("x-country") or "")      # generic/custom
         dest = affiliate.resolve_link(product.brand, product.name, product.retailer,
-                                      clickref=str(click.id), country=country)["url"]
+                                      clickref=str(click.id), country=country,
+                                      subref=handle)["url"]
     return RedirectResponse(dest, status_code=302)
 
 

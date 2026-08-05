@@ -91,17 +91,19 @@ def _destination(brand: str, name: str, retailer: str) -> str:
 class AffiliateNetwork(Protocol):
     """Resolve a product to a best-rate buy link + commission. Phase 3.
     `clickref` is an opaque token (we pass the Click id) the network echoes back on a
-    conversion so the sale can be attributed to the right creator/page. `country` is
-    the SHOPPER's ISO country (from the click) for geo-aware regional links."""
+    conversion so the sale can be attributed to the exact click. `subref` is the
+    creator's id (handle) — a per-creator SubID that lets AWIN's own reports break
+    down sales by creator. `country` is the SHOPPER's ISO country (from the click)
+    for geo-aware regional links."""
     def resolve_link(self, brand: str, name: str, retailer: str,
-                     clickref: str = "", country: str = "") -> dict: ...
+                     clickref: str = "", country: str = "", subref: str = "") -> dict: ...
 
 
 class MockAffiliateNetwork:
     """No real network. Prefer a trusted retailer's search when we're confident it
     carries the item; otherwise Google Shopping so the link always works. No tracking."""
     def resolve_link(self, brand: str, name: str, retailer: str,
-                     clickref: str = "", country: str = "") -> dict:
+                     clickref: str = "", country: str = "", subref: str = "") -> dict:
         return {"url": _destination(brand, name, retailer), "rate": 8,
                 "retailer": retailer, "network": "mock"}
 
@@ -154,15 +156,19 @@ class AwinAffiliateNetwork:
         self.affid = os.environ.get("AWIN_PUBLISHER_ID", "").strip()
 
     def resolve_link(self, brand: str, name: str, retailer: str,
-                     clickref: str = "", country: str = "") -> dict:
+                     clickref: str = "", country: str = "", subref: str = "") -> dict:
         mid, search = _pick_program(retailer, country)
         if search:
             dest = search.format(q=quote_plus(f"{brand} {name}".strip()))
         else:
             dest = _destination(brand, name, retailer)
         if self.affid and mid:
+            # clickref = this click (exact attribution); clickref2 = creator SubID
+            # (so AWIN's reports break sales down per creator).
             url = (f"https://www.awin1.com/cread.php?awinmid={mid}&awinaffid={self.affid}"
-                   f"&clickref={quote(clickref, safe='')}&ued={quote(dest, safe='')}")
+                   f"&clickref={quote(clickref, safe='')}"
+                   f"&clickref2={quote(subref, safe='')}"
+                   f"&ued={quote(dest, safe='')}")
             return {"url": url, "rate": 8, "retailer": retailer, "network": "awin"}
         return {"url": dest, "rate": 0, "retailer": retailer, "network": "none"}
 

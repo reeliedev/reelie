@@ -47,17 +47,20 @@ def redirect(handle: str, slug: str, nn: str, request: Request,
         raise HTTPException(400, "Bad product index")
     page, product = _product_at(session, handle, slug, position)
 
-    session.add(Click(
+    click = Click(
         handle=handle, page_slug=slug, position=position, product_id=product.id,
-        session=request.query_params.get("s"), user_agent=user_agent, referer=referer))
+        session=request.query_params.get("s"), user_agent=user_agent, referer=referer)
+    session.add(click)
     session.commit()
+    session.refresh(click)   # need the id to attribute a later conversion (AWIN clickref)
 
-    # A creator-set ('own') or auto-resolved ('auto') direct product link wins;
-    # otherwise fall back to the affiliate/search resolver.
+    # A creator-set ('own') or auto-resolved ('auto') direct product link wins as-is;
+    # otherwise the affiliate resolver builds a tracked link attributed to this click.
     if product.link_kind in ("own", "auto") and (product.url or "").startswith("http"):
         dest = product.url
     else:
-        dest = affiliate.resolve_link(product.brand, product.name, product.retailer)["url"]
+        dest = affiliate.resolve_link(product.brand, product.name, product.retailer,
+                                      clickref=str(click.id))["url"]
     return RedirectResponse(dest, status_code=302)
 
 

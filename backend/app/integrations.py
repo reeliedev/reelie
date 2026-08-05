@@ -91,40 +91,72 @@ def _destination(brand: str, name: str, retailer: str) -> str:
 class AffiliateNetwork(Protocol):
     """Resolve a product to a best-rate buy link + commission. Phase 3.
     `clickref` is an opaque token (we pass the Click id) the network echoes back on a
-    conversion so the sale can be attributed to the right creator/page."""
-    def resolve_link(self, brand: str, name: str, retailer: str, clickref: str = "") -> dict: ...
+    conversion so the sale can be attributed to the right creator/page. `country` is
+    the SHOPPER's ISO country (from the click) for geo-aware regional links."""
+    def resolve_link(self, brand: str, name: str, retailer: str,
+                     clickref: str = "", country: str = "") -> dict: ...
 
 
 class MockAffiliateNetwork:
     """No real network. Prefer a trusted retailer's search when we're confident it
     carries the item; otherwise Google Shopping so the link always works. No tracking."""
-    def resolve_link(self, brand: str, name: str, retailer: str, clickref: str = "") -> dict:
+    def resolve_link(self, brand: str, name: str, retailer: str,
+                     clickref: str = "", country: str = "") -> dict:
         return {"url": _destination(brand, name, retailer), "rate": 8,
                 "retailer": retailer, "network": "mock"}
 
 
-def _awin_merchants() -> dict:
-    """retailer name (lowercased) -> AWIN advertiser id (awinmid). Configured via the
-    AWIN_MERCHANTS env var as JSON, e.g. {"sephora": "12345", "target": "67890"} —
-    one entry per merchant you're approved with in AWIN."""
+def _awin_config() -> dict:
+    """Parse AWIN_MERCHANTS (JSON). Two accepted shapes per retailer:
+
+      Flat (single program):     "sephora": "12345"
+      Region-aware (per country): "douglas": {
+          "HU": {"mid": "111", "search": "https://www.douglas.hu/hu/search/{q}"},
+          "IT": {"mid": "222", "search": "https://www.douglas.it/it/search/{q}"},
+          "default": "IT"          # used when the shopper's country has no program
+      }
+    The region-aware form is what makes a link resolve to the shopper's own regional
+    store + the matching regional AWIN program."""
     try:
         raw = json.loads(os.environ.get("AWIN_MERCHANTS", "").strip() or "{}")
-        return {str(k).strip().lower(): str(v).strip() for k, v in raw.items()}
+        return {str(k).strip().lower(): v for k, v in raw.items()}
     except Exception:  # noqa: BLE001
         return {}
 
 
+def _pick_program(retailer: str, country: str) -> tuple:
+    """(awinmid, region_search_template) for a retailer given the SHOPPER's country,
+    or (None, None) if the retailer isn't configured. Region-aware config picks the
+    country's program, else the retailer's declared default, else the first program."""
+    cfg = _awin_config().get((retailer or "").strip().lower())
+    if cfg is None:
+        return None, None
+    if isinstance(cfg, str):                                   # flat: one program
+        return cfg.strip(), _RETAILER_SEARCH.get((retailer or "").strip().lower())
+    entry = (cfg.get((country or "").upper())                  # shopper's region
+             or cfg.get(str(cfg.get("default", "")).upper())   # declared default
+             or next((v for v in cfg.values() if isinstance(v, dict)), None))  # any
+    if not isinstance(entry, dict):
+        return None, None
+    return str(entry.get("mid", "")).strip() or None, entry.get("search")
+
+
 class AwinAffiliateNetwork:
-    """AWIN deep links via cread.php. The destination retailer search URL is wrapped
-    with the publisher id (awinaffid) + the merchant's advertiser id (awinmid) + a
-    clickref for per-sale attribution. If the product's retailer isn't an approved
-    AWIN merchant, we return the plain destination (link still works, earns nothing)."""
+    """AWIN deep links via cread.php, geo-aware. Using the SHOPPER's country (from the
+    click), we pick that retailer's regional program (advertiser id + regional store
+    URL), wrap the destination with awinaffid + awinmid + a clickref for per-sale
+    attribution. Retailers/regions we're not approved for fall back to a plain
+    destination (link still works, earns nothing)."""
     def __init__(self) -> None:
         self.affid = os.environ.get("AWIN_PUBLISHER_ID", "").strip()
 
-    def resolve_link(self, brand: str, name: str, retailer: str, clickref: str = "") -> dict:
-        dest = _destination(brand, name, retailer)
-        mid = _awin_merchants().get((retailer or "").strip().lower())
+    def resolve_link(self, brand: str, name: str, retailer: str,
+                     clickref: str = "", country: str = "") -> dict:
+        mid, search = _pick_program(retailer, country)
+        if search:
+            dest = search.format(q=quote_plus(f"{brand} {name}".strip()))
+        else:
+            dest = _destination(brand, name, retailer)
         if self.affid and mid:
             url = (f"https://www.awin1.com/cread.php?awinmid={mid}&awinaffid={self.affid}"
                    f"&clickref={quote(clickref, safe='')}&ued={quote(dest, safe='')}")

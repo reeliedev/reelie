@@ -55,12 +55,16 @@ def redirect(handle: str, slug: str, nn: str, request: Request,
     session.refresh(click)   # need the id to attribute a later conversion (AWIN clickref)
 
     # A creator-set ('own') or auto-resolved ('auto') direct product link wins as-is;
-    # otherwise the affiliate resolver builds a tracked link attributed to this click.
+    # otherwise the affiliate resolver builds a tracked link — routed to the SHOPPER's
+    # own region (their country from the CDN geo header), attributed to this click.
     if product.link_kind in ("own", "auto") and (product.url or "").startswith("http"):
         dest = product.url
     else:
+        country = (request.headers.get("cf-ipcountry")            # Cloudflare
+                   or request.headers.get("x-vercel-ip-country")  # Vercel
+                   or request.headers.get("x-country") or "")      # generic/custom
         dest = affiliate.resolve_link(product.brand, product.name, product.retailer,
-                                      clickref=str(click.id))["url"]
+                                      clickref=str(click.id), country=country)["url"]
     return RedirectResponse(dest, status_code=302)
 
 

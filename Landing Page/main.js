@@ -1,4 +1,4 @@
-/* Retrieva landing — interactions */
+/* Reelie landing — interactions */
 (function () {
   "use strict";
 

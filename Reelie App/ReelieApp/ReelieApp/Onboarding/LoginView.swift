@@ -129,7 +129,7 @@ struct EmailSignInSheet: View {
                       keyboard: .emailAddress, content: .emailAddress)
             } else {
                 Text("Enter your code").displayStyle(26).padding(.top, 26)
-                Text("We sent a 6-digit code to \(email).")
+                Text("We sent a sign-in code to \(email).")
                     .font(ReelieFont.ui(14)).foregroundStyle(Palette.grey).lineSpacing(2).padding(.top, 6)
                 field(placeholder: "123456", text: $code,
                       keyboard: .numberPad, content: .oneTimeCode)
@@ -165,7 +165,9 @@ struct EmailSignInSheet: View {
     }
 
     private var canContinue: Bool {
-        stage == .email ? (email.contains("@") && email.contains(".")) : code.count >= 6
+        // Length-agnostic: accept any plausible code (Supabase's OTP length can vary),
+        // so we don't hard-block a code that isn't exactly 6 digits.
+        stage == .email ? (email.contains("@") && email.contains(".")) : code.count >= 4
     }
 
     private func go() async {

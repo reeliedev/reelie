@@ -10,6 +10,7 @@ Monetization core (Phase 3):
 
 from __future__ import annotations
 
+import os
 import random
 from urllib.parse import quote
 
@@ -25,6 +26,10 @@ from app.models import Click, Page, Product, Sale
 from app.routers.ingest import require_ingest_token
 
 router = APIRouter(prefix="/r", tags=["redirect"])
+
+# Our AWIN publisher id — used to recognise an AWIN link as ours (so we can stamp it
+# with per-click + per-creator tracking) vs a creator's genuinely-own link.
+_AWIN_AFFID = os.environ.get("AWIN_PUBLISHER_ID", "").strip()
 
 
 def _product_at(session: Session, handle: str, slug: str, position: int) -> tuple[Page, Product]:
@@ -60,11 +65,16 @@ def redirect(handle: str, slug: str, nn: str, request: Request,
     # own region (their country from the CDN geo header), attributed to this click.
     if product.link_kind in ("own", "auto") and (product.url or "").startswith("http"):
         dest = product.url
-        # A feed-matched AWIN deep link ('auto') gets THIS click's ref (exact
-        # attribution) + the creator handle as clickref2 (a per-creator SubID, so
-        # AWIN's reports break sales down per creator). ('own' links are the creator's
-        # own — we don't touch their tracking.)
-        if product.link_kind == "auto" and "awin1.com" in dest and "clickref=" not in dest:
+        # Stamp OUR AWIN links with this click's id (exact attribution) + the creator
+        # handle as clickref2 (a per-creator SubID, so AWIN's reports break sales down
+        # per creator). "Ours" = an awin1.com link that is either feed-matched ('auto')
+        # or carries OUR publisher id — the latter covers an 'own' link a creator pasted
+        # straight from our feed. A creator's genuinely-own link (a different store, or a
+        # different publisher id) has neither, so it's left exactly as they set it.
+        ours_awin = ("awin1.com" in dest and "clickref=" not in dest
+                     and (product.link_kind == "auto"
+                          or (_AWIN_AFFID and _AWIN_AFFID in dest)))
+        if ours_awin:
             dest += ("&" if "?" in dest else "?") + (
                 f"clickref={click.id}&clickref2={quote(handle, safe='')}")
     else:

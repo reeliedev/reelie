@@ -14,7 +14,7 @@ from pydantic import BaseModel
 from sqlalchemy import func
 from sqlmodel import Session, delete, select
 
-from app import admin_page, awin_feed, config, notify
+from app import admin_page, awin_feed, awin_sales, config, notify
 from app.db import get_session
 from app.models import (Click, Creator, Favorite, GenerationJob, MerchantProduct, Page,
                         PageLike, PageView, Payout, Product, Sale, SocialConnection,
@@ -61,6 +61,17 @@ def awin_ingest(background: BackgroundTasks):
     return {"ok": True, "status": "ingestion started"}
 
 
+@router.post("/admin/awin/import-sales", dependencies=[Depends(require_admin)])
+def awin_import_sales(background: BackgroundTasks):
+    """Pull recent AWIN transactions and credit them to creators as Sales (idempotent).
+    Runs in the background; check a creator's earnings or the logs for results. Cron
+    this daily. Needs AWIN_API_TOKEN + AWIN_PUBLISHER_ID."""
+    if not awin_sales.enabled():
+        raise HTTPException(400, "AWIN_API_TOKEN / AWIN_PUBLISHER_ID not set on this service.")
+    background.add_task(awin_sales.import_sales)
+    return {"ok": True, "status": "sales import started"}
+
+
 @router.get("/admin/awin/status", dependencies=[Depends(require_admin)])
 def awin_status(session: Session = Depends(get_session)):
     """How many catalogue products are loaded, and a per-merchant breakdown.
@@ -72,7 +83,13 @@ def awin_status(session: Session = Depends(get_session)):
         .group_by(MerchantProduct.merchant_name)
     ).all()
     by_merchant = {(name or "?"): count for name, count in breakdown}
-    return {"enabled": awin_feed.enabled(), "products": total, "byMerchant": by_merchant}
+    sales_by_state = dict(session.exec(
+        select(Sale.state, func.count()).where(Sale.network == "awin")
+        .group_by(Sale.state)).all())
+    return {"enabled": awin_feed.enabled(), "products": total, "byMerchant": by_merchant,
+            "salesImportEnabled": awin_sales.enabled(),
+            "importedSales": {"byState": sales_by_state,
+                              "total": sum(sales_by_state.values())}}
 
 
 @router.get("/admin", response_class=HTMLResponse)

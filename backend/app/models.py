@@ -226,7 +226,8 @@ class Sale(SQLModel, table=True):
     retailer: str = ""
     network: str = "mock"
     click_id: str | None = None
-    state: str = "pending"                                 # pending | ready | paid
+    external_id: str = Field(default="", index=True)       # AWIN transaction id (idempotent import)
+    state: str = "pending"                                 # pending | ready | paid | void
     date: datetime = Field(default_factory=_now)
 
 

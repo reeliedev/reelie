@@ -121,3 +121,25 @@ services:
     envVars:
       - key: ADMIN_TOKEN
         sync: false                  # SAME value as reelie-api (copy from its Env tab)
+
+  # ------------------------------------------ AWIN conversion import (cron, 4x/day)
+  # Pulls actual AWIN transactions and credits them to creators as Sales (idempotent),
+  # so the earnings dashboard shows REAL commission, not an estimate. Runs more often
+  # than the feed refresh to pick up new sales + status changes (pending->approved).
+  # Needs AWIN_API_TOKEN + AWIN_PUBLISHER_ID set on reelie-api (this cron only triggers
+  # the endpoint, so its only secret is ADMIN_TOKEN — same value as reelie-api).
+  - type: cron
+    name: reelie-awin-sales
+    runtime: docker
+    plan: starter
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    schedule: "15 */6 * * *"         # every 6h at :15 (offset from the feed refresh)
+    dockerCommand: >-
+      python -c "import os,urllib.request as u;
+      req=u.Request('https://reelie.io/admin/awin/import-sales', method='POST',
+      headers={'X-Admin-Token': os.environ['ADMIN_TOKEN']});
+      print(u.urlopen(req, timeout=60).read().decode())"
+    envVars:
+      - key: ADMIN_TOKEN
+        sync: false                  # SAME value as reelie-api (copy from its Env tab)

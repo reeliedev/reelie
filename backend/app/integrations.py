@@ -133,6 +133,9 @@ def _pick_program(retailer: str, country: str) -> tuple:
         return None, None
     if isinstance(cfg, str):                                   # flat: one program
         return cfg.strip(), _RETAILER_SEARCH.get((retailer or "").strip().lower())
+    if isinstance(cfg, dict) and ("mid" in cfg or "search" in cfg):
+        # single global program: {"mid": "...", "search": "https://store/..{q}.."}
+        return str(cfg.get("mid", "")).strip() or None, cfg.get("search")
     entry = (cfg.get((country or "").upper())                  # shopper's region
              or cfg.get(str(cfg.get("default", "")).upper())   # declared default
              or next((v for v in cfg.values() if isinstance(v, dict)), None))  # any

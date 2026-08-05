@@ -11,6 +11,7 @@ import hmac
 from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
+from sqlalchemy import func
 from sqlmodel import Session, delete, select
 
 from app import admin_page, awin_feed, config, notify
@@ -62,14 +63,16 @@ def awin_ingest(background: BackgroundTasks):
 
 @router.get("/admin/awin/status", dependencies=[Depends(require_admin)])
 def awin_status(session: Session = Depends(get_session)):
-    """How many catalogue products are loaded, and a merchant breakdown."""
-    rows = session.exec(select(MerchantProduct)).all()
-    by_merchant: dict[str, int] = {}
-    for r in rows:
-        by_merchant[r.merchant_name or r.merchant_id] = by_merchant.get(
-            r.merchant_name or r.merchant_id, 0) + 1
-    return {"enabled": awin_feed.enabled(), "products": len(rows),
-            "byMerchant": by_merchant}
+    """How many catalogue products are loaded, and a per-merchant breakdown.
+    Counts in SQL (COUNT / GROUP BY) — never loads the ~200k rows into memory, which
+    would OOM a 512MB service."""
+    total = session.exec(select(func.count()).select_from(MerchantProduct)).one()
+    breakdown = session.exec(
+        select(MerchantProduct.merchant_name, func.count())
+        .group_by(MerchantProduct.merchant_name)
+    ).all()
+    by_merchant = {(name or "?"): count for name, count in breakdown}
+    return {"enabled": awin_feed.enabled(), "products": total, "byMerchant": by_merchant}
 
 
 @router.get("/admin", response_class=HTMLResponse)

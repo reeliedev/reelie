@@ -5,6 +5,7 @@ import SwiftUI
 struct ProfileView: View {
     @Environment(AppState.self) private var app
     @State private var becomingCreator = false
+    @State private var signingIn = false
     @State private var showDeleteAccount = false
 
     var body: some View {
@@ -51,7 +52,7 @@ struct ProfileView: View {
                         }
                     }
 
-                    if app.isCreator {
+                    if app.isSignedIn {
                         Button("Sign out") { app.signOut() }
                             .font(ReelieFont.ui(14, weight: .medium)).foregroundStyle(Palette.fainter)
                             .buttonStyle(.plain).padding(.top, 24)
@@ -73,6 +74,17 @@ struct ProfileView: View {
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
         .fullScreenCover(isPresented: $becomingCreator) { BecomeCreatorView() }
+        .fullScreenCover(isPresented: $signingIn) {
+            // Plain sign-in for returning users. On success /me sets their real role,
+            // so a returning creator lands back in their studio (no re-claiming a handle).
+            LoginView(onContinue: {
+                signingIn = false
+                Task {
+                    await app.restoreSession()
+                    if app.isCreator { await app.loadMyPages() } else { await app.loadFavorites() }
+                }
+            }, onCancel: { signingIn = false })
+        }
         .confirmationDialog("Delete your account?", isPresented: $showDeleteAccount, titleVisibility: .visible) {
             Button("Delete everything", role: .destructive) { Task { await app.deleteAccount() } }
             Button("Cancel", role: .cancel) {}
@@ -81,16 +93,27 @@ struct ProfileView: View {
         }
     }
 
+    /// Name shown on the profile: real name when signed in (falling back to email,
+    /// then "You"), and "Guest" when just browsing — never a stale/mock identity.
+    private var profileName: String {
+        guard app.isSignedIn else { return "Guest" }
+        if !app.displayName.isEmpty { return app.displayName }
+        return app.currentUser.email.isEmpty ? "You" : app.currentUser.email
+    }
+
     private var identity: some View {
         VStack(spacing: 0) {
             CreatorAvatar(gradient: app.currentUser.avatarGradient, size: 76)
-            Text(app.displayName).displayStyle(24).padding(.top, 12)
+            Text(profileName).displayStyle(24).padding(.top, 12)
             Group {
                 if app.isCreator {
                     (Text(app.baseURL).foregroundStyle(Palette.grey).fontWeight(.medium)
                      + Text(app.handle).foregroundStyle(Palette.ink).fontWeight(.bold))
+                } else if app.isSignedIn {
+                    Text(app.currentUser.email.isEmpty ? "Shopping on Reelie" : app.currentUser.email)
+                        .foregroundStyle(Palette.grey)
                 } else {
-                    Text("Shopping on Reelie").foregroundStyle(Palette.grey)
+                    Text("You're browsing as a guest").foregroundStyle(Palette.grey)
                 }
             }
             .font(ReelieFont.ui(13)).padding(.top, 6)
@@ -100,22 +123,39 @@ struct ProfileView: View {
 
     // MARK: viewer
 
-    @ViewBuilder private var viewerSections: some View {
-        // Become a creator.
-        Button { becomingCreator = true } label: {
-            HStack(spacing: 14) {
-                EmojiThumb(emoji: "🎬", size: 46, corner: 12, fill: Palette.sun)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Become a creator").font(ReelieFont.ui(15, weight: .bold)).foregroundStyle(Palette.ink)
-                    Text("Turn your videos into shoppable pages").font(ReelieFont.ui(12.5)).foregroundStyle(Palette.grey)
-                }
-                Spacer(minLength: 4)
-                Image(systemName: "chevron.right").font(.system(size: 15, weight: .bold)).foregroundStyle(Palette.faint)
+    /// Shared layout for the profile action cards (Sign in / Become a creator).
+    private func profileCard(emoji: String, fill: Color, title: String, subtitle: String) -> some View {
+        HStack(spacing: 14) {
+            EmojiThumb(emoji: emoji, size: 46, corner: 12, fill: fill)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title).font(ReelieFont.ui(15, weight: .bold)).foregroundStyle(Palette.ink)
+                Text(subtitle).font(ReelieFont.ui(12.5)).foregroundStyle(Palette.grey)
             }
-            .padding(15).hairlineCard(color: Palette.ink)
+            Spacer(minLength: 4)
+            Image(systemName: "chevron.right").font(.system(size: 15, weight: .bold)).foregroundStyle(Palette.faint)
+        }
+        .padding(15).hairlineCard(color: Palette.ink)
+    }
+
+    @ViewBuilder private var viewerSections: some View {
+        // Sign in — for RETURNING users (existing creators/accounts) to log back in.
+        // Guests only: once signed in, this is replaced by account actions below.
+        if !app.isSignedIn {
+            Button { signingIn = true } label: {
+                profileCard(emoji: "👋", fill: Palette.soft, title: "Sign in",
+                            subtitle: "Already have an account? Log back in")
+            }
+            .buttonStyle(PressableStyle())
+            .padding(.top, 22)
+        }
+
+        // Become a creator — sign up + claim a handle (a different action from Sign in).
+        Button { becomingCreator = true } label: {
+            profileCard(emoji: "🎬", fill: Palette.sun, title: "Become a creator",
+                        subtitle: "Turn your videos into shoppable pages")
         }
         .buttonStyle(PressableStyle())
-        .padding(.top, 22)
+        .padding(.top, app.isSignedIn ? 22 : 12)
 
         SectionLabel(text: "YOU").padding(.top, 22).padding(.bottom, 10)
         SettingsGroup {

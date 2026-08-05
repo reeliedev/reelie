@@ -7,6 +7,9 @@ import AuthenticationServices
 struct LoginView: View {
     @Environment(AppState.self) private var app
     var onContinue: () -> Void
+    /// When presented modally (e.g. "Sign in" from the profile), shows a close
+    /// button. Nil during onboarding, where there's nothing to dismiss to.
+    var onCancel: (() -> Void)? = nil
 
     @State private var showEmail = false
     @State private var appleNonce = ""
@@ -15,6 +18,16 @@ struct LoginView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            if let onCancel {
+                HStack {
+                    Spacer()
+                    Button { onCancel() } label: {
+                        Image(systemName: "xmark").font(.system(size: 15, weight: .bold))
+                            .foregroundStyle(Palette.grey).padding(10)
+                    }
+                }
+                .padding(.horizontal, 18).padding(.top, 8)
+            }
             Spacer()
             VStack(spacing: 16) {
                 Wordmark(size: 44)

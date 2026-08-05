@@ -27,11 +27,14 @@ final class AppState {
     // The signed-in account. Viewer by default; "become a creator" unlocks the
     // studio on the same identity.
     var currentUser = User(
-        displayName: "Jess Tan", handle: "glowbyjess",
+        displayName: "", handle: "",
         avatarGradient: [Color(hex: 0xE8E4DA), Color(hex: 0xD8D2C4)],
         role: .viewer
     )
     var isCreator: Bool { currentUser.role.isCreator }
+    /// A stored bearer token means a real account is signed in — vs. a guest just
+    /// browsing. Drives the profile's "Sign in" vs "Become a creator" fork.
+    var isSignedIn: Bool { authToken != nil }
 
     // Last-known role/creator-status, persisted so the tab bar shows the right
     // tabs from the first frame (no 3→5 flicker) and the Pages tab loads on the
@@ -560,6 +563,9 @@ final class AppState {
         refreshToken = nil
         currentUser.role = .viewer
         currentUser.creatorStatus = nil
+        currentUser.displayName = ""     // don't leave a stale name on the guest profile
+        currentUser.handle = ""
+        currentUser.email = ""
         UserDefaults.standard.removeObject(forKey: Self.roleKey)
         UserDefaults.standard.removeObject(forKey: Self.creatorStatusKey)
         earningsSummary = nil
@@ -645,11 +651,13 @@ final class AppState {
     var profileURL: String { "\(baseURL)\(handle)" }
 
     // ---- Earnings --------------------------------------------------------
-    var pending = "$62.10"
-    var ready = "$186.40"
-    var readyToPayout = "$186.40"
-    var paidSoFar = "$412.85"
-    var sales: [Sale] = SampleData.sales
+    // Zeroed fallbacks — shown only until the real earnings summary loads. Must never
+    // display invented money (a creator with $0 should see $0, not a demo figure).
+    var pending = "$0.00"
+    var ready = "$0.00"
+    var readyToPayout = "$0.00"
+    var paidSoFar = "$0.00"
+    var sales: [Sale] = []
 
     var lifetimeEarnings: Double { sales.reduce(0) { $0 + $1.value } }
     func earnings(sinceDaysAgo days: Int) -> Double {

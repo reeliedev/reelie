@@ -63,7 +63,7 @@ def withdraw(user: User = Depends(current_user), session: Session = Depends(get_
         s.state = "paid"
         session.add(s)
     payout = Payout(handle=user.handle, amount=amount, status=result.get("status", "paid"),
-                    provider="mock", provider_ref=result.get("ref"))
+                    provider=getattr(provider, "name", "mock"), provider_ref=result.get("ref"))
     session.add(payout)
     session.commit()
     return {"ok": True, "amount": amount, "status": payout.status}

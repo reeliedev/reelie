@@ -134,6 +134,7 @@ class AwinAffiliateNetwork:
 
 class PayoutProvider(Protocol):
     """Connected accounts + payouts. Phase 4 (Stripe Connect swaps in here)."""
+    name: str
     def onboarding_url(self, handle: str) -> str: ...
     def is_connected(self, handle: str) -> bool: ...
     def create_payout(self, handle: str, amount: float) -> dict: ...
@@ -141,6 +142,8 @@ class PayoutProvider(Protocol):
 
 class MockPayoutProvider:
     """No real transfers. Onboarding is auto-completed; payouts return a fake ref."""
+    name = "mock"
+
     def onboarding_url(self, handle: str) -> str:
         return f"https://connect.stripe.com/setup/mock/{handle}"
 
@@ -151,7 +154,79 @@ class MockPayoutProvider:
         return {"ref": f"po_mock_{handle}", "status": "paid"}
 
 
+class StripePayoutProvider:
+    """Stripe Connect Express. Creators onboard via Stripe-hosted KYC; the platform
+    holds each creator's commission balance and transfers it to their connected
+    account on withdrawal. The Stripe account id is stored on the Creator row.
+
+    Requires STRIPE_SECRET_KEY. USE A TEST KEY FIRST: create_payout moves REAL money
+    in live mode, so only set a live key once earnings are real (AWIN conversions
+    imported + reconciled) — until then the 'ready' balance is estimated."""
+    name = "stripe"
+
+    def __init__(self) -> None:
+        import stripe
+        stripe.api_key = os.environ["STRIPE_SECRET_KEY"].strip()
+        self._stripe = stripe
+        self._base = os.environ.get("PUBLIC_BASE_URL", "https://reelie.io").rstrip("/")
+
+    def _account_id(self, handle: str, create: bool = False) -> str | None:
+        from sqlmodel import Session
+        from app.db import engine
+        from app.models import Creator
+        with Session(engine) as s:
+            c = s.get(Creator, handle)
+            if not c:
+                return None
+            if c.stripe_account_id:
+                return c.stripe_account_id
+            if not create:
+                return None
+            acct = self._stripe.Account.create(
+                type="express", business_type="individual",
+                capabilities={"transfers": {"requested": True}},
+                metadata={"handle": handle})
+            c.stripe_account_id = acct.id
+            s.add(c); s.commit()
+            return acct.id
+
+    def onboarding_url(self, handle: str) -> str:
+        aid = self._account_id(handle, create=True)
+        link = self._stripe.AccountLink.create(
+            account=aid, type="account_onboarding",
+            refresh_url=f"{self._base}/studio?payout=refresh",
+            return_url=f"{self._base}/studio?payout=done")
+        return link.url
+
+    def is_connected(self, handle: str) -> bool:
+        aid = self._account_id(handle)
+        if not aid:
+            return False
+        try:
+            return bool(self._stripe.Account.retrieve(aid).payouts_enabled)
+        except Exception:  # noqa: BLE001
+            return False
+
+    def create_payout(self, handle: str, amount: float) -> dict:
+        aid = self._account_id(handle)
+        if not aid:
+            return {"ref": None, "status": "failed"}
+        tr = self._stripe.Transfer.create(
+            amount=int(round(amount * 100)), currency="usd",
+            destination=aid, metadata={"handle": handle})
+        return {"ref": tr.id, "status": "paid"}
+
+
+def _make_payouts() -> PayoutProvider:
+    if os.environ.get("STRIPE_SECRET_KEY", "").strip():
+        try:
+            return StripePayoutProvider()
+        except Exception as e:  # noqa: BLE001 — never brick the app on a bad key
+            print(f"[payouts] Stripe init failed, using mock: {e}", flush=True)
+    return MockPayoutProvider()
+
+
 affiliate: AffiliateNetwork = (AwinAffiliateNetwork()
                                if os.environ.get("AWIN_PUBLISHER_ID", "").strip()
                                else MockAffiliateNetwork())
-payouts: PayoutProvider = MockPayoutProvider()
+payouts: PayoutProvider = _make_payouts()

@@ -10,3 +10,4 @@ psycopg[binary]>=3.1     # Postgres driver (used when DATABASE_URL is postgresql
 boto3>=1.34          # object storage (Cloudflare R2 / S3) for uploads + clips
 certifi>=2024.0          # CA bundle for outbound HTTPS (Resend email)
 slowapi>=0.1.9           # per-IP rate limiting (flood backstop)
+stripe>=9            # Stripe Connect payouts (StripePayoutProvider)

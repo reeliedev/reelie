@@ -43,6 +43,7 @@ class Creator(SQLModel, table=True):
     youtube: str = ""                                      # submitted YouTube handle
     applied_at: datetime = Field(default_factory=_now)
     reviewed_at: datetime | None = None
+    stripe_account_id: str = ""                             # Stripe Connect Express acct (payouts)
 
 
 class Page(SQLModel, table=True):

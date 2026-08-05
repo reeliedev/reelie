@@ -96,3 +96,28 @@ services:
       #   YTDLP_PROXY = http://user:pass_country-us_session-{session}_lifetime-30m@geo.iproyal.com:12321
       - key: YTDLP_PROXY
         sync: false
+
+  # ------------------------------------------------ daily AWIN feed refresh (cron)
+  # Prices/stock drift daily, so rebuild the merchant-product catalogue once a day
+  # by triggering the same ingest endpoint you run by hand. Uses only the Python
+  # stdlib (no app import, no DB/feed config to duplicate), so its ONLY secret is
+  # ADMIN_TOKEN — which MUST equal the value on reelie-api (that one is
+  # generateValue, so copy it from the API's Environment tab into this service).
+  # The endpoint kicks the ingest off in the background and returns immediately,
+  # so this job's log shows "ingestion started" (not the final count — check
+  # /admin/awin/status for that).
+  - type: cron
+    name: reelie-awin-refresh
+    runtime: docker
+    plan: starter
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    schedule: "0 7 * * *"            # daily at 07:00 UTC
+    dockerCommand: >-
+      python -c "import os,urllib.request as u;
+      req=u.Request('https://reelie.io/admin/awin/ingest', method='POST',
+      headers={'X-Admin-Token': os.environ['ADMIN_TOKEN']});
+      print(u.urlopen(req, timeout=60).read().decode())"
+    envVars:
+      - key: ADMIN_TOKEN
+        sync: false                  # SAME value as reelie-api (copy from its Env tab)

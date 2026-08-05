@@ -12,29 +12,49 @@ from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException
 from pydantic import BaseModel
 from sqlmodel import Session, delete, select
 
-from app import config, product_search
+from app import awin_feed, config, product_search
 from app.db import engine, get_session
 from app.models import Creator, Page, Product
 from app.serialize import normalize_product
 
 
 def _resolve_links(page_id: str) -> None:
-    """Background: turn each product's search link into a direct buy link via
-    DataForSEO (skips creator-set 'own' links). No-op without creds."""
-    if not product_search.enabled():
+    """Background: turn each product's search link into a direct buy link, skipping
+    creator-set 'own' links. Two steps, best-first:
+      1. Our approved AWIN merchants' catalogues (awin_feed) — a verified, in-stock,
+         already-tracked deep link. Preferred: we know it's carried and it earns.
+      2. DataForSEO product search — a direct link for anything the feeds don't carry.
+    Each is a no-op without its config, so with neither set this leaves search links."""
+    if not (awin_feed.enabled() or product_search.enabled()):
         return
     with Session(engine) as s:
         prods = s.exec(select(Product).where(Product.page_id == page_id)).all()
         targets = [p for p in prods if p.link_kind != "own"]
-        resolved = product_search.resolve_batch(
-            [{"id": p.id, "brand": p.brand, "name": p.name, "variant": p.variant or ""}
-             for p in targets])
-        for p in targets:
-            r = resolved.get(p.id)
-            if r:
-                p.url, p.link_kind = r["url"], "auto"
-                s.add(p)
-        s.commit()
+
+        # Step 1 — feed match against our merchants' catalogues.
+        remaining = targets
+        if awin_feed.enabled():
+            remaining = []
+            for p in targets:
+                m = awin_feed.match(p.brand, p.name)
+                if m:
+                    p.url, p.link_kind, p.retailer = m.deep_link, "auto", m.merchant_name
+                    s.add(p)
+                else:
+                    remaining.append(p)
+            s.commit()
+
+        # Step 2 — search fallback for whatever the feeds didn't carry.
+        if product_search.enabled() and remaining:
+            resolved = product_search.resolve_batch(
+                [{"id": p.id, "brand": p.brand, "name": p.name, "variant": p.variant or ""}
+                 for p in remaining])
+            for p in remaining:
+                r = resolved.get(p.id)
+                if r:
+                    p.url, p.link_kind = r["url"], "auto"
+                    s.add(p)
+            s.commit()
 
 router = APIRouter(prefix="/ingest", tags=["ingest"])
 

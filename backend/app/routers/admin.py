@@ -13,10 +13,11 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from sqlmodel import Session, delete, select
 
-from app import admin_page, config, notify
+from app import admin_page, awin_feed, config, notify
 from app.db import get_session
-from app.models import (Click, Creator, Favorite, GenerationJob, Page, PageLike,
-                        PageView, Payout, Product, Sale, SocialConnection, User, _now)
+from app.models import (Click, Creator, Favorite, GenerationJob, MerchantProduct, Page,
+                        PageLike, PageView, Payout, Product, Sale, SocialConnection,
+                        User, _now)
 
 router = APIRouter(tags=["admin"])
 
@@ -46,6 +47,29 @@ def wipe_accounts(body: Wipe, session: Session = Depends(get_session)):
         session.exec(delete(Model))
     session.commit()
     return {"ok": True, "deleted": counts}
+
+
+@router.post("/admin/awin/ingest", dependencies=[Depends(require_admin)])
+def awin_ingest(background: BackgroundTasks):
+    """Download AWIN_FEED_URL and (re)build the merchant-product catalogue used to
+    resolve products to direct, tracked deep links. Runs in the background (the feed
+    is large); poll /admin/awin/status for the resulting count. Cron this daily."""
+    if not awin_feed.enabled():
+        raise HTTPException(400, "AWIN_FEED_URL is not set on this service.")
+    background.add_task(awin_feed.ingest)
+    return {"ok": True, "status": "ingestion started"}
+
+
+@router.get("/admin/awin/status", dependencies=[Depends(require_admin)])
+def awin_status(session: Session = Depends(get_session)):
+    """How many catalogue products are loaded, and a merchant breakdown."""
+    rows = session.exec(select(MerchantProduct)).all()
+    by_merchant: dict[str, int] = {}
+    for r in rows:
+        by_merchant[r.merchant_name or r.merchant_id] = by_merchant.get(
+            r.merchant_name or r.merchant_id, 0) + 1
+    return {"enabled": awin_feed.enabled(), "products": len(rows),
+            "byMerchant": by_merchant}
 
 
 @router.get("/admin", response_class=HTMLResponse)

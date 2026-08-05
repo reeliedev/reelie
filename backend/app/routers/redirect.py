@@ -59,6 +59,11 @@ def redirect(handle: str, slug: str, nn: str, request: Request,
     # own region (their country from the CDN geo header), attributed to this click.
     if product.link_kind in ("own", "auto") and (product.url or "").startswith("http"):
         dest = product.url
+        # A feed-matched AWIN deep link ('auto') needs THIS click's ref appended so the
+        # conversion attributes back to the right creator/page. ('own' links are the
+        # creator's own — we don't touch their tracking.)
+        if product.link_kind == "auto" and "awin1.com" in dest and "clickref=" not in dest:
+            dest += ("&" if "?" in dest else "?") + f"clickref={click.id}"
     else:
         country = (request.headers.get("cf-ipcountry")            # Cloudflare
                    or request.headers.get("x-vercel-ip-country")  # Vercel

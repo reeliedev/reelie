@@ -228,3 +228,25 @@ class Sale(SQLModel, table=True):
     click_id: str | None = None
     state: str = "pending"                                 # pending | ready | paid
     date: datetime = Field(default_factory=_now)
+
+
+class MerchantProduct(SQLModel, table=True):
+    """One product from an approved AWIN merchant's data feed. Ingested from
+    AWIN_FEED_URL (a gzip CSV) and matched against a video-detected product to
+    produce a direct, already-tracked buy link (`deep_link` = aw_deep_link).
+    The whole table is replaced on each ingest, so rows are disposable."""
+    id: str = Field(default_factory=_uuid, primary_key=True)
+    merchant_id: str = Field(default="", index=True)
+    merchant_name: str = ""
+    brand: str = ""
+    name: str = ""
+    name_norm: str = Field(default="", index=True)         # lowercased alphanumerics, for search
+    ean: str = Field(default="", index=True)
+    upc: str = Field(default="", index=True)
+    deep_link: str = ""                                    # aw_deep_link — already AWIN-tracked
+    product_url: str = ""                                  # merchant_deep_link — raw store URL
+    image: str = ""
+    price: float = 0.0
+    currency: str = ""
+    in_stock: bool = True
+    updated_at: datetime = Field(default_factory=_now)

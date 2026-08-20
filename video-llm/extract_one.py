@@ -76,8 +76,13 @@ def _download(url: str) -> tuple[Path, str]:
         # their n-challenge signature on download. Plain format *selection* leaves
         # them out (n-sig unsolved at listing time) and silently drops to 480p.
         # Non-YouTube URLs skip these itags and use the generic branches.
+        # YouTube: explicit 1080p/720p itags first (137/136, horizontal). Everything
+        # else (TikTok / Reels / Shorts) is VERTICAL — its 1080p is 1080w x 1920h, so a
+        # [height<=1080] cap wrongly excludes it and drops to 540p. Cap BOTH dims <=1920
+        # instead: orientation-agnostic ~1080p, works for portrait and landscape.
         "format": ("137+140/137+bestaudio/136+140/136+bestaudio/"
-                   "bestvideo[height<=1080]+bestaudio/best[height<=1080]/best"),
+                   "bestvideo[width<=1920][height<=1920]+bestaudio/"
+                   "best[width<=1920][height<=1920]/best"),
         "merge_output_format": "mp4",
         "quiet": True,
         "noplaylist": True,

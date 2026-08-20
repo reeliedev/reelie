@@ -92,7 +92,12 @@ struct ReelsFeedView: View {
                     }
                     .scrollTargetLayout()
                 }
-                .scrollTargetBehavior(.paging)
+                // Snap to CELL boundaries (not container-size strides). .paging drifts
+                // here because the scroll view ignores the top safe area while the tab
+                // bar insets the bottom — so its page stride ≠ the cell height and it
+                // lands between videos. .viewAligned snaps to each cell exactly;
+                // limitBehavior:.always keeps the one-swipe-one-video feel.
+                .scrollTargetBehavior(.viewAligned(limitBehavior: .always))
                 .scrollPosition(id: $activeID)
                 .background(Color.black)
                 // Ignore only the TOP safe area: the video runs full-bleed under

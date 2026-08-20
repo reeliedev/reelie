@@ -642,24 +642,39 @@ final class AppState {
             }
             let jobId = try await client.startGeneration(videoId: videoId, url: url,
                                                          uploadKey: uploadKey, title: title, token: token)
-            for _ in 0..<maxPolls {
-                let st = try await client.generationStatus(jobId: jobId, token: token)
-                onProgress?(st.stage, st.phase, st.preview ?? [], st.posterUrl)
-                if st.status == "done" {
-                    await refreshFromAPI()
-                    await loadMyPages()
-                    return .done(slug: st.pageSlug ?? "")
+            // The job is now queued and runs to completion on our servers regardless of
+            // this app. From here a THROWN error means WE lost the connection (the user
+            // backgrounded the app and iOS suspended us) — NOT that generation failed. So
+            // fall through to `.building`: the finished page still lands in Drafts. Only a
+            // real backend "error" status is a failure.
+            do {
+                for _ in 0..<maxPolls {
+                    let st = try await client.generationStatus(jobId: jobId, token: token)
+                    onProgress?(st.stage, st.phase, st.preview ?? [], st.posterUrl)
+                    if st.status == "done" {
+                        await refreshFromAPI()
+                        await loadMyPages()
+                        return .done(slug: st.pageSlug ?? "")
+                    }
+                    if st.status == "error" {
+                        print("[Reelie] generate error: \(st.error ?? "")")
+                        return .failed(reason: st.error)
+                    }
+                    try? await Task.sleep(nanoseconds: interval)
                 }
-                if st.status == "error" {
-                    print("[Reelie] generate error: \(st.error ?? "")")
-                    return .failed(reason: st.error)
-                }
-                try? await Task.sleep(nanoseconds: interval)
+            } catch {
+                // Lost the connection while the job runs server-side (e.g. backgrounded) —
+                // the page will be in Drafts. Not a failure.
+                print("[Reelie] generate poll interrupted, job continues server-side: \(error)")
             }
-            // Watch window elapsed — the backend keeps building; it'll show in Drafts.
+            // Watch window elapsed OR polling was interrupted — the backend keeps
+            // building; it'll show in Drafts.
             await loadMyPages()
             return .building
-        } catch { print("[Reelie] generatePage: \(error)"); return .failed(reason: nil) }
+        } catch {
+            // Failed before the job was even queued (upload/start) — a real failure.
+            print("[Reelie] generatePage: \(error)"); return .failed(reason: nil)
+        }
     }
 
     // ---- Creator studio --------------------------------------------------

@@ -66,6 +66,31 @@ struct SupabaseAuth {
                                body: ["type": "email", "email": email, "token": code]))
     }
 
+    // MARK: Email + password
+
+    /// Sign in with email + password → Supabase session.
+    func signInWithPassword(email: String, password: String) async throws -> Session {
+        try await send(request("auth/v1/token?grant_type=password",
+                               body: ["email": email, "password": password]))
+    }
+
+    /// Set (or change) the password on an ALREADY-authenticated session. Used right
+    /// after an OTP verify — at sign-up to create the password, and on the sign-in
+    /// code path to reset a forgotten one.
+    func setPassword(accessToken: String, password: String) async throws {
+        let full = URL(string: url.absoluteString + "/auth/v1/user") ?? url
+        var req = URLRequest(url: full)
+        req.httpMethod = "PUT"
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.setValue(anonKey, forHTTPHeaderField: "apikey")
+        req.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        req.httpBody = try? JSONSerialization.data(withJSONObject: ["password": password])
+        let (data, resp) = try await URLSession.shared.data(for: req)
+        guard let http = resp as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
+            throw AuthError.server(String(data: data, encoding: .utf8) ?? "Couldn't set your password.")
+        }
+    }
+
     // MARK: Sign in with Apple (native)
 
     /// Exchange Apple's identity token for a Supabase session.

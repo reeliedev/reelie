@@ -521,6 +521,30 @@ final class AppState {
         catch { print("[Reelie] verifyEmailOTP: \(error)"); return false }
     }
 
+    /// Sign in with email + password.
+    @MainActor @discardableResult
+    func signInWithPassword(email: String, password: String) async -> Bool {
+        currentUser.email = email
+        guard let sb = supabase() else { return await signIn(email: email) }   // dev fallback
+        do { return await adoptSupabaseSession(try await sb.signInWithPassword(email: email, password: password)) }
+        catch {
+            lastAuthError = "Wrong email or password."
+            print("[Reelie] signInWithPassword: \(error)"); return false
+        }
+    }
+
+    /// Set/reset the password on the current session (after an OTP verify at sign-up
+    /// or on the forgot-password code path). Requires an active token.
+    @MainActor @discardableResult
+    func setPassword(_ password: String) async -> Bool {
+        guard let sb = supabase(), let token = authToken else { return false }
+        do { try await sb.setPassword(accessToken: token, password: password); return true }
+        catch {
+            lastAuthError = "Couldn't set your password."
+            print("[Reelie] setPassword: \(error)"); return false
+        }
+    }
+
     @MainActor @discardableResult
     func signInWithApple(idToken: String, rawNonce: String) async -> Bool {
         guard let sb = supabase() else { lastAuthError = "Auth isn't configured (no Supabase)."; return false }

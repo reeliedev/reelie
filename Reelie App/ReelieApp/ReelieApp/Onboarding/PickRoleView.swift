@@ -140,7 +140,7 @@ struct BecomeCreatorView: View {
         .padding(.horizontal, 28)
         .task { await app.loadAuthConfig() }
         .sheet(isPresented: $showEmail) {
-            EmailSignInSheet { showEmail = false; afterSignedIn() }
+            EmailSignInSheet(mode: .signUp) { showEmail = false; afterSignedIn() }
                 .presentationDetents([.height(360)])
         }
     }

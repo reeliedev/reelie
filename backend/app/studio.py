@@ -295,7 +295,9 @@ async function viewSupabaseLogin(){
    '<button class="btn oauth google" id="google"> Continue with Google</button>'+
    '<div class="hr"><span>or with email</span></div>'+
    '<label>Email</label><input id="email" type="email" placeholder="you@example.com" autocomplete="email">'+
-   '<div style="height:12px"></div><button class="btn oauth" id="mlink">Email me a sign-in link</button>'+
+   '<label style="margin-top:12px">Password</label><input id="pass" type="password" placeholder="Your password" autocomplete="current-password">'+
+   '<div style="height:12px"></div><button class="btn" id="signin">Sign in</button>'+
+   '<div class="muted" style="margin-top:10px"><a href="#" id="forgot">Forgot password? Email me a code</a></div>'+
    '<div class="muted" id="msg" style="margin-top:12px"></div>'+
    '<div class="muted" style="margin-top:14px">New to Reelie? <a href="#" id="toSignup">Create your account →</a></div></div></div>';
   var hp = new URLSearchParams((INIT_HASH||'').replace(/^#/,'')), qp = new URLSearchParams(INIT_SEARCH||'');
@@ -304,44 +306,97 @@ async function viewSupabaseLogin(){
   var c = await supa();
   document.getElementById('apple').onclick = function(){ c.auth.signInWithOAuth({provider:'apple', options:{redirectTo:location.href}}); };
   document.getElementById('google').onclick = function(){ c.auth.signInWithOAuth({provider:'google', options:{redirectTo:location.href}}); };
-  document.getElementById('mlink').onclick = async function(){
-    var email=document.getElementById('email').value.trim(), msg=document.getElementById('msg');
+  document.getElementById('signin').onclick = async function(){
+    var email=document.getElementById('email').value.trim(), pass=document.getElementById('pass').value, msg=document.getElementById('msg');
     if(email.indexOf('@')<1){ msg.textContent='Enter a valid email.'; return; }
-    msg.textContent='Sending…';
-    var r = await c.auth.signInWithOtp({email:email, options:{emailRedirectTo:location.href}});
-    msg.textContent = r.error ? r.error.message : 'Check your email for a sign-in link ✨';
+    if(!pass){ msg.textContent='Enter your password.'; return; }
+    msg.textContent='Signing in…';
+    var r = await c.auth.signInWithPassword({email:email, password:pass});
+    if(r.error){ msg.innerHTML='<span class="err">'+esc(r.error.message)+'</span>'; }
+    else { location.reload(); }
   };
-  document.getElementById('email').addEventListener('keydown', function(e){ if(e.key==='Enter') document.getElementById('mlink').click(); });
+  document.getElementById('forgot').onclick = async function(e){ e.preventDefault();
+    var email=document.getElementById('email').value.trim(), msg=document.getElementById('msg');
+    if(email.indexOf('@')<1){ msg.textContent='Enter your email above first, then tap this.'; return; }
+    msg.textContent='Sending code…';
+    var r = await c.auth.signInWithOtp({email:email, options:{shouldCreateUser:false}});
+    if(r.error){ msg.innerHTML='<span class="err">'+esc(r.error.message)+'</span>'; }
+    else { viewEmailCode(email, 'signin'); }
+  };
+  document.getElementById('email').addEventListener('keydown', function(e){ if(e.key==='Enter') document.getElementById('pass').focus(); });
+  document.getElementById('pass').addEventListener('keydown', function(e){ if(e.key==='Enter') document.getElementById('signin').click(); });
   document.getElementById('toSignup').onclick = function(e){ e.preventDefault(); viewSignup(); };
 }
 
 async function viewSignup(){
   app.innerHTML =
    '<div class="authview"><h1>Create your account</h1>'+
-   '<p class="sub"><b>Step 1 of 2 — verify your email.</b> Then you\'ll set up your creator profile.</p>'+
+   '<p class="sub"><b>Step 1 — verify your email.</b> We\'ll email you a code.</p>'+
    '<div class="card" style="max-width:420px">'+
    '<button class="btn oauth apple" id="apple"> Continue with Apple</button>'+
    '<button class="btn oauth google" id="google"> Continue with Google</button>'+
    '<div class="hr"><span>or with email</span></div>'+
    '<label>Email</label><input id="email" type="email" placeholder="you@example.com" autocomplete="email">'+
-   '<div style="height:12px"></div><button class="btn" id="mlink">Verify my email →</button>'+
+   '<div style="height:12px"></div><button class="btn" id="send">Send code →</button>'+
    '<div class="muted" id="msg" style="margin-top:12px"></div>'+
    '<div class="muted" style="margin-top:14px">Already have an account? <a href="#" id="toSignin">Sign in →</a></div></div></div>';
   var c = await supa();
   document.getElementById('apple').onclick = function(){ c.auth.signInWithOAuth({provider:'apple', options:{redirectTo:location.href}}); };
   document.getElementById('google').onclick = function(){ c.auth.signInWithOAuth({provider:'google', options:{redirectTo:location.href}}); };
-  document.getElementById('mlink').onclick = async function(){
+  document.getElementById('send').onclick = async function(){
     var email=document.getElementById('email').value.trim(), msg=document.getElementById('msg');
     if(email.indexOf('@')<1){ msg.textContent='Enter a valid email.'; return; }
     msg.textContent='Sending…';
-    var r = await c.auth.signInWithOtp({email:email, options:{emailRedirectTo:location.href}});
-    msg.innerHTML = r.error ? '<span class="err">'+esc(r.error.message)+'</span>'
-      : 'Check your email for a verification link ✨ Click it to continue to step 2.';
+    var r = await c.auth.signInWithOtp({email:email, options:{shouldCreateUser:true}});
+    if(r.error){ msg.innerHTML='<span class="err">'+esc(r.error.message)+'</span>'; }
+    else { viewEmailCode(email, 'signup'); }
   };
-  document.getElementById('email').addEventListener('keydown', function(e){ if(e.key==='Enter') document.getElementById('mlink').click(); });
+  document.getElementById('email').addEventListener('keydown', function(e){ if(e.key==='Enter') document.getElementById('send').click(); });
   document.getElementById('toSignin').onclick = function(e){ e.preventDefault(); viewSupabaseLogin(); };
 }
 window.viewSignup = viewSignup;
+
+// Shared: enter the emailed code (sign-up verify, or forgot-password), then set a password.
+async function viewEmailCode(email, flow){
+  if(!email || email.indexOf('@')<1){ viewSupabaseLogin(); return; }
+  app.innerHTML =
+   '<div class="authview"><h1>Enter your code</h1>'+
+   '<p class="sub">We sent a sign-in code to <b>'+esc(email)+'</b>.</p>'+
+   '<div class="card" style="max-width:420px">'+
+   '<label>Code</label><input id="code" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="123456">'+
+   '<div style="height:12px"></div><button class="btn" id="verify">Verify →</button>'+
+   '<div class="muted" id="msg" style="margin-top:12px"></div></div></div>';
+  var c = await supa();
+  document.getElementById('verify').onclick = async function(){
+    var code=document.getElementById('code').value.trim(), msg=document.getElementById('msg');
+    if(code.length<4){ msg.textContent='Enter the code from your email.'; return; }
+    msg.textContent='Verifying…';
+    var r = await c.auth.verifyOtp({email:email, token:code, type:'email'});
+    if(r.error){ msg.innerHTML='<span class="err">'+esc(r.error.message)+'</span>'; }
+    else { viewSetPassword(flow); }
+  };
+  document.getElementById('code').addEventListener('keydown', function(e){ if(e.key==='Enter') document.getElementById('verify').click(); });
+}
+
+async function viewSetPassword(flow){
+  app.innerHTML =
+   '<div class="authview"><h1>'+(flow==='signup'?'Set a password':'Set a new password')+'</h1>'+
+   '<p class="sub">You\'ll use this to sign in next time.</p>'+
+   '<div class="card" style="max-width:420px">'+
+   '<label>Password</label><input id="pass" type="password" autocomplete="new-password" placeholder="Create a password (6+ characters)">'+
+   '<div style="height:12px"></div><button class="btn" id="save">Set password &amp; continue</button>'+
+   '<div class="muted" id="msg" style="margin-top:12px"></div></div></div>';
+  var c = await supa();
+  document.getElementById('save').onclick = async function(){
+    var pass=document.getElementById('pass').value, msg=document.getElementById('msg');
+    if((pass||'').length<6){ msg.textContent='Use at least 6 characters.'; return; }
+    msg.textContent='Saving…';
+    var r = await c.auth.updateUser({password:pass});
+    if(r.error){ msg.innerHTML='<span class="err">'+esc(r.error.message)+'</span>'; }
+    else { location.reload(); }
+  };
+  document.getElementById('pass').addEventListener('keydown', function(e){ if(e.key==='Enter') document.getElementById('save').click(); });
+}
 
 function viewApply(){
   app.innerHTML =

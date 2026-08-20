@@ -74,7 +74,7 @@ struct LoginView: View {
         .toolbar(.hidden, for: .navigationBar)
         .task { await app.loadAuthConfig() }
         .sheet(isPresented: $showEmail) {
-            EmailSignInSheet { showEmail = false; onContinue() }
+            EmailSignInSheet(mode: .signIn) { showEmail = false; onContinue() }
                 .presentationDetents([.height(360)])
         }
     }
@@ -108,12 +108,18 @@ struct LoginView: View {
 /// become-creator screens.
 struct EmailSignInSheet: View {
     @Environment(AppState.self) private var app
-    @Environment(\.dismiss) private var dismiss
+
+    /// signIn = email + password (with a "forgot password → code" backup).
+    /// signUp = email + code (verify) then set a password.
+    enum AuthMode { case signIn, signUp }
+    var mode: AuthMode = .signIn
     var onDone: () -> Void
 
-    private enum Stage { case email, code }
+    // email → (signUp: code → setPassword) | (signIn: password, or forgot → code → setPassword)
+    private enum Stage { case email, password, code, setPassword }
     @State private var stage: Stage = .email
     @State private var email = ""
+    @State private var password = ""
     @State private var code = ""
     @State private var busy = false
     @State private var error: String?
@@ -121,27 +127,25 @@ struct EmailSignInSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            if stage == .email {
-                Text("What's your email?").displayStyle(26).padding(.top, 26)
-                Text("We'll email you a code to sign in.")
-                    .font(ReelieFont.ui(14)).foregroundStyle(Palette.grey).lineSpacing(2).padding(.top, 6)
-                field(placeholder: "you@example.com", text: $email,
-                      keyboard: .emailAddress, content: .emailAddress)
-            } else {
-                Text("Enter your code").displayStyle(26).padding(.top, 26)
-                Text("We sent a sign-in code to \(email).")
-                    .font(ReelieFont.ui(14)).foregroundStyle(Palette.grey).lineSpacing(2).padding(.top, 6)
-                field(placeholder: "123456", text: $code,
-                      keyboard: .numberPad, content: .oneTimeCode)
-            }
+            Text(title).displayStyle(26).padding(.top, 26)
+            Text(subtitle).font(ReelieFont.ui(14)).foregroundStyle(Palette.grey)
+                .lineSpacing(2).padding(.top, 6)
+
+            inputField
 
             if let error {
                 Text(error).font(ReelieFont.ui(12.5)).foregroundStyle(.red).padding(.top, 8)
             }
             Spacer(minLength: 0)
 
-            BigButton(title: busy ? "…" : (stage == .email ? "Continue" : "Verify & sign in"),
-                      style: .sun) { Task { await go() } }
+            // Forgot-password backup: only on the sign-in password step.
+            if mode == .signIn && stage == .password {
+                Button("Forgot password? Email me a code") { Task { await sendCode() } }
+                    .font(ReelieFont.ui(13, weight: .medium)).foregroundStyle(Palette.grey)
+                    .buttonStyle(.plain).padding(.bottom, 10)
+            }
+
+            BigButton(title: busy ? "…" : primaryTitle, style: .sun) { Task { await go() } }
                 .opacity(canContinue && !busy ? 1 : 0.5)
                 .disabled(!canContinue || busy)
                 .padding(.bottom, 20)
@@ -151,13 +155,63 @@ struct EmailSignInSheet: View {
         .onAppear { focused = true }
     }
 
+    private var title: String {
+        switch stage {
+        case .email:       return mode == .signUp ? "What's your email?" : "Sign in"
+        case .password:    return "Enter your password"
+        case .code:        return "Enter your code"
+        case .setPassword: return mode == .signUp ? "Set a password" : "Set a new password"
+        }
+    }
+
+    private var subtitle: String {
+        switch stage {
+        case .email:       return mode == .signUp ? "We'll email you a code to verify it."
+                                                   : "Enter your email to continue."
+        case .password:    return "Signing in as \(email)."
+        case .code:        return "We sent a sign-in code to \(email)."
+        case .setPassword: return "You'll use this to sign in next time."
+        }
+    }
+
+    private var primaryTitle: String {
+        switch stage {
+        case .email:       return "Continue"
+        case .password:    return "Sign in"
+        case .code:        return "Verify"
+        case .setPassword: return "Set password & continue"
+        }
+    }
+
+    @ViewBuilder private var inputField: some View {
+        switch stage {
+        case .email:
+            field(placeholder: "you@example.com", text: $email,
+                  keyboard: .emailAddress, content: .emailAddress, secure: false)
+        case .password:
+            field(placeholder: "Your password", text: $password,
+                  keyboard: .default, content: .password, secure: true)
+        case .setPassword:
+            field(placeholder: "Create a password", text: $password,
+                  keyboard: .default, content: .newPassword, secure: true)
+        case .code:
+            field(placeholder: "123456", text: $code,
+                  keyboard: .numberPad, content: .oneTimeCode, secure: false)
+        }
+    }
+
+    @ViewBuilder
     private func field(placeholder: String, text: Binding<String>,
-                       keyboard: UIKeyboardType, content: UITextContentType) -> some View {
+                       keyboard: UIKeyboardType, content: UITextContentType,
+                       secure: Bool) -> some View {
         HStack(spacing: 9) {
-            TextField(placeholder, text: text)
-                .font(ReelieFont.ui(15)).foregroundStyle(Palette.ink)
-                .textInputAutocapitalization(.never).autocorrectionDisabled()
-                .keyboardType(keyboard).textContentType(content).focused($focused)
+            Group {
+                if secure { SecureField(placeholder, text: text) }
+                else { TextField(placeholder, text: text) }
+            }
+            .font(ReelieFont.ui(15)).foregroundStyle(Palette.ink)
+            .textInputAutocapitalization(.never).autocorrectionDisabled()
+            .keyboardType(keyboard).textContentType(content).focused($focused)
         }
         .padding(.horizontal, 14).padding(.vertical, 14)
         .hairlineCard(cornerRadius: 14, color: error == nil ? Palette.ink : Color.red.opacity(0.6))
@@ -165,29 +219,47 @@ struct EmailSignInSheet: View {
     }
 
     private var canContinue: Bool {
-        // Length-agnostic: accept any plausible code (Supabase's OTP length can vary),
-        // so we don't hard-block a code that isn't exactly 6 digits.
-        stage == .email ? (email.contains("@") && email.contains(".")) : code.count >= 4
+        switch stage {
+        case .email:                  return email.contains("@") && email.contains(".")
+        case .password, .setPassword: return password.count >= 6
+        case .code:                   return code.count >= 4   // OTP length can vary
+        }
     }
+
+    private var mail: String { email.trimmingCharacters(in: .whitespaces).lowercased() }
 
     private func go() async {
         guard canContinue, !busy else { return }
         busy = true; error = nil
-        let mail = email.trimmingCharacters(in: .whitespaces).lowercased()
-        if stage == .email {
-            if app.usesSupabaseAuth {
-                if await app.startEmailOTP(mail) { stage = .code; code = ""; focused = true }
-                else { error = "Couldn't send the code. Check your email and try again." }
-            } else {
-                // Dev provider: single-step email login.
+        switch stage {
+        case .email:
+            if !app.usesSupabaseAuth {                       // dev provider: passwordless
                 if await app.signIn(email: mail) { onDone() }
                 else { error = "Couldn't sign in. Check your connection." }
+            } else if mode == .signUp {
+                await sendCode()                             // verify email first
+            } else {
+                stage = .password; password = ""; focused = true   // collect password
             }
-        } else {
+        case .password:
+            if await app.signInWithPassword(email: mail, password: password) { onDone() }
+            else { error = app.lastAuthError ?? "Wrong email or password." }
+        case .code:
             if await app.verifyEmailOTP(email: mail, code: code.trimmingCharacters(in: .whitespaces)) {
-                onDone()
+                stage = .setPassword; password = ""; focused = true   // now set/reset the password
             } else { error = "That code didn't work. Try again." }
+        case .setPassword:
+            _ = await app.setPassword(password)              // best-effort; they're already signed in
+            onDone()
         }
+        busy = false
+    }
+
+    /// Send the email code (sign-up verification, or the forgot-password backup).
+    private func sendCode() async {
+        busy = true; error = nil
+        if await app.startEmailOTP(mail) { stage = .code; code = ""; focused = true }
+        else { error = "Couldn't send the code. Check your email and try again." }
         busy = false
     }
 }

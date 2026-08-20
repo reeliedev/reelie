@@ -684,15 +684,19 @@ def get_description(video_id: str, cache_dir: Path) -> str:
     if cache.exists():
         return cache.read_text()
     desc = ""
-    try:
-        import yt_dlp
-        with yt_dlp.YoutubeDL({"quiet": True, "no_warnings": True,
-                               "skip_download": True}) as ydl:
-            info = ydl.extract_info(f"https://www.youtube.com/watch?v={video_id}",
-                                    download=False)
-        desc = info.get("description") or ""
-    except Exception:
-        desc = ""
+    # Only YouTube ids (the 11-char form) live on YouTube. A TikTok/IG id (e.g. a
+    # 19-digit TikTok id) fed to youtube.com/watch?v= truncates to a bogus 11-char id
+    # and errors ("This video is unavailable") — noisy and pointless. Skip it.
+    if re.fullmatch(r"[A-Za-z0-9_-]{11}", video_id):
+        try:
+            import yt_dlp
+            with yt_dlp.YoutubeDL({"quiet": True, "no_warnings": True,
+                                   "skip_download": True}) as ydl:
+                info = ydl.extract_info(f"https://www.youtube.com/watch?v={video_id}",
+                                        download=False)
+            desc = info.get("description") or ""
+        except Exception:
+            desc = ""
     cache.parent.mkdir(parents=True, exist_ok=True)
     cache.write_text(desc)
     return desc

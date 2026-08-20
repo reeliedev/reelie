@@ -214,6 +214,8 @@ input[type=file]{padding:9px 12px}
 var BASE = window.location.origin;
 var tok = localStorage.getItem('reelie.token') || '';
 var me = null; try { me = JSON.parse(localStorage.getItem('reelie.user')||'null'); } catch(e){}
+// Suppress the onAuthStateChange auto-render while we're mid-multi-step flow (code -> set password), so signing in via the code doesn't skip the set-password screen.
+var authBusy = false;
 // Returned from a social OAuth connect → confirm + clean the URL.
 (function(){
   var q=new URLSearchParams(location.search), c=q.get('connected');
@@ -257,7 +259,7 @@ async function supa(){
     if(t){
       // Session arrived (incl. after a magic-link / OAuth redirect is processed) —
       // if it's new, store it and re-render so we leave the login screen.
-      if(t !== tok){ tok = t; localStorage.setItem('reelie.token', t); render(); }
+      if(t !== tok){ tok = t; localStorage.setItem("reelie.token", t); if(!authBusy) render(); }
     } else if(evt === 'SIGNED_OUT'){ tok = ''; }
   });
   return sb;
@@ -371,8 +373,9 @@ async function viewEmailCode(email, flow){
     var code=document.getElementById('code').value.trim(), msg=document.getElementById('msg');
     if(code.length<4){ msg.textContent='Enter the code from your email.'; return; }
     msg.textContent='Verifying…';
+    authBusy = true;   // verifyOtp signs us in; hold the auto-render so we reach set-password
     var r = await c.auth.verifyOtp({email:email, token:code, type:'email'});
-    if(r.error){ msg.innerHTML='<span class="err">'+esc(r.error.message)+'</span>'; }
+    if(r.error){ authBusy = false; msg.innerHTML='<span class="err">'+esc(r.error.message)+'</span>'; }
     else { viewSetPassword(flow); }
   };
   document.getElementById('code').addEventListener('keydown', function(e){ if(e.key==='Enter') document.getElementById('verify').click(); });
@@ -393,7 +396,7 @@ async function viewSetPassword(flow){
     msg.textContent='Saving…';
     var r = await c.auth.updateUser({password:pass});
     if(r.error){ msg.innerHTML='<span class="err">'+esc(r.error.message)+'</span>'; }
-    else { location.reload(); }
+    else { authBusy = false; location.reload(); }
   };
   document.getElementById('pass').addEventListener('keydown', function(e){ if(e.key==='Enter') document.getElementById('save').click(); });
 }
